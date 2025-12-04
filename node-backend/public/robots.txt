@@ -1,0 +1,15 @@
+# robots.txt for PICS Backend API
+# https://www.robotstxt.org/
+
+User-agent: *
+
+# Block super admin routes from indexing
+Disallow: /api/v1/super-admin/
+Disallow: /api/v1/super-admin/*
+
+# Block all API routes from general crawlers (optional - APIs aren't meant for crawling)
+Disallow: /api/
+
+# Allow health check
+Allow: /health
+
