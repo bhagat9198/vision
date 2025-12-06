@@ -8,7 +8,8 @@ const router = Router();
 
 // Public routes
 router.get('/public/:id', eventController.findPublicById);
-router.post('/public/:id/verify-password', validate(verifyPasswordSchema), eventController.verifyPassword);
+router.get('/public/slug/*', eventController.findPublicBySlug);
+router.post('/:id/verify-password', validate(verifyPasswordSchema), eventController.verifyPassword);
 
 // Protected routes (authenticated photographer)
 router.use(authenticate);

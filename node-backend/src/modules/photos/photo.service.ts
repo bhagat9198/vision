@@ -4,6 +4,15 @@ import { NotFoundError, ForbiddenError, BadRequestError } from '../../common/exc
 import { getPagination } from '../../common/utils/pagination.js';
 import type { CreatePhotoDto, UpdatePhotoDto, BulkCreatePhotosDto, PhotoQueryDto, LikePhotoDto } from './photo.dto.js';
 
+// Helper to parse ID - returns { id, displayId } based on input
+function parseId(idOrDisplayId: string): { id?: string; displayId?: number } {
+  const numId = parseInt(idOrDisplayId, 10);
+  if (!isNaN(numId) && numId.toString() === idOrDisplayId) {
+    return { displayId: numId };
+  }
+  return { id: idOrDisplayId };
+}
+
 export class PhotoService {
   private async verifyAlbumOwnership(albumId: string, photographerId: string) {
     const album = await prisma.album.findUnique({
@@ -67,12 +76,24 @@ export class PhotoService {
     return { count: photos.count };
   }
 
-  async findByEventId(eventId: string, query: PhotoQueryDto) {
+  async findByEventId(eventIdOrDisplayId: string, query: PhotoQueryDto) {
     const { page, limit, skip } = getPagination(query.page, query.limit);
+    const { id: eventId, displayId: eventDisplayId } = parseId(eventIdOrDisplayId);
+
+    // First get the event to find its actual ID
+    const event = await prisma.event.findFirst({
+      where: eventId ? { id: eventId } : { displayId: eventDisplayId },
+      select: { id: true },
+    });
+
+    if (!event) {
+      throw new NotFoundError('Event');
+    }
 
     const where: Prisma.PhotoWhereInput = {
-      eventId,
+      eventId: event.id,
       ...(query.albumId && { albumId: query.albumId }),
+      ...(query.rootOnly === 'true' && { albumId: null }), // Get only photos without album
     };
 
     const [photos, total] = await Promise.all([
@@ -82,7 +103,7 @@ export class PhotoService {
         take: limit,
         orderBy: { sortOrder: 'asc' },
         include: {
-          album: { select: { id: true, name: true } },
+          album: { select: { id: true, displayId: true, name: true } },
           _count: { select: { likes: true, comments: true } },
         },
       }),
@@ -92,12 +113,14 @@ export class PhotoService {
     return { photos, total, page, limit };
   }
 
-  async findById(id: string) {
-    const photo = await prisma.photo.findUnique({
-      where: { id },
+  async findById(idOrDisplayId: string) {
+    const { id, displayId } = parseId(idOrDisplayId);
+
+    const photo = await prisma.photo.findFirst({
+      where: id ? { id } : { displayId },
       include: {
-        album: { select: { id: true, name: true } },
-        event: { select: { id: true, name: true, photographerId: true } },
+        album: { select: { id: true, displayId: true, name: true } },
+        event: { select: { id: true, displayId: true, name: true, photographerId: true } },
         comments: { orderBy: { createdAt: 'desc' }, take: 20 },
         _count: { select: { likes: true, comments: true } },
       },
@@ -110,15 +133,15 @@ export class PhotoService {
     return photo;
   }
 
-  async update(id: string, photographerId: string, data: UpdatePhotoDto) {
-    const photo = await this.findById(id);
+  async update(idOrDisplayId: string, photographerId: string, data: UpdatePhotoDto) {
+    const photo = await this.findById(idOrDisplayId);
 
     if (photo.event.photographerId !== photographerId) {
       throw new ForbiddenError('You do not have access to this photo');
     }
 
     const updated = await prisma.photo.update({
-      where: { id },
+      where: { id: photo.id },
       data,
       include: { _count: { select: { likes: true, comments: true } } },
     });
@@ -126,24 +149,26 @@ export class PhotoService {
     return updated;
   }
 
-  async delete(id: string, photographerId: string) {
-    const photo = await this.findById(id);
+  async delete(idOrDisplayId: string, photographerId: string) {
+    const photo = await this.findById(idOrDisplayId);
 
     if (photo.event.photographerId !== photographerId) {
       throw new ForbiddenError('You do not have access to this photo');
     }
 
-    await prisma.photo.delete({ where: { id } });
+    await prisma.photo.delete({ where: { id: photo.id } });
   }
 
-  async toggleLike(id: string, data: LikePhotoDto) {
+  async toggleLike(idOrDisplayId: string, data: LikePhotoDto) {
     if (!data.sessionId && !data.userEmail) {
       throw new BadRequestError('Either sessionId or userEmail is required');
     }
 
+    const photo = await this.findById(idOrDisplayId);
+
     const existing = await prisma.photoLike.findFirst({
       where: {
-        photoId: id,
+        photoId: photo.id,
         ...(data.sessionId ? { sessionId: data.sessionId } : { userEmail: data.userEmail }),
       },
     });
@@ -154,7 +179,7 @@ export class PhotoService {
     }
 
     await prisma.photoLike.create({
-      data: { photoId: id, ...data },
+      data: { photoId: photo.id, ...data },
     });
 
     return { liked: true };

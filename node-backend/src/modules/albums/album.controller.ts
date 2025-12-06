@@ -20,7 +20,10 @@ export class AlbumController {
   async findByEventId(req: Request, res: Response, next: NextFunction) {
     try {
       const { eventId } = req.params;
-      const albums = await albumService.findByEventId(eventId as string);
+      // parentId query param: undefined = all, "null" = root only, or albumId for children
+      const parentIdParam = req.query.parentId as string | undefined;
+      const parentId = parentIdParam === 'null' ? null : parentIdParam;
+      const albums = await albumService.findByEventId(eventId as string, parentId);
       sendSuccess(res, albums);
     } catch (error) {
       next(error);

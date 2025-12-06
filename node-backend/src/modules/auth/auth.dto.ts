@@ -7,6 +7,7 @@ export const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   otp: z.string().optional(),
   phoneVerified: z.boolean().optional(),
+  emailVerified: z.boolean().optional(), // Set by frontend after OTP verification
 }).refine(data => data.email || data.phone, {
   message: 'Either email or phone is required',
 });

@@ -49,6 +49,18 @@ export class EventController {
     }
   }
 
+  // Public endpoint by slug - no auth required
+  async findPublicBySlug(req: Request, res: Response, next: NextFunction) {
+    try {
+      // Get slug from wildcard path (e.g., /public/slug/user_123/event-name)
+      const slug = req.params[0] || req.path.replace('/public/slug/', '');
+      const event = await eventService.findPublicBySlug(slug);
+      sendSuccess(res, event);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       const { user } = req as AuthenticatedRequest;

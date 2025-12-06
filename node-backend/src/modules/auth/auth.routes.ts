@@ -14,6 +14,7 @@ router.post('/login', validate(loginSchema), authController.login);
 
 // Protected routes
 router.get('/profile', authenticate, authController.getProfile);
+router.patch('/profile', authenticate, authController.updateProfile);
 router.patch('/change-password', authenticate, validate(changePasswordSchema), authController.changePassword);
 
 export { router as authRouter };

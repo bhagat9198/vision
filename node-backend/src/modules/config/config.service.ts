@@ -34,6 +34,47 @@ export const DEFAULT_CONFIGS: Record<string, { value: string; options?: string[]
   bulksms_enabled: { value: 'false' },
   bulksms_api_key: { value: '' },
   bulksms_sender_id: { value: '' },
+
+  // ============ STORAGE SETTINGS ============
+  storage_provider: { value: 'local', options: ['local', 's3'] },
+
+  // Local Storage
+  storage_local_path: { value: './uploads' },
+  storage_local_base_url: { value: 'http://localhost:4000/uploads' },
+
+  // S3 Storage
+  storage_s3_bucket: { value: '' },
+  storage_s3_region: { value: 'ap-south-1' },
+  storage_s3_access_key: { value: '' },
+  storage_s3_secret_key: { value: '' },
+  storage_s3_endpoint: { value: '' }, // For S3-compatible services like MinIO
+
+  // ============ UPLOAD SETTINGS ============
+  upload_chunk_size_mb: { value: '5' },
+  upload_max_file_size_mb: { value: '100' },
+  upload_session_expiry_hours: { value: '24' },
+  upload_concurrent_processing: { value: '5' },
+  upload_allowed_types: { value: 'image/jpeg,image/png,image/heic,image/heif,image/webp,video/mp4,video/quicktime' },
+
+  // ============ THUMBNAIL SETTINGS ============
+  thumbnail_max_dimension: { value: '400' },
+  thumbnail_quality: { value: '80' },
+  thumbnail_format: { value: 'jpeg', options: ['jpeg', 'webp'] },
+
+  // ============ FACE RECOGNITION SETTINGS ============
+  face_recognition_provider: { value: 'none', options: ['none', 'aws_rekognition'] },
+  face_recognition_auto_index: { value: 'false' },
+  face_recognition_aws_region: { value: 'ap-south-1' },
+  face_recognition_aws_access_key: { value: '' },
+  face_recognition_aws_secret_key: { value: '' },
+
+  // ============ WATERMARK SETTINGS ============
+  watermark_default_text: { value: '' }, // Default watermark text when photographer has no custom text
+
+  // ============ TEMPLATE MAPPINGS ============
+  // These link to template IDs in the MessageTemplate table
+  photographer_email_otp_template: { value: '' }, // Template ID for photographer email OTP
+  photographer_phone_otp_template: { value: '' }, // Template ID for photographer phone OTP
 };
 
 export class ConfigService {
@@ -209,6 +250,55 @@ export class ConfigService {
       result[config.key] = config.value;
     }
     return result;
+  }
+
+  // ============ STORAGE CONFIG HELPERS ============
+
+  async getStorageConfig() {
+    return {
+      provider: await this.get('storage_provider', 'local'),
+      local: {
+        path: await this.get('storage_local_path', './uploads'),
+        baseUrl: await this.get('storage_local_base_url', 'http://localhost:4000/uploads'),
+      },
+      s3: {
+        bucket: await this.get('storage_s3_bucket', ''),
+        region: await this.get('storage_s3_region', 'ap-south-1'),
+        accessKey: await this.get('storage_s3_access_key', ''),
+        secretKey: await this.get('storage_s3_secret_key', ''),
+        endpoint: await this.get('storage_s3_endpoint', ''),
+      },
+    };
+  }
+
+  async getUploadConfig() {
+    return {
+      chunkSizeMb: parseInt(await this.get('upload_chunk_size_mb', '5') || '5'),
+      maxFileSizeMb: parseInt(await this.get('upload_max_file_size_mb', '100') || '100'),
+      sessionExpiryHours: parseInt(await this.get('upload_session_expiry_hours', '24') || '24'),
+      concurrentProcessing: parseInt(await this.get('upload_concurrent_processing', '5') || '5'),
+      allowedTypes: (await this.get('upload_allowed_types', '')).split(',').filter(Boolean),
+    };
+  }
+
+  async getThumbnailConfig() {
+    return {
+      maxDimension: parseInt(await this.get('thumbnail_max_dimension', '400') || '400'),
+      quality: parseInt(await this.get('thumbnail_quality', '80') || '80'),
+      format: await this.get('thumbnail_format', 'jpeg') as 'jpeg' | 'webp',
+    };
+  }
+
+  async getFaceRecognitionConfig() {
+    return {
+      provider: await this.get('face_recognition_provider', 'none'),
+      autoIndex: (await this.get('face_recognition_auto_index', 'false')) === 'true',
+      aws: {
+        region: await this.get('face_recognition_aws_region', 'ap-south-1'),
+        accessKey: await this.get('face_recognition_aws_access_key', ''),
+        secretKey: await this.get('face_recognition_aws_secret_key', ''),
+      },
+    };
   }
 }
 

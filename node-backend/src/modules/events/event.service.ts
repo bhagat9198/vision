@@ -4,16 +4,54 @@ import { NotFoundError, ForbiddenError, UnauthorizedError } from '../../common/e
 import { getPagination } from '../../common/utils/pagination.js';
 import type { CreateEventDto, UpdateEventDto, EventQueryDto } from './event.dto.js';
 
+// Helper to parse ID - returns { id, displayId } based on input
+function parseEventId(idOrDisplayId: string): { id?: string; displayId?: number } {
+  const numId = parseInt(idOrDisplayId, 10);
+  if (!isNaN(numId) && numId.toString() === idOrDisplayId) {
+    return { displayId: numId };
+  }
+  return { id: idOrDisplayId };
+}
+
+// Generate URL-safe slug from text
+function generateSlug(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .slice(0, 50);
+}
+
 export class EventService {
   async create(photographerId: string, data: CreateEventDto) {
+    // Get photographer username to create slug
+    const photographer = await prisma.photographer.findUnique({
+      where: { id: photographerId },
+      select: { username: true },
+    });
+    if (!photographer) throw new NotFoundError('Photographer not found');
+
+    // Generate unique slug: username/event-name
+    let baseSlug = `${photographer.username}/${generateSlug(data.name)}`;
+    let slug = baseSlug;
+    let attempts = 0;
+    while (attempts < 10) {
+      const existing = await prisma.event.findUnique({ where: { slug } });
+      if (!existing) break;
+      slug = `${baseSlug}-${Math.random().toString(36).substring(2, 6)}`;
+      attempts++;
+    }
+
     const event = await prisma.event.create({
       data: {
         ...data,
+        slug,
         photographerId,
       },
       include: {
         photographer: {
-          select: { id: true, name: true, avatar: true },
+          select: { id: true, username: true, name: true, avatar: true },
         },
         _count: { select: { photos: true, albums: true } },
       },
@@ -52,12 +90,14 @@ export class EventService {
     return { events, total, page, limit };
   }
 
-  async findById(id: string, photographerId?: string) {
-    const event = await prisma.event.findUnique({
-      where: { id },
+  async findById(idOrDisplayId: string, photographerId?: string) {
+    const { id, displayId } = parseEventId(idOrDisplayId);
+
+    const event = await prisma.event.findFirst({
+      where: id ? { id } : { displayId },
       include: {
         photographer: {
-          select: { id: true, name: true, avatar: true, bio: true, website: true, instagram: true },
+          select: { id: true, displayId: true, name: true, avatar: true, bio: true, website: true, instagram: true },
         },
         albums: { orderBy: { sortOrder: 'asc' } },
         _count: { select: { photos: true, albums: true } },
@@ -76,9 +116,11 @@ export class EventService {
     return event;
   }
 
-  async findPublicById(id: string) {
-    const event = await prisma.event.findUnique({
-      where: { id, status: 'PUBLISHED' },
+  async findPublicById(idOrDisplayId: string) {
+    const { id, displayId } = parseEventId(idOrDisplayId);
+
+    const event = await prisma.event.findFirst({
+      where: id ? { id } : { displayId },
       include: {
         photographer: {
           select: { id: true, name: true, avatar: true, bio: true, website: true, instagram: true },
@@ -100,15 +142,40 @@ export class EventService {
     return { ...publicEvent, requiresPassword: event.isPasswordProtected };
   }
 
-  async update(id: string, photographerId: string, data: UpdateEventDto) {
-    // Verify ownership
-    await this.findById(id, photographerId);
+  async findPublicBySlug(slug: string) {
+    const event = await prisma.event.findFirst({
+      where: { slug },
+      include: {
+        photographer: {
+          select: { id: true, name: true, avatar: true, bio: true, website: true, instagram: true },
+        },
+        _count: { select: { photos: true, albums: true } },
+      },
+    });
+
+    if (!event) {
+      throw new NotFoundError('Event');
+    }
+
+    // Remove password from response
+    const { password: _, ...publicEvent } = event;
+    return { ...publicEvent, requiresPassword: event.isPasswordProtected };
+  }
+
+  async update(idOrDisplayId: string, photographerId: string, data: UpdateEventDto) {
+    // Verify ownership and get the actual event
+    const existingEvent = await this.findById(idOrDisplayId, photographerId);
+
+    // Remove any undefined values and settings key (shouldn't be there after transform but just in case)
+    const cleanData = Object.fromEntries(
+      Object.entries(data).filter(([key, value]) => value !== undefined && key !== 'settings')
+    );
 
     const event = await prisma.event.update({
-      where: { id },
-      data,
+      where: { id: existingEvent.id },
+      data: cleanData,
       include: {
-        photographer: { select: { id: true, name: true, avatar: true } },
+        photographer: { select: { id: true, displayId: true, name: true, avatar: true } },
         _count: { select: { photos: true, albums: true } },
       },
     });
@@ -116,14 +183,16 @@ export class EventService {
     return event;
   }
 
-  async delete(id: string, photographerId: string) {
-    await this.findById(id, photographerId);
-    await prisma.event.delete({ where: { id } });
+  async delete(idOrDisplayId: string, photographerId: string) {
+    const event = await this.findById(idOrDisplayId, photographerId);
+    await prisma.event.delete({ where: { id: event.id } });
   }
 
-  async verifyPassword(id: string, password: string) {
-    const event = await prisma.event.findUnique({
-      where: { id },
+  async verifyPassword(idOrDisplayId: string, password: string) {
+    const { id, displayId } = parseEventId(idOrDisplayId);
+
+    const event = await prisma.event.findFirst({
+      where: id ? { id } : { displayId },
       select: { id: true, isPasswordProtected: true, password: true },
     });
 

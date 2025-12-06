@@ -55,6 +55,17 @@ export class AuthController {
     }
   }
 
+  async updateProfile(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { user } = req as AuthenticatedRequest;
+      const data = req.body as { username?: string; name?: string; bio?: string; website?: string; instagram?: string; phone?: string };
+      const result = await authService.updateProfile(user.id, data);
+      sendSuccess(res, result, 200, 'Profile updated successfully');
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async changePassword(req: Request, res: Response, next: NextFunction) {
     try {
       const { user } = req as AuthenticatedRequest;

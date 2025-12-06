@@ -2,12 +2,23 @@ import { app } from './app.js';
 import { env } from './config/env.js';
 import { logger } from './common/utils/logger.js';
 import { prisma } from './config/database.js';
+import { getRedisConnection, closeRedisConnection } from './config/redis.js';
+import { startImageProcessingWorker, stopImageProcessingWorker } from './queues/image-processing.queue.js';
 
 const startServer = async () => {
   try {
     // Test database connection
     await prisma.$connect();
     logger.info('✅ Database connected successfully');
+
+    // Initialize Redis connection
+    const redis = getRedisConnection();
+    await redis.ping();
+    logger.info('✅ Redis connected successfully');
+
+    // Start image processing worker
+    startImageProcessingWorker(5); // 5 concurrent jobs
+    logger.info('✅ Image processing worker started');
 
     // Start server
     app.listen(env.PORT, () => {
@@ -24,8 +35,17 @@ const startServer = async () => {
 // Graceful shutdown
 const gracefulShutdown = async (signal: string) => {
   logger.info(`\n${signal} received. Shutting down gracefully...`);
-  
+
   try {
+    // Stop image processing worker
+    await stopImageProcessingWorker();
+    logger.info('Image processing worker stopped');
+
+    // Close Redis connection
+    await closeRedisConnection();
+    logger.info('Redis disconnected');
+
+    // Disconnect database
     await prisma.$disconnect();
     logger.info('Database disconnected');
     process.exit(0);

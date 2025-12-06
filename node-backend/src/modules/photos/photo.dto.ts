@@ -29,6 +29,7 @@ export const photoQuerySchema = z.object({
   page: z.string().optional(),
   limit: z.string().optional(),
   albumId: z.string().uuid().optional(),
+  rootOnly: z.string().optional(), // 'true' to get photos without album (root photos)
 });
 
 export type CreatePhotoDto = z.infer<typeof createPhotoSchema>;
