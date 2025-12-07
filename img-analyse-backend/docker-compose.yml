@@ -1,0 +1,120 @@
+# =============================================================================
+# Docker Compose for img-analyse-backend
+# =============================================================================
+# Multi-tenant face detection and search service.
+#
+# Services:
+#   - PostgreSQL: Organization and API key storage
+#   - Redis: API key caching and embedding sessions
+#   - Qdrant: Vector database for face embeddings
+#   - Python Sidecar: Fallback face detection (YuNet/SCRFD) and alignment
+#
+# Usage:
+#   docker-compose up -d
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL - Organization & API Key Storage
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: img-analyse-postgres
+    restart: unless-stopped
+    ports:
+      - "5433:5432"   # Use 5433 to avoid conflict with api-node-backend
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: img_analyse
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # Redis - API Key Caching & Embedding Sessions
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: img-analyse-redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"   # Use 6380 to avoid conflict with api-node-backend
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # Qdrant - Vector Database for Face Embeddings
+  # ---------------------------------------------------------------------------
+  # Documentation: https://qdrant.tech/documentation/
+  # Each event gets collection: org_{orgId}_event_{eventId}_faces
+  # ---------------------------------------------------------------------------
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: img-analyse-qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"   # REST API
+      - "6334:6334"   # gRPC API
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__GRPC_PORT=6334
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      # Performance tuning for face search
+      - QDRANT__STORAGE__PERFORMANCE__MAX_SEARCH_THREADS=4
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
+  # Python Sidecar - Fallback Face Detection & Alignment
+  # ---------------------------------------------------------------------------
+  # Provides:
+  #   - YuNet face detection (fallback #1)
+  #   - SCRFD face detection (fallback #2)
+  #   - Face alignment using 5-point landmarks
+  # ---------------------------------------------------------------------------
+  python-sidecar:
+    build:
+      context: ../python-sidecar
+      dockerfile: Dockerfile
+    container_name: img-analyse-python-sidecar
+    restart: unless-stopped
+    ports:
+      - "4002:4002"
+    volumes:
+      - ../python-sidecar/models:/app/models:ro
+    environment:
+      - PORT=4002
+      - LOG_LEVEL=INFO
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  qdrant_data:
+    driver: local
+

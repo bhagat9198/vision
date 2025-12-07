@@ -1,0 +1,89 @@
+// =============================================================================
+// Prisma Schema - img-analyse-backend
+// =============================================================================
+// Multi-tenant face analysis service with organization-based configuration
+// =============================================================================
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ ENUMS ============
+
+enum FaceDetectionMode {
+  RECOGNITION_ONLY
+  DETECTION_THEN_RECOGNITION
+}
+
+enum ImageSourceMode {
+  URL
+  MULTIPART
+  SHARED_STORAGE
+}
+
+// ============ MODELS ============
+
+/// Organization - represents a tenant in the multi-tenant system
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // === CompreFace Settings ===
+  comprefaceUrl               String?
+  comprefaceRecognitionApiKey String?
+  comprefaceDetectionApiKey   String?
+
+  // === Detection Settings ===
+  faceDetectionMode FaceDetectionMode @default(RECOGNITION_ONLY)
+  imageSourceMode   ImageSourceMode   @default(URL)
+  sharedStoragePath String?
+
+  // === Quality Filters ===
+  minConfidence     Float   @default(0.7)
+  minSizePx         Int     @default(60)
+  skipExtremeAngles Boolean @default(true)
+
+  // === Search Settings ===
+  searchDefaultTopK   Int   @default(50)
+  searchMinSimilarity Float @default(0.6)
+
+  // === Cache Settings ===
+  embeddingCacheTtlSeconds Int @default(1800) // 30 min
+
+  // === Python Sidecar ===
+  pythonSidecarUrl        String?
+  enableFallbackDetection Boolean @default(true)
+  enableAlignment         Boolean @default(true)
+
+  // === Relations ===
+  apiKeys ApiKey[]
+
+  @@map("organizations")
+}
+
+/// ApiKey - authentication keys for organizations
+model ApiKey {
+  id        String    @id @default(uuid())
+  orgId     String
+  key       String    @unique
+  name      String    @default("Default")
+  isActive  Boolean   @default(true)
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([key])
+  @@index([orgId])
+  @@map("api_keys")
+}
+

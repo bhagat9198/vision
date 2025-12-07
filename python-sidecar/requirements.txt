@@ -1,0 +1,25 @@
+# =============================================================================
+# Python Sidecar Dependencies
+# =============================================================================
+# Face detection and alignment service using YuNet and SCRFD
+# =============================================================================
+
+# Web framework
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+python-multipart==0.0.9
+
+# Image processing
+opencv-python-headless==4.10.0.84
+numpy==1.26.4
+Pillow==10.4.0
+
+# ONNX Runtime for model inference
+onnxruntime==1.19.2
+
+# HTTP client (for health checks)
+httpx==0.27.2
+
+# Utilities
+pydantic==2.9.2
+
