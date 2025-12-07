@@ -3,7 +3,12 @@ import { env } from './config/env.js';
 import { logger } from './common/utils/logger.js';
 import { prisma } from './config/database.js';
 import { getRedisConnection, closeRedisConnection } from './config/redis.js';
+import express from 'express';
+import path from 'path';
+import { configService } from './modules/config/config.service.js';
 import { startImageProcessingWorker, stopImageProcessingWorker } from './queues/image-processing.queue.js';
+import { notFoundHandler } from './middleware/notFound.middleware.js';
+import { errorHandler } from './middleware/error.middleware.js';
 
 const startServer = async () => {
   try {
@@ -21,6 +26,18 @@ const startServer = async () => {
     logger.info('✅ Image processing worker started');
 
     // Start server
+    // Serve static files from configured, absolute path
+    const storageConfig = await configService.getStorageConfig();
+    if (storageConfig.local.path) {
+      const absoluteStoragePath = path.resolve(storageConfig.local.path);
+      app.use('/uploads', express.static(absoluteStoragePath));
+      logger.info(`📂 Serving static files from: ${absoluteStoragePath}`);
+    }
+
+    // Register error handlers (must be last)
+    app.use(notFoundHandler);
+    app.use(errorHandler);
+
     app.listen(env.PORT, () => {
       logger.info(`🚀 Server running on port ${env.PORT}`);
       logger.info(`📍 Environment: ${env.NODE_ENV}`);

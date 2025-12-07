@@ -45,9 +45,31 @@ export class ImageProcessor {
       const mergedFilePath = await this.mergeChunks(sessionId, fileId);
 
       // Check if this is a video file - handle differently
+      // Check if this is a video file - handle differently
       if (this.isVideo(mimeType)) {
+        // Fetch dependencies for video processing
+        const orgId = await configService.getOrganizationId();
+        const photographer = await prisma.photographer.findUnique({
+          where: { id: photographerId },
+          select: { displayId: true }
+        });
+        if (!photographer) throw new Error(`Photographer not found: ${photographerId}`);
+
+        // Fetch Album Display ID if exists
+        let albumDisplayId = '';
+        if (albumId) {
+          const album = await prisma.album.findUnique({
+            where: { id: albumId },
+            select: { displayId: true }
+          });
+          if (album) {
+            albumDisplayId = `/${album.displayId}`;
+          }
+        }
+
         return await this.processVideoFile({
-          sessionId, fileId, eventId, albumId, eventDisplayId, originalName, mimeType, mergedFilePath
+          sessionId, fileId, eventId, albumId, eventDisplayId: String(eventDisplayId), originalName, mimeType, mergedFilePath,
+          orgId, photographerDisplayId: photographer.displayId, albumDisplayId
         });
       }
 
@@ -64,8 +86,9 @@ export class ImageProcessor {
       // 6. Apply watermark if enabled (event setting takes precedence)
       const photographer = await prisma.photographer.findUnique({
         where: { id: photographerId },
-        select: { watermarkEnabled: true, watermarkUrl: true, watermarkText: true, watermarkPosition: true, watermarkOpacity: true, watermarkScale: true },
+        select: { displayId: true, watermarkEnabled: true, watermarkUrl: true, watermarkText: true, watermarkPosition: true, watermarkOpacity: true, watermarkScale: true },
       });
+      if (!photographer) throw new Error(`Photographer not found: ${photographerId}`);
 
       let finalImageBuffer = await fs.readFile(processedFilePath);
       // Use event's watermark setting if available, otherwise fall back to photographer's setting
@@ -74,24 +97,41 @@ export class ImageProcessor {
       if (watermarkEnabled && photographer) {
         // Priority: 1. Event watermark text, 2. Photographer image watermark, 3. Photographer text watermark, 4. Default config text
         if (event.watermarkText) {
-          finalImageBuffer = await this.applyTextWatermark(processedFilePath, event.watermarkText, photographer);
+          finalImageBuffer = (await this.applyTextWatermark(processedFilePath, event.watermarkText, photographer)) as any;
         } else if (photographer.watermarkUrl) {
-          finalImageBuffer = await this.applyImageWatermark(processedFilePath, photographer);
+          finalImageBuffer = (await this.applyImageWatermark(processedFilePath, photographer)) as any;
         } else if (photographer.watermarkText) {
-          finalImageBuffer = await this.applyTextWatermark(processedFilePath, photographer.watermarkText, photographer);
+          finalImageBuffer = (await this.applyTextWatermark(processedFilePath, photographer.watermarkText, photographer)) as any;
         } else {
           // Use default watermark text from config
           const defaultWatermarkText = await configService.get('watermark_default_text', '');
           if (defaultWatermarkText) {
-            finalImageBuffer = await this.applyTextWatermark(processedFilePath, defaultWatermarkText, photographer);
+            if (defaultWatermarkText) {
+              finalImageBuffer = (await this.applyTextWatermark(processedFilePath, defaultWatermarkText, photographer)) as any;
+            }
           }
         }
       }
 
-      // 7. Upload to storage (local or S3) using displayId for folder path
+      // 7. Upload to storage (local or S3) using structured path
       const storageConfig = await configService.getStorageConfig();
-      const fileKey = `events/${eventDisplayId}/photos/${fileId}`;
-      const thumbnailKey = `events/${eventDisplayId}/thumbnails/${fileId}`;
+      const orgId = await configService.getOrganizationId();
+
+      // Fetch Album Display ID if exists
+      let albumDisplayId = '';
+      if (albumId) {
+        const album = await prisma.album.findUnique({
+          where: { id: albumId },
+          select: { displayId: true }
+        });
+        if (album) {
+          albumDisplayId = `/${album.displayId}`;
+        }
+      }
+
+      // Structure: orgId/photographerDisplayId/eventDisplayId/[albumDisplayId]/fileId.jpg
+      const fileKey = `${orgId}/${photographer.displayId}/${eventDisplayId}${albumDisplayId}/${fileId}`;
+      const thumbnailKey = `${orgId}/${photographer.displayId}/${eventDisplayId}${albumDisplayId}/thumbnails/${fileId}`;
 
       const [photoUrl, thumbnailUrl] = await Promise.all([
         storageService.uploadFile(finalImageBuffer, `${fileKey}.jpg`, 'image/jpeg'),
@@ -165,8 +205,11 @@ export class ImageProcessor {
     originalName: string;
     mimeType: string;
     mergedFilePath: string;
+    orgId: string;
+    photographerDisplayId: number;
+    albumDisplayId: string;
   }) {
-    const { sessionId, fileId, eventId, albumId, eventDisplayId, originalName, mimeType, mergedFilePath } = data;
+    const { sessionId, fileId, eventId, albumId, eventDisplayId, originalName, mimeType, mergedFilePath, orgId, photographerDisplayId, albumDisplayId } = data;
 
     // Check if video needs conversion to MP4 (for browser compatibility)
     const needsConversion = mimeType.toLowerCase() !== 'video/mp4';
@@ -190,9 +233,10 @@ export class ImageProcessor {
     const videoBuffer = await fs.readFile(finalVideoPath);
     const fileStats = await fs.stat(finalVideoPath);
 
-    // Upload to storage (always as .mp4 if converted)
+    // Upload to storage (local or S3) using structured path
     const ext = finalMimeType === 'video/mp4' ? 'mp4' : 'mov';
-    const fileKey = `events/${eventDisplayId}/videos/${fileId}.${ext}`;
+    // Structured path: orgId/photographerDisplayId/eventDisplayId/[albumDisplayId]/fileId.ext
+    const fileKey = `${orgId}/${photographerDisplayId}/${eventDisplayId}${albumDisplayId}/${fileId}.${ext}`;
     const videoUrl = await storageService.uploadFile(videoBuffer, fileKey, finalMimeType);
 
     // Generate thumbnail from video using ffmpeg
@@ -203,7 +247,7 @@ export class ImageProcessor {
       logger.warn(`Failed to generate video thumbnail, using placeholder: ${error}`);
       thumbnailBuffer = await this.generateVideoPlaceholder();
     }
-    const thumbnailKey = `events/${eventDisplayId}/thumbnails/${fileId}.jpg`;
+    const thumbnailKey = `${orgId}/${photographerDisplayId}/${eventDisplayId}${albumDisplayId}/thumbnails/${fileId}.jpg`;
     const thumbnailUrl = await storageService.uploadFile(thumbnailBuffer, thumbnailKey, 'image/jpeg');
 
     // Create photo record with video metadata
@@ -379,8 +423,8 @@ export class ImageProcessor {
     const sortedChunks = chunkFiles
       .filter(f => f.startsWith('chunk_'))
       .sort((a, b) => {
-        const numA = parseInt(a.split('_')[1]);
-        const numB = parseInt(b.split('_')[1]);
+        const numA = parseInt(a.split('_')[1] || '0');
+        const numB = parseInt(b.split('_')[1] || '0');
         return numA - numB;
       });
 

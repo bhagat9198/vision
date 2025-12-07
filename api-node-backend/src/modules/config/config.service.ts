@@ -12,6 +12,10 @@ export const DEFAULT_CONFIGS: Record<string, { value: string; options?: string[]
   smtp_host: { value: '' },
   smtp_port: { value: '587' },
   smtp_user: { value: '' },
+
+  // Organization Root
+  organization_id: { value: 'org_default' },
+
   smtp_password: { value: '' },
   smtp_from: { value: '' },
 
@@ -71,6 +75,7 @@ export const DEFAULT_CONFIGS: Record<string, { value: string; options?: string[]
   // ============ FACE ANALYSIS SETTINGS (img-analyse-backend) ============
   face_analysis_enabled: { value: 'false' },
   face_analysis_backend_url: { value: 'http://localhost:4001' },
+  face_analysis_api_key: { value: '' },
 
   // CompreFace settings
   compreface_url: { value: 'http://localhost:8000' },
@@ -128,8 +133,8 @@ export class ConfigService {
   async set(key: string, value: string, options?: string[]): Promise<void> {
     await prisma.systemConfig.upsert({
       where: { key },
-      update: { value, options: options ?? null },
-      create: { key, value, options: options ?? null },
+      update: { value, options: options ?? undefined },
+      create: { key, value, options: options ?? undefined },
     });
   }
 
@@ -162,7 +167,7 @@ export class ConfigService {
       return prisma.systemConfig.upsert({
         where: { key },
         update: { value },
-        create: { key, value, options: DEFAULT_CONFIGS[key]?.options ?? null },
+        create: { key, value, options: DEFAULT_CONFIGS[key]?.options ?? undefined },
       });
     });
     const results = await prisma.$transaction(operations);
@@ -175,7 +180,7 @@ export class ConfigService {
       const existing = await prisma.systemConfig.findUnique({ where: { key } });
       if (!existing) {
         await prisma.systemConfig.create({
-          data: { key, value: def.value, options: def.options ?? null },
+          data: { key, value: def.value, options: def.options ?? undefined },
         });
       }
     }
@@ -310,7 +315,7 @@ export class ConfigService {
       maxFileSizeMb: parseInt(await this.get('upload_max_file_size_mb', '100') || '100'),
       sessionExpiryHours: parseInt(await this.get('upload_session_expiry_hours', '24') || '24'),
       concurrentProcessing: parseInt(await this.get('upload_concurrent_processing', '5') || '5'),
-      allowedTypes: (await this.get('upload_allowed_types', '')).split(',').filter(Boolean),
+      allowedTypes: ((await this.get('upload_allowed_types', '')) ?? '').split(',').filter(Boolean),
     };
   }
 
@@ -382,9 +387,16 @@ export class ConfigService {
    * Get face analysis backend URL.
    */
   async getFaceAnalysisBackendUrl(): Promise<string> {
-    return await this.get('face_analysis_backend_url', 'http://localhost:4001') || 'http://localhost:4001';
+    return (await this.get('face_analysis_backend_url', 'http://localhost:4001')) ?? 'http://localhost:4001';
+  }
+
+  async getOrganizationId(): Promise<string> {
+    return (await this.get('organization_id', 'org_default')) ?? 'org_default';
+  }
+
+  async getFaceAnalysisApiKey(): Promise<string> {
+    return (await this.get('face_analysis_api_key', '')) ?? '';
   }
 }
 
 export const configService = new ConfigService();
-

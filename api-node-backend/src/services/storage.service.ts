@@ -17,19 +17,19 @@ class LocalStorageAdapter implements StorageAdapter {
   private baseDir: string;
   private baseUrl: string;
 
-  constructor() {
-    this.baseDir = LOCAL_STORAGE_DIR;
+  constructor(baseDir: string = LOCAL_STORAGE_DIR) {
+    this.baseDir = baseDir;
     this.baseUrl = `http://localhost:${env.PORT}/uploads`;
   }
 
   async uploadFile(buffer: Buffer, key: string, contentType: string): Promise<string> {
     const filePath = path.join(this.baseDir, key);
     const dir = path.dirname(filePath);
-    
+
     await fs.mkdir(dir, { recursive: true });
     await fs.writeFile(filePath, buffer);
-    
-    logger.info(`Local storage: uploaded ${key}`);
+
+    logger.info(`Local storage: uploaded ${key} to ${filePath}`);
     return `${this.baseUrl}/${key}`;
   }
 
@@ -75,14 +75,14 @@ class StorageService {
     if (this.adapter) return this.adapter;
 
     const config = await configService.getStorageConfig();
-    
+
     switch (config.provider) {
       case 's3':
         this.adapter = new S3StorageAdapter();
         break;
       case 'local':
       default:
-        this.adapter = new LocalStorageAdapter();
+        this.adapter = new LocalStorageAdapter(config.local.path ?? undefined);
         break;
     }
 

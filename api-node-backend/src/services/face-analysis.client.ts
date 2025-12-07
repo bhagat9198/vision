@@ -69,8 +69,9 @@ class FaceAnalysisClient {
    */
   private async getClient(): Promise<AxiosInstance> {
     const url = await configService.getFaceAnalysisBackendUrl();
+    const apiKey = await configService.getFaceAnalysisApiKey();
 
-    // Recreate client if URL changed
+    // Recreate client if URL or API Key changed (though simplistic check)
     if (this.client && this.baseUrl === url) {
       return this.client;
     }
@@ -78,9 +79,9 @@ class FaceAnalysisClient {
     this.baseUrl = url;
     this.client = axios.create({
       baseURL: url,
-      timeout: 60000, // 60 seconds for face processing
+      timeout: 60000,
       headers: {
-        'x-internal-key': env.INTERNAL_API_KEY || '',
+        'x-api-key': apiKey,
       },
     });
 

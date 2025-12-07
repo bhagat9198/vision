@@ -127,12 +127,12 @@ app.use(`${API_PREFIX}/photos`, apiLimiter, photoRouter);
 app.use(`${API_PREFIX}/comments`, apiLimiter, commentRouter);
 app.use(`${API_PREFIX}/config`, apiLimiter, configRouter);
 
-// Serve uploaded files statically
-app.use('/uploads', express.static(path.join(__dirname, '../uploads/storage')));
+// Serve uploaded files statically - MOVED TO SERVER.TS TO SUPPORT DYNAMIC CONFIG
+// app.use('/uploads', express.static(path.join(__dirname, '../uploads/storage')));
 
-// Error handling
-app.use(notFoundHandler);
-app.use(errorHandler);
+// Error handling - MOVED TO SERVER.TS TO ENSURE STATIC FILES ARE SERVED FIRST
+// app.use(notFoundHandler);
+// app.use(errorHandler);
 
 export { app };
 
