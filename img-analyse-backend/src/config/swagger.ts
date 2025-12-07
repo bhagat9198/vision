@@ -142,6 +142,64 @@ Currently no rate limiting is enforced.
             },
           },
         },
+        EventStats: {
+          type: 'object',
+          properties: {
+            eventId: { type: 'string' },
+            indexed: { type: 'boolean' },
+            vectorCount: { type: 'integer' },
+            indexedVectorCount: { type: 'integer' },
+            status: { type: 'string' },
+          },
+        },
+        OrganizationResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            data: { $ref: '#/components/schemas/Organization' },
+            message: { type: 'string' },
+          },
+          required: ['success'],
+        },
+        OrganizationListResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            data: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/Organization' },
+            },
+            message: { type: 'string' },
+          },
+          required: ['success'],
+        },
+        IndexPhotoResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            data: { $ref: '#/components/schemas/IndexPhotoResult' },
+            message: { type: 'string' },
+          },
+          required: ['success'],
+        },
+        EventStatsResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            data: { $ref: '#/components/schemas/EventStats' },
+            message: { type: 'string' },
+          },
+          required: ['success'],
+        },
+        SearchSuccessResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            data: { $ref: '#/components/schemas/SearchResponse' },
+            message: { type: 'string' },
+          },
+          required: ['success'],
+        },
       },
     },
     tags: [

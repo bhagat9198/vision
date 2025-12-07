@@ -65,7 +65,7 @@ const upload = multer({
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/SearchResponse'
+ *               $ref: '#/components/schemas/SearchSuccessResponse'
  *       400:
  *         description: No face detected in image
  *       401:
@@ -102,8 +102,11 @@ router.post('/', upload.single('image') as unknown as RequestHandler, searchCont
  *                 type: number
  *                 default: 0.6
  *     responses:
- *       200:
  *         description: Search results
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SearchSuccessResponse'
  *       404:
  *         description: Session not found or expired
  */

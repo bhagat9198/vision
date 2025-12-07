@@ -18,6 +18,8 @@ const __dirname = path.dirname(__filename);
 import { errorHandler } from './middleware/error.middleware.js';
 import { notFoundHandler } from './middleware/notFound.middleware.js';
 import { requestLogger } from './middleware/requestLogger.middleware.js';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger.js';
 
 // Import routes
 import { authRouter } from './modules/auth/auth.routes.js';
@@ -100,6 +102,13 @@ app.get('/health', (_req, res) => {
 
 // API routes with route-specific rate limiting
 const API_PREFIX = '/api/v1';
+
+// Swagger Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get('/api-docs.json', (_req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
 
 // Auth routes - strict rate limit (brute force protection)
 app.use(`${API_PREFIX}/auth`, authLimiter, authRouter);

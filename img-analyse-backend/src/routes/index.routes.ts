@@ -67,7 +67,7 @@ const upload = multer({
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ApiResponse'
+ *               $ref: '#/components/schemas/IndexPhotoResponse'
  *       400:
  *         description: Invalid request
  *       401:
@@ -135,8 +135,11 @@ router.delete('/event/:eventId', indexController.deleteEvent);
  *         schema:
  *           type: string
  *     responses:
- *       200:
  *         description: Event statistics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/EventStatsResponse'
  */
 router.get('/event/:eventId/stats', indexController.getEventStats);
 

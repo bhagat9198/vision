@@ -52,6 +52,10 @@ const router = Router();
  *     responses:
  *       201:
  *         description: Organization registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/OrganizationResponse'
  *       400:
  *         description: Invalid request
  *       401:
@@ -76,6 +80,10 @@ router.post('/register', requireMasterKey, registerOrg);
  *     responses:
  *       200:
  *         description: List of organizations
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/OrganizationListResponse'
  */
 router.get('/', requireMasterKey, listOrgs);
 
@@ -96,6 +104,10 @@ router.get('/', requireMasterKey, listOrgs);
  *     responses:
  *       200:
  *         description: Organization details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/OrganizationResponse'
  *       404:
  *         description: Organization not found
  */
@@ -130,6 +142,10 @@ router.get('/:id', requireOrgAuth, getOrg);
  *     responses:
  *       200:
  *         description: Settings updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/OrganizationResponse'
  */
 router.patch('/:id/settings', requireOrgAuth, updateOrgSettings);
 

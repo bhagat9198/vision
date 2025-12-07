@@ -73,11 +73,11 @@ export class SuperAdminDashboardService {
     const skip = (page - 1) * limit;
     const where = search
       ? {
-          OR: [
-            { name: { contains: search, mode: 'insensitive' as const } },
-            { email: { contains: search, mode: 'insensitive' as const } },
-          ],
-        }
+        OR: [
+          { name: { contains: search, mode: 'insensitive' as const } },
+          { email: { contains: search, mode: 'insensitive' as const } },
+        ],
+      }
       : {};
 
     const [photographers, total] = await Promise.all([
@@ -140,6 +140,112 @@ export class SuperAdminDashboardService {
     });
 
     return updated;
+  }
+
+  async getEvents(page = 1, limit = 10, search?: string) {
+    const skip = (page - 1) * limit;
+    const where = search
+      ? {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' as const } },
+          { photographer: { name: { contains: search, mode: 'insensitive' as const } } },
+        ],
+      }
+      : {};
+
+    const [events, total] = await Promise.all([
+      prisma.event.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { date: 'desc' },
+        select: {
+          id: true,
+          name: true,
+          status: true,
+          date: true,
+          createdAt: true,
+          photographer: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              avatar: true,
+            },
+          },
+          _count: { select: { photos: true, albums: true } },
+        },
+      }),
+      prisma.event.count({ where }),
+    ]);
+
+    return {
+      events: events.map((e) => ({
+        ...e,
+        photographerName: e.photographer.name,
+        photosCount: e._count.photos,
+        albumsCount: e._count.albums,
+        _count: undefined,
+      })),
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async getPhotographerById(id: string) {
+    const photographer = await prisma.photographer.findUnique({
+      where: { id },
+      include: {
+        _count: { select: { events: true } },
+      },
+    });
+
+    if (!photographer) {
+      throw new Error('Photographer not found');
+    }
+
+    return {
+      ...photographer,
+      storageUsed: Number(photographer.storageUsed),
+      storageLimit: Number(photographer.storageLimit),
+      eventsCount: photographer._count.events,
+      _count: undefined,
+    };
+  }
+
+  async getEventById(id: string) {
+    const event = await prisma.event.findUnique({
+      where: { id },
+      include: {
+        photographer: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true,
+            phone: true,
+          },
+        },
+        _count: { select: { photos: true, albums: true, downloads: true } },
+      },
+    });
+
+    if (!event) {
+      throw new Error('Event not found');
+    }
+
+    return {
+      ...event,
+      photographerName: event.photographer.name,
+      photosCount: event._count.photos,
+      albumsCount: event._count.albums,
+      downloadsCount: event._count.downloads,
+      _count: undefined,
+    };
   }
 }
 
