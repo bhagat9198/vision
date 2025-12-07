@@ -30,6 +30,12 @@ const router = Router();
  *     tags: [Organizations]
  *     security:
  *       - MasterKeyAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: x-master-key
+ *         schema:
+ *           type: string
+ *         description: Master API Key for admin operations
  *     requestBody:
  *       required: true
  *       content:
@@ -61,6 +67,12 @@ router.post('/register', requireMasterKey, registerOrg);
  *     tags: [Organizations]
  *     security:
  *       - MasterKeyAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: x-master-key
+ *         schema:
+ *           type: string
+ *         description: Master API Key for admin operations
  *     responses:
  *       200:
  *         description: List of organizations
