@@ -19,7 +19,7 @@ from typing import Optional
 import cv2
 import numpy as np
 import logging
-from fastapi import FastAPI, File, Form, UploadFile, HTTPException
+from fastapi import FastAPI, File, Form, UploadFile, HTTPException, Request
 from fastapi.responses import JSONResponse
 from PIL import Image
 from pydantic import BaseModel
@@ -30,12 +30,44 @@ from alignment import align_face
 # =============================================================================
 # LOGGING SETUP
 # =============================================================================
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
+# =============================================================================
+# LOGGING SETUP
+# =============================================================================
+LOGS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
+os.makedirs(LOGS_DIR, exist_ok=True)
+
+class IsoFormatter(logging.Formatter):
+    """Custom formatter to match Node.js log format: [ISO_TIMESTAMP] [LEVEL] MESSAGE"""
+    def formatTime(self, record, datefmt=None):
+        return time.strftime("%Y-%m-%dT%H:%M:%S.000Z", time.gmtime(record.created))
+
+    def format(self, record):
+        record.asctime = self.formatTime(record)
+        return super().format(record)
+
+# Create custom logger
 logger = logging.getLogger("python-sidecar")
+logger.setLevel(logging.INFO)
+logger.propagate = False  # Prevent double logging in Uvicorn
+
+# Formatter
+formatter = IsoFormatter("[%(asctime)s] [%(levelname)s] %(message)s")
+
+# 1. Console Handler
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
+
+# 2. File Handler (Combined)
+file_handler = logging.FileHandler(os.path.join(LOGS_DIR, "combined.log"))
+file_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+
+# 3. File Handler (Error)
+error_handler = logging.FileHandler(os.path.join(LOGS_DIR, "error.log"))
+error_handler.setLevel(logging.ERROR)
+error_handler.setFormatter(formatter)
+logger.addHandler(error_handler)
 
 # =============================================================================
 # MODEL PATHS & URLS
@@ -51,7 +83,7 @@ SCRFD_MODEL_PATH = f"{MODELS_DIR}/scrfd_10g_bnkps.onnx"
 
 # Model download URLs (fallback sources)
 YUNET_URL = "https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx"
-SCRFD_URL = "https://drive.google.com/uc?export=download&id=1g7e7RxQqtg8sEvJw9RHJy7pfqX4Q_ffH"
+SCRFD_URL = "https://huggingface.co/DIAMONIK7777/antelopev2/resolve/main/scrfd_10g_bnkps.onnx"
 
 # =============================================================================
 # MODEL DOWNLOAD HELPER
@@ -83,6 +115,27 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# Request Logging Middleware
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """Log incoming requests and outgoing responses."""
+    start_time = time.time()
+    
+    # Log Incoming
+    logger.info(f"Incoming Request: {request.method} {request.url.path}")
+    
+    try:
+        response = await call_next(request)
+        process_time = (time.time() - start_time) * 1000
+        
+        # Log Response
+        logger.info(f"Response Sent: {response.status_code} {request.method} {request.url.path} - {process_time:.2f}ms")
+        return response
+    except Exception as e:
+        process_time = (time.time() - start_time) * 1000
+        logger.error(f"Request failed: {request.method} {request.url.path} - {e} - {process_time:.2f}ms")
+        raise e
+
 # Initialize detectors (lazy loading)
 yunet_detector: Optional[YuNetDetector] = None
 scrfd_detector: Optional[SCRFDDetector] = None
@@ -106,7 +159,8 @@ def get_scrfd() -> SCRFDDetector:
         if not ensure_model_exists(SCRFD_MODEL_PATH, SCRFD_URL, "SCRFD"):
             scrfd_available = False
             raise RuntimeError("SCRFD model not available")
-        scrfd_detector = SCRFDDetector(SCRFD_MODEL_PATH)
+        # Lower threshold for better recall on difficult faces
+        scrfd_detector = SCRFDDetector(SCRFD_MODEL_PATH, conf_threshold=0.1)
     return scrfd_detector
 
 
@@ -204,7 +258,7 @@ async def detect_yunet(image: UploadFile = File(...)):
         detector = get_yunet()
         
         faces = detector.detect(img)
-        logger.info(f"YuNet detected {len(faces)} faces")
+        logger.info(f"YuNet detected {len(faces)} faces in {(time.time() - start_time)*1000:.2f}ms")
         
         results = []
         for face in faces:
@@ -225,7 +279,7 @@ async def detect_yunet(image: UploadFile = File(...)):
             processing_time_ms=(time.time() - start_time) * 1000,
         )
     except Exception as e:
-        print(f"YuNet detection failed: {e}")
+        logger.error(f"YuNet detection failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -233,6 +287,7 @@ async def detect_yunet(image: UploadFile = File(...)):
 async def detect_scrfd(image: UploadFile = File(...)):
     """Detect faces using SCRFD detector."""
     start_time = time.time()
+    logger.info("Received SCRFD detection request")
 
     # Check if SCRFD is available
     if not scrfd_available:
@@ -246,6 +301,7 @@ async def detect_scrfd(image: UploadFile = File(...)):
         detector = get_scrfd()
 
         faces = detector.detect(img)
+        logger.info(f"SCRFD detected {len(faces)} faces in {(time.time() - start_time)*1000:.2f}ms")
 
         results = []
         for face in faces:
@@ -284,6 +340,7 @@ async def align_face_endpoint(
     import json
 
     start_time = time.time()
+    logger.info("Received Face Alignment request")
 
     img = await read_image(image)
 
@@ -307,6 +364,8 @@ async def align_face_endpoint(
     # Convert to base64
     _, buffer = cv2.imencode(".jpg", aligned, [cv2.IMWRITE_JPEG_QUALITY, 95])
     base64_image = base64.b64encode(buffer).decode("utf-8")
+    
+    logger.info(f"Face alignment completed in {(time.time() - start_time)*1000:.2f}ms")
 
     return AlignResponse(
         success=True,
@@ -323,6 +382,7 @@ async def align_face_endpoint(
 async def startup_event():
     """Pre-load models on startup."""
     logger.info("Starting Python Sidecar Service...")
+    logger.info(f"Logging initialized in: {LOGS_DIR}")
     logger.info(f"Models directory: {MODELS_DIR}")
     
     try:

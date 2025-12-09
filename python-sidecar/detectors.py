@@ -151,6 +151,9 @@ class SCRFDDetector:
         Returns:
             List of face dictionaries with bbox, confidence, landmarks
         """
+        height, width = image.shape[:2]
+        print(f"[DEBUG] SCRFD Input Image: {width}x{height}, Threshold: {self.conf_threshold}")
+
         blob, scale, _ = self._preprocess(image)
         
         # Run inference
@@ -177,11 +180,13 @@ class SCRFDDetector:
             # The exact parsing depends on the model variant
             if len(outputs) >= 9:
                 # Multi-stride output (8, 16, 32)
+                # Multi-stride output (8, 16, 32)
+                # Logs confirm order: [Scores x3, BBoxes x3, Kps x3]
                 strides = [8, 16, 32]
                 for i, stride in enumerate(strides):
-                    scores = outputs[i * 3]
-                    bboxes = outputs[i * 3 + 1]
-                    keypoints = outputs[i * 3 + 2]
+                    scores = outputs[i]
+                    bboxes = outputs[i + 3]
+                    keypoints = outputs[i + 6] 
 
                     self._process_stride(
                         results, scores, bboxes, keypoints,
@@ -226,26 +231,58 @@ class SCRFDDetector:
         scale: float,
         original_size: tuple[int, int],
     ):
-        """Process detections from a single stride."""
+        """Process detections from a single stride with anchor decoding."""
         scores = scores.flatten()
+        feat_h = self.input_size[0] // stride
+        feat_w = self.input_size[1] // stride
+        num_anchors = len(scores) // (feat_h * feat_w)
+        
+        # DEBUG: Log decoding params
+        # print(f"[DEBUG] Decoding Stride {stride}: {feat_w}x{feat_h} map, {num_anchors} anchors/pixel")
 
         for j, score in enumerate(scores):
             if score > self.conf_threshold:
-                bbox = bboxes[0, j] / scale
-                x1, y1, x2, y2 = bbox[:4]
+                # 1. Calculate anchor center
+                # Assuming layout (H, W, A) flattened
+                pixel_idx = j // num_anchors
+                grid_y = pixel_idx // feat_w
+                grid_x = pixel_idx % feat_w
+                
+                cx = grid_x * stride
+                cy = grid_y * stride
 
-                # Parse keypoints if available
+                # 2. Decode bounding box (distance from center)
+                # bboxes[j] = [l, t, r, b] * stride
+                offsets = bboxes[j]
+                
+                x1 = (cx - offsets[0] * stride) / scale
+                y1 = (cy - offsets[1] * stride) / scale
+                x2 = (cx + offsets[2] * stride) / scale
+                y2 = (cy + offsets[3] * stride) / scale
+
+                # 3. Decode keypoints
+                # kps[j] = [x1, y1, x2, y2, ...] * stride
                 landmarks = None
                 if keypoints is not None and keypoints.size > 0:
-                    kps = keypoints[0, j].reshape(-1, 2) / scale
-                    if len(kps) >= 5:
-                        landmarks = {
-                            "left_eye": [float(kps[0, 0]), float(kps[0, 1])],
-                            "right_eye": [float(kps[1, 0]), float(kps[1, 1])],
-                            "nose": [float(kps[2, 0]), float(kps[2, 1])],
-                            "left_mouth": [float(kps[3, 0]), float(kps[3, 1])],
-                            "right_mouth": [float(kps[4, 0]), float(kps[4, 1])],
-                        }
+                    kps_offsets = keypoints[j].reshape(-1, 2)
+                    landmarks = {}
+                    # Keypoints are typically offsets from cx, cy too? 
+                    # Or absolute coords in feature map? 
+                    # Usually: kp_x = cx + offset_x * stride
+                    
+                    raw_kps = []
+                    for k in range(5):
+                         kx = (cx + kps_offsets[k][0] * stride) / scale
+                         ky = (cy + kps_offsets[k][1] * stride) / scale
+                         raw_kps.append([kx, ky])
+                    
+                    landmarks = {
+                        "left_eye": raw_kps[0],
+                        "right_eye": raw_kps[1],
+                        "nose": raw_kps[2],
+                        "left_mouth": raw_kps[3],
+                        "right_mouth": raw_kps[4],
+                    }
 
                 results.append({
                     "bbox": {

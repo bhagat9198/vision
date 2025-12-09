@@ -68,7 +68,7 @@ export async function readImageFromPath(path: string): Promise<Buffer> {
 export async function cropFace(
   imageBuffer: Buffer,
   bbox: BoundingBox,
-  paddingPercent = 0.2
+  paddingPercent = 0.5
 ): Promise<Buffer> {
   const image = sharp(imageBuffer);
   const metadata = await image.metadata();
