@@ -117,6 +117,19 @@ export interface QdrantFacePayload {
   detectorSource: 'compreface' | 'yunet' | 'scrfd';
   /** Whether face was aligned */
   wasAligned?: boolean;
+  /** Estimated age range */
+  age?: {
+    low: number;
+    high: number;
+  };
+  /** Estimated gender */
+  gender?: string; // 'male' or 'female'
+  /** Head pose */
+  pose?: {
+    pitch: number;
+    roll: number;
+    yaw: number;
+  };
   /** Timestamp when indexed */
   indexedAt: string;
 }

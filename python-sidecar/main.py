@@ -18,6 +18,7 @@ from typing import Optional
 
 import cv2
 import numpy as np
+import logging
 from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 from PIL import Image
@@ -27,10 +28,24 @@ from detectors import YuNetDetector, SCRFDDetector
 from alignment import align_face
 
 # =============================================================================
+# LOGGING SETUP
+# =============================================================================
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger = logging.getLogger("python-sidecar")
+
+# =============================================================================
 # MODEL PATHS & URLS
 # =============================================================================
 
-MODELS_DIR = "/app/models"
+# Determine models directory (handle local vs docker)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODELS_DIR = os.path.join(BASE_DIR, "models")
+if os.path.exists("/app/models"):
+    MODELS_DIR = "/app/models"
 YUNET_MODEL_PATH = f"{MODELS_DIR}/face_detection_yunet_2023mar.onnx"
 SCRFD_MODEL_PATH = f"{MODELS_DIR}/scrfd_10g_bnkps.onnx"
 
@@ -182,30 +197,36 @@ async def health_check():
 async def detect_yunet(image: UploadFile = File(...)):
     """Detect faces using YuNet detector."""
     start_time = time.time()
+    logger.info("Received YuNet detection request")
     
-    img = await read_image(image)
-    detector = get_yunet()
-    
-    faces = detector.detect(img)
-    
-    results = []
-    for face in faces:
-        landmarks = face.get("landmarks")
-        yaw = estimate_yaw_angle(landmarks) if landmarks else None
+    try:
+        img = await read_image(image)
+        detector = get_yunet()
         
-        results.append(FaceResult(
-            bbox=face["bbox"],
-            confidence=face["confidence"],
-            landmarks=landmarks,
-            yaw_angle=yaw,
-        ))
-    
-    return DetectionResponse(
-        success=True,
-        detector="yunet",
-        faces=results,
-        processing_time_ms=(time.time() - start_time) * 1000,
-    )
+        faces = detector.detect(img)
+        logger.info(f"YuNet detected {len(faces)} faces")
+        
+        results = []
+        for face in faces:
+            landmarks = face.get("landmarks")
+            yaw = estimate_yaw_angle(landmarks) if landmarks else None
+            
+            results.append(FaceResult(
+                bbox=face["bbox"],
+                confidence=face["confidence"],
+                landmarks=landmarks,
+                yaw_angle=yaw,
+            ))
+        
+        return DetectionResponse(
+            success=True,
+            detector="yunet",
+            faces=results,
+            processing_time_ms=(time.time() - start_time) * 1000,
+        )
+    except Exception as e:
+        print(f"YuNet detection failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/detect/scrfd", response_model=DetectionResponse)
@@ -301,18 +322,20 @@ async def align_face_endpoint(
 @app.on_event("startup")
 async def startup_event():
     """Pre-load models on startup."""
-    print("Loading face detection models...")
+    logger.info("Starting Python Sidecar Service...")
+    logger.info(f"Models directory: {MODELS_DIR}")
+    
     try:
         get_yunet()
-        print("YuNet loaded successfully")
+        logger.info("YuNet loaded successfully")
     except Exception as e:
-        print(f"Failed to load YuNet: {e}")
+        logger.error(f"Failed to load YuNet: {e}")
 
     try:
         get_scrfd()
-        print("SCRFD loaded successfully")
+        logger.info("SCRFD loaded successfully")
     except Exception as e:
-        print(f"Failed to load SCRFD: {e}")
+        logger.error(f"Failed to load SCRFD: {e}")
 
-    print("Python sidecar ready!")
+    logger.info("Python sidecar ready!")
 

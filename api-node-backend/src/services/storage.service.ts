@@ -10,6 +10,9 @@ export interface StorageAdapter {
   uploadFile(buffer: Buffer, key: string, contentType: string): Promise<string>;
   deleteFile(key: string): Promise<void>;
   getFileUrl(key: string): Promise<string>;
+  deleteDirectory(key: string): Promise<void>;
+  moveDirectory(sourceKey: string, destKey: string): Promise<void>;
+  checkExists(key: string): Promise<boolean>;
 }
 
 // Local storage adapter
@@ -46,23 +49,67 @@ class LocalStorageAdapter implements StorageAdapter {
   async getFileUrl(key: string): Promise<string> {
     return `${this.baseUrl}/${key}`;
   }
+
+  async deleteDirectory(key: string): Promise<void> {
+    const dirPath = path.join(this.baseDir, key);
+    try {
+      await fs.rm(dirPath, { recursive: true, force: true });
+      logger.info(`Local storage: deleted directory ${key}`);
+    } catch (error) {
+      // If it doesn't exist, we don't care
+      logger.warn(`Local storage: failed to delete directory ${key}`, error);
+    }
+  }
+
+  async moveDirectory(sourceKey: string, destKey: string): Promise<void> {
+    const srcPath = path.join(this.baseDir, sourceKey);
+    const destPath = path.join(this.baseDir, destKey);
+
+    try {
+      // Ensure destination parent exists
+      await fs.mkdir(path.dirname(destPath), { recursive: true });
+      await fs.rename(srcPath, destPath);
+      logger.info(`Local storage: moved ${sourceKey} to ${destKey}`);
+    } catch (error) {
+      logger.error(`Local storage: failed to move ${sourceKey} to ${destKey}`, error);
+      throw error;
+    }
+  }
+
+  async checkExists(key: string): Promise<boolean> {
+    const filePath = path.join(this.baseDir, key);
+    try {
+      await fs.access(filePath);
+      return true;
+    } catch {
+      return false;
+    }
+  }
 }
 
 // S3 storage adapter (placeholder for future implementation)
 class S3StorageAdapter implements StorageAdapter {
   async uploadFile(buffer: Buffer, key: string, contentType: string): Promise<string> {
-    // TODO: Implement S3 upload using AWS SDK
-    // const { S3Client, PutObjectCommand } = await import('@aws-sdk/client-s3');
     throw new Error('S3 storage not implemented yet');
   }
 
   async deleteFile(key: string): Promise<void> {
-    // TODO: Implement S3 delete
     throw new Error('S3 storage not implemented yet');
   }
 
   async getFileUrl(key: string): Promise<string> {
-    // TODO: Return S3 URL or CloudFront URL
+    throw new Error('S3 storage not implemented yet');
+  }
+
+  async deleteDirectory(key: string): Promise<void> {
+    throw new Error('S3 storage not implemented yet');
+  }
+
+  async moveDirectory(sourceKey: string, destKey: string): Promise<void> {
+    throw new Error('S3 storage not implemented yet');
+  }
+
+  async checkExists(key: string): Promise<boolean> {
     throw new Error('S3 storage not implemented yet');
   }
 }
@@ -103,6 +150,21 @@ class StorageService {
   async getFileUrl(key: string): Promise<string> {
     const adapter = await this.getAdapter();
     return adapter.getFileUrl(key);
+  }
+
+  async deleteDirectory(key: string): Promise<void> {
+    const adapter = await this.getAdapter();
+    return adapter.deleteDirectory(key);
+  }
+
+  async moveDirectory(sourceKey: string, destKey: string): Promise<void> {
+    const adapter = await this.getAdapter();
+    return adapter.moveDirectory(sourceKey, destKey);
+  }
+
+  async checkExists(key: string): Promise<boolean> {
+    const adapter = await this.getAdapter();
+    return adapter.checkExists(key);
   }
 
   // Reset adapter (useful when config changes)

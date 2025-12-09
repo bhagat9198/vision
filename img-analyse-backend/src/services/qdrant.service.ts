@@ -112,6 +112,9 @@ class QdrantService {
         confidence: face.confidence,
         detectorSource: face.detectorSource,
         wasAligned: face.wasAligned,
+        age: face.age,
+        gender: face.gender?.value,
+        pose: face.pose,
         indexedAt: new Date().toISOString(),
       },
     }));
@@ -187,6 +190,7 @@ class QdrantService {
    */
   async deleteFacesForPhoto(orgId: string, eventId: string, photoId: string): Promise<void> {
     const collectionName = getOrgCollectionName(orgId, eventId);
+    logger.info(`[DELETE_PHOTO] Request to delete faces for photo ${photoId} in collection ${collectionName} (Org: ${orgId}, Event: ${eventId})`);
 
     try {
       await qdrantClient.delete(collectionName, {
@@ -201,9 +205,14 @@ class QdrantService {
         },
       });
 
-      logger.info(`Deleted faces for photo ${photoId} from ${collectionName}`);
-    } catch (error) {
-      logger.error(`Failed to delete faces for photo ${photoId}:`, error);
+      logger.info(`[DELETE_PHOTO] Successfully deleted faces for photo ${photoId} from ${collectionName}`);
+    } catch (error: any) {
+      // Ignore if collection doesn't exist (idempotent)
+      if (error?.status === 404 || error?.response?.status === 404) {
+        logger.warn(`[DELETE_PHOTO] Collection ${collectionName} does not exist, skipping photo deletion.`);
+        return;
+      }
+      logger.error(`[DELETE_PHOTO] Failed to delete faces for photo ${photoId}:`, error);
       throw error;
     }
   }
@@ -216,12 +225,18 @@ class QdrantService {
    */
   async deleteCollection(orgId: string, eventId: string): Promise<void> {
     const collectionName = getOrgCollectionName(orgId, eventId);
+    logger.info(`[DELETE_COLLECTION] Request to delete collection ${collectionName} (Org: ${orgId}, Event: ${eventId})`);
 
     try {
       await qdrantClient.deleteCollection(collectionName);
-      logger.info(`Deleted collection ${collectionName}`);
-    } catch (error) {
-      logger.error(`Failed to delete collection ${collectionName}:`, error);
+      logger.info(`[DELETE_COLLECTION] Successfully deleted collection ${collectionName}`);
+    } catch (error: any) {
+      // Ignore if collection doesn't exist (idempotent)
+      if (error?.status === 404 || error?.response?.status === 404) {
+        logger.warn(`[DELETE_COLLECTION] Collection ${collectionName} does not exist, skipping deletion.`);
+        return;
+      }
+      logger.error(`[DELETE_COLLECTION] Failed to delete collection ${collectionName}:`, error);
       throw error;
     }
   }

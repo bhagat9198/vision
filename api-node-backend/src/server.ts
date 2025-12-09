@@ -7,6 +7,7 @@ import express from 'express';
 import path from 'path';
 import { configService } from './modules/config/config.service.js';
 import { startImageProcessingWorker, stopImageProcessingWorker } from './queues/image-processing.queue.js';
+import './queues/event-cleanup.queue.js'; // Initialize cleanup worker
 import { notFoundHandler } from './middleware/notFound.middleware.js';
 import { errorHandler } from './middleware/error.middleware.js';
 

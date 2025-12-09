@@ -17,42 +17,11 @@ version: '3.8'
 
 services:
   # ---------------------------------------------------------------------------
-  # PostgreSQL - Organization & API Key Storage
+  # External Services
   # ---------------------------------------------------------------------------
-  postgres:
-    image: postgres:15-alpine
-    container_name: img-analyse-postgres
-    restart: unless-stopped
-    ports:
-      - "5433:5432"   # Use 5433 to avoid conflict with api-node-backend
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: img_analyse
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+  # Postgres & Redis: Using external/existing instances as requested.
+  # Ensure your .env file points to the correct host/port.
 
-  # ---------------------------------------------------------------------------
-  # Redis - API Key Caching & Embedding Sessions
-  # ---------------------------------------------------------------------------
-  redis:
-    image: redis:7-alpine
-    container_name: img-analyse-redis
-    restart: unless-stopped
-    ports:
-      - "6380:6379"   # Use 6380 to avoid conflict with api-node-backend
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
   # ---------------------------------------------------------------------------
   # Qdrant - Vector Database for Face Embeddings
@@ -80,41 +49,79 @@ services:
       timeout: 10s
       retries: 3
 
+
+
   # ---------------------------------------------------------------------------
-  # Python Sidecar - Fallback Face Detection & Alignment
+  # CompreFace - Face Recognition Platform
   # ---------------------------------------------------------------------------
-  # Provides:
-  #   - YuNet face detection (fallback #1)
-  #   - SCRFD face detection (fallback #2)
-  #   - Face alignment using 5-point landmarks
+  # Source: https://github.com/exadel-inc/CompreFace
   # ---------------------------------------------------------------------------
-  python-sidecar:
-    build:
-      context: ../python-sidecar
-      dockerfile: Dockerfile
-    container_name: img-analyse-python-sidecar
-    restart: unless-stopped
-    ports:
-      - "4002:4002"
-    volumes:
-      - ../python-sidecar/models:/app/models:ro
+  compreface-postgres-db:
+    image: postgres:13.3-alpine
+    restart: always
+    container_name: "compreface-postgres-db"
     environment:
-      - PORT=4002
-      - LOG_LEVEL=INFO
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4002/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=sip_compreface
+      - POSTGRES_DB=compreface
+    volumes:
+      - compreface_postgres_data:/var/lib/postgresql/data
+
+  compreface-admin:
+    image: exadel/compreface-admin:latest
+    restart: always
+    container_name: "compreface-admin"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=sip_compreface
+      - POSTGRES_URL=jdbc:postgresql://compreface-postgres-db:5432/compreface
+      - SPRING_PROFILES_ACTIVE=dev
+      - ENABLE_EMAIL_SERVER=false
+    depends_on:
+      - compreface-postgres-db
+      - compreface-api
+
+  compreface-api:
+    image: exadel/compreface-api:latest
+    restart: always
+    container_name: "compreface-api"
+    depends_on:
+      - compreface-postgres-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=sip_compreface
+      - POSTGRES_URL=jdbc:postgresql://compreface-postgres-db:5432/compreface
+      - SPRING_PROFILES_ACTIVE=dev
+      - SAVE_IMAGES_TO_DB=false
+
+  compreface-fe:
+    image: exadel/compreface-fe:latest
+    restart: always
+    container_name: "compreface-ui"
+    ports:
+      - "8000:80"
+    environment:
+      - CLIENT_MAX_BODY_SIZE=50M
+      - PROXY_READ_TIMEOUT=60s
+      - PROXY_CONNECT_TIMEOUT=60s
+    depends_on:
+      - compreface-api
+      - compreface-admin
+
+  compreface-core:
+    image: exadel/compreface-core:latest
+    restart: always
+    container_name: "compreface-core"
+    environment:
+      - ML_PORT=3000
+
 
 # =============================================================================
 # Volumes
 # =============================================================================
 volumes:
-  postgres_data:
-    driver: local
-  redis_data:
-    driver: local
   qdrant_data:
+    driver: local
+  compreface_postgres_data:
     driver: local
 

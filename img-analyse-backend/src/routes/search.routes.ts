@@ -102,6 +102,7 @@ router.post('/', upload.single('image') as unknown as RequestHandler, searchCont
  *                 type: number
  *                 default: 0.6
  *     responses:
+ *       200:
  *         description: Search results
  *         content:
  *           application/json:

@@ -56,6 +56,7 @@ class FaceDetectionService {
 
     try {
       // Use configured detection mode
+      logger.info(`Starting face detection. Mode: ${settings.faceDetectionMode}`);
       if (settings.faceDetectionMode === 'RECOGNITION_ONLY') {
         faces = await this.detectRecognitionOnly(settings, imageBuffer, detectorsUsed);
       } else {
@@ -175,6 +176,7 @@ class FaceDetectionService {
     imageBuffer: Buffer,
     detectorsUsed: DetectionResult['detectorsUsed']
   ): Promise<FaceWithEmbedding[]> {
+    logger.info('Attempting fallback detection...');
     const detectedFaces = await this.runFallbackDetection(settings, imageBuffer, detectorsUsed);
 
     if (detectedFaces.length === 0) {
@@ -223,6 +225,8 @@ class FaceDetectionService {
     imageBuffer: Buffer,
     detectorsUsed: DetectionResult['detectorsUsed']
   ): Promise<DetectedFace[]> {
+    logger.info(`Running fallback detection. Sidecar URL: ${settings.pythonSidecarUrl}`);
+
     // Try YuNet first (faster)
     try {
       detectorsUsed.push('yunet');
@@ -231,8 +235,11 @@ class FaceDetectionService {
         logger.debug(`YuNet fallback found ${yunetFaces.length} faces`);
         return yunetFaces;
       }
-    } catch (error) {
-      logger.warn('YuNet fallback failed:', error);
+    } catch (error: any) {
+      logger.warn('YuNet fallback failed:', error.message);
+      if (error.response?.data) {
+        logger.warn('YuNet error details:', JSON.stringify(error.response.data));
+      }
     }
 
     // Try SCRFD (best for hard cases)

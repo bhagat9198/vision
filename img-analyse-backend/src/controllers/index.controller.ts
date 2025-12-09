@@ -38,9 +38,13 @@ export const indexController = {
 
     try {
       const settings = req.orgSettings!;
-
-      // Validate request
       const { photoId, eventId, imageUrl, imagePath } = req.body as IndexPhotoRequest;
+
+      logger.info(`Starting indexing for photo ${photoId} (Event: ${eventId})`, {
+        mode: settings.imageSourceMode,
+        hasUrl: !!imageUrl,
+        hasPath: !!imagePath
+      });
 
       if (!photoId || !eventId) {
         res.status(400).json({
@@ -73,7 +77,8 @@ export const indexController = {
             } as ApiResponse);
             return;
           }
-          const fullPath = `${settings.sharedStoragePath}/${imagePath}`;
+          const fullPath = `${settings.sharedStoragePath}/${imagePath}`; // Removing path.join to ensure strictly string concatenation if issues arise, but template literal handles it.
+          logger.debug(`Reading image from shared storage: ${fullPath}`);
           imageBuffer = await readImageFromPath(fullPath);
           break;
 
@@ -101,7 +106,7 @@ export const indexController = {
         detectorsUsed: detectionResult.detectorsUsed,
       };
 
-      logger.info(`Indexed photo ${photoId}: ${result.facesIndexed} faces in ${result.processingTimeMs}ms`);
+      logger.info(`Indexed photo ${photoId}: ${result.facesIndexed} faces in ${result.processingTimeMs}ms`, { result });
 
       res.json({
         success: true,

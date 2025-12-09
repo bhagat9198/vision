@@ -43,6 +43,10 @@ interface CompreFaceResult {
   box: CompreFaceBox;
   embedding?: number[];
   landmarks?: CompreFaceLandmarks;
+  age?: { low: number; high: number };
+  gender?: { value: 'male' | 'female'; probability: number };
+  pose?: { pitch: number; roll: number; yaw: number };
+  landmarks2d106?: Array<[number, number]>;
   subjects?: Array<{ subject: string; similarity: number }>;
   execution_time?: Record<string, number>;
 }
@@ -72,6 +76,9 @@ function convertBox(box: CompreFaceBox): BoundingBox {
  * Convert CompreFace landmarks to our format.
  */
 function convertLandmarks(landmarks: CompreFaceLandmarks) {
+  if (!landmarks.left_eye || !landmarks.right_eye || !landmarks.nose || !landmarks.left_lip || !landmarks.right_lip) {
+    return undefined;
+  }
   return {
     leftEye: { x: landmarks.left_eye[0], y: landmarks.left_eye[1] },
     rightEye: { x: landmarks.right_eye[0], y: landmarks.right_eye[1] },
@@ -127,6 +134,7 @@ class CompreFaceService {
   async detectAndEmbed(settings: OrgSettings, imageBuffer: Buffer): Promise<FaceWithEmbedding[]> {
     const startTime = Date.now();
     const client = this.createRecognitionClient(settings);
+    logger.info('Calling CompreFace detectAndEmbed...');
 
     try {
       const formData = new FormData();
@@ -143,10 +151,17 @@ class CompreFaceService {
           params: {
             limit: 0, // Return all faces, no subject matching
             det_prob_threshold: settings.minConfidence,
-            face_plugins: 'landmarks',
+            face_plugins: 'landmarks,calculator,age,gender',
           },
         }
       );
+
+      logger.debug(`CompreFace response: ${JSON.stringify({
+        status: response.status,
+        facesCount: response.data.result.length,
+        firstFaceHasEmbedding: !!response.data.result[0]?.embedding,
+        firstFaceEmbeddingLength: response.data.result[0]?.embedding?.length
+      })}`);
 
       const faces: FaceWithEmbedding[] = response.data.result.map((result) => ({
         id: uuidv4(),
@@ -156,12 +171,19 @@ class CompreFaceService {
         detectorSource: 'compreface' as const,
         embedding: result.embedding || [],
         wasAligned: false,
+        age: result.age,
+        gender: result.gender,
+        pose: result.pose,
+        landmarks2d106: result.landmarks2d106,
       }));
 
       logger.debug(`CompreFace detectAndEmbed: ${faces.length} faces in ${Date.now() - startTime}ms`);
       return faces;
-    } catch (error) {
-      logger.error('CompreFace detectAndEmbed failed:', error);
+    } catch (error: any) {
+      if (error.response?.data) {
+        logger.error(`CompreFace request failed. Status: ${error.response.status}, Data: ${JSON.stringify(error.response.data)}`);
+      }
+      logger.error('CompreFace detectAndEmbed failed:', error.message);
       throw error;
     }
   }
@@ -192,7 +214,7 @@ class CompreFaceService {
           headers: formData.getHeaders(),
           params: {
             det_prob_threshold: settings.minConfidence,
-            face_plugins: 'landmarks',
+            face_plugins: 'landmarks,age,gender',
           },
         }
       );
@@ -203,6 +225,10 @@ class CompreFaceService {
         confidence: result.box.probability,
         landmarks: result.landmarks ? convertLandmarks(result.landmarks) : undefined,
         detectorSource: 'compreface' as const,
+        age: result.age,
+        gender: result.gender,
+        pose: result.pose,
+        landmarks2d106: result.landmarks2d106,
       }));
 
       logger.debug(`CompreFace detectOnly: ${faces.length} faces in ${Date.now() - startTime}ms`);
@@ -237,7 +263,10 @@ class CompreFaceService {
           headers: formData.getHeaders(),
           params: {
             limit: 0,
-            det_prob_threshold: 0.3, // Lower threshold for cropped faces
+            // Use a very low threshold for embedding extraction since we are sending a verified face crop.
+            // This bypasses strict detection when we already know a face is present (e.g. found by fallback).
+            det_prob_threshold: 0.01,
+            face_plugins: 'calculator',
           },
         }
       );
@@ -246,9 +275,12 @@ class CompreFaceService {
         throw new Error('No embedding extracted from face image');
       }
 
-      return response.data.result[0].embedding;
-    } catch (error) {
-      logger.error('CompreFace extractEmbedding failed:', error);
+      return response.data.result?.[0]?.embedding || [];
+    } catch (error: any) {
+      if (error.response?.data) {
+        logger.error(`CompreFace embedding extraction failed. Status: ${error.response.status}, Data: ${JSON.stringify(error.response.data)}`);
+      }
+      logger.error('CompreFace extractEmbedding failed:', error.message);
       throw error;
     }
   }
@@ -260,8 +292,9 @@ class CompreFaceService {
     const startTime = Date.now();
 
     try {
-      await axios.get(`${settings.comprefaceUrl}/api/v1/recognition/status`, {
+      await axios.get(`${settings.comprefaceUrl}/api/v1/recognition/subjects`, {
         headers: { 'x-api-key': settings.comprefaceRecognitionApiKey || '' },
+        params: { limit: 1 },
         timeout: 5000,
       });
 

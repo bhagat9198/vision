@@ -17,6 +17,7 @@ import { logger } from './utils/logger.js';
 import { orgRoutes } from './modules/org/index.js';
 import { apiKeyRoutes } from './modules/api-key/index.js';
 import { swaggerSpec } from './config/swagger.js';
+import { requestLogger } from './middleware/request-logger.js';
 
 // =============================================================================
 // CREATE APP
@@ -49,10 +50,7 @@ export function createApp(): Express {
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
   // Request logging
-  app.use((req, _res, next) => {
-    logger.debug(`${req.method} ${req.path}`);
-    next();
-  });
+  app.use(requestLogger);
 
   // ==========================================================================
   // ROUTES

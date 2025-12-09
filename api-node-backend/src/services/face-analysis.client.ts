@@ -85,6 +85,19 @@ class FaceAnalysisClient {
       },
     });
 
+    // Add cURL logging interceptor
+    this.client.interceptors.request.use((config) => {
+      try {
+        const { generateCurlCommand } = require('../common/utils/curl-generator');
+        const curl = generateCurlCommand(config);
+        logger.debug(`[Face Analysis] Request:\n${curl}`);
+      } catch (err) {
+        // Fallback or ignore if generator fails, don't block request
+        logger.debug('[Face Analysis] Could not generate cURL log', err);
+      }
+      return config;
+    });
+
     return this.client;
   }
 
@@ -293,6 +306,25 @@ class FaceAnalysisClient {
     } catch (error) {
       this.handleError('getEventStats', error);
       return null;
+    }
+  }
+
+  /**
+   * Update organization settings in Face Analysis service.
+   * This ensures the sidecar service is in sync with admin changes.
+   */
+  async updateOrgSettings(orgId: string, settings: Record<string, any>): Promise<void> {
+    try {
+      const client = await this.getClient();
+      // Using master key for admin updates
+      await client.patch(`/orgs/${orgId}/settings`, settings, {
+        headers: { 'x-master-key': process.env.IMG_ANALYSIS_MASTER_KEY || 'master-key-change-me' }
+      });
+
+      logger.info(`Updated Face Analysis settings for org ${orgId}`);
+    } catch (error) {
+      logger.error('Failed to update Face Analysis settings:', error);
+      // Don't throw here to avoid blocking the main config update flow
     }
   }
 

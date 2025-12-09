@@ -41,6 +41,10 @@ export const DEFAULT_CONFIGS: Record<string, { value: string; options?: string[]
 
   // ============ STORAGE SETTINGS ============
   storage_provider: { value: 'local', options: ['local', 's3'] },
+  storage_trash_path: { value: '_trash' },
+
+  // Event Deletion Settings
+  event_deletion_mode: { value: 'soft', options: ['soft', 'hard'] },
 
   // Local Storage
   storage_local_path: { value: './uploads' },
@@ -170,8 +174,59 @@ export class ConfigService {
         create: { key, value, options: DEFAULT_CONFIGS[key]?.options ?? undefined },
       });
     });
+
+    // Execute updates
     const results = await prisma.$transaction(operations);
     console.log('Transaction completed, updated:', results.length, 'records');
+
+    // Check if Face Analysis settings were updated and sync if needed
+    const faceAnalysisKeys = [
+      'face_analysis_enabled', 'face_analysis_backend_url', 'compreface_url',
+      'compreface_recognition_api_key', 'compreface_detection_api_key',
+      'face_detection_mode', 'face_indexing_image_source', 'face_indexing_shared_storage_path',
+      'face_min_confidence', 'face_min_size_px', 'face_skip_extreme_angles',
+      'face_search_default_top_k', 'face_search_min_similarity',
+      'face_embedding_cache_ttl_minutes', 'face_python_sidecar_url',
+      'face_enable_fallback_detection', 'face_enable_alignment'
+    ];
+
+    const hasFaceAnalysisUpdates = Object.keys(data).some(key => faceAnalysisKeys.includes(key));
+
+    if (hasFaceAnalysisUpdates) {
+      // Import here to avoid circular dependency if any
+      const { faceAnalysisClient } = await import('../../services/face-analysis.client.js');
+      const orgId = await this.getOrganizationId();
+      const faceAnalysisConfig = await this.getFaceAnalysisConfig();
+
+      // Transform keys to match img-analyse-backend expected format (camelCase)
+      const transformedSettings: Record<string, any> = {};
+
+      // Map known keys manual mapping or util
+      // Simplified mapping based on variable names
+      if (faceAnalysisConfig.compreface_url) transformedSettings.comprefaceUrl = faceAnalysisConfig.compreface_url;
+      if (faceAnalysisConfig.compreface_recognition_api_key) transformedSettings.comprefaceRecognitionApiKey = faceAnalysisConfig.compreface_recognition_api_key;
+      if (faceAnalysisConfig.compreface_detection_api_key) transformedSettings.comprefaceDetectionApiKey = faceAnalysisConfig.compreface_detection_api_key;
+      if (faceAnalysisConfig.face_detection_mode) transformedSettings.faceDetectionMode = faceAnalysisConfig.face_detection_mode.toUpperCase();
+      if (faceAnalysisConfig.face_indexing_image_source) transformedSettings.imageSourceMode = faceAnalysisConfig.face_indexing_image_source.toUpperCase();
+      if (faceAnalysisConfig.face_indexing_shared_storage_path) transformedSettings.sharedStoragePath = faceAnalysisConfig.face_indexing_shared_storage_path;
+      if (faceAnalysisConfig.face_min_confidence) transformedSettings.minConfidence = parseFloat(faceAnalysisConfig.face_min_confidence);
+      if (faceAnalysisConfig.face_min_size_px) transformedSettings.minSizePx = parseInt(faceAnalysisConfig.face_min_size_px);
+      if (faceAnalysisConfig.face_skip_extreme_angles) transformedSettings.skipExtremeAngles = faceAnalysisConfig.face_skip_extreme_angles === 'true';
+      if (faceAnalysisConfig.face_search_default_top_k) transformedSettings.searchDefaultTopK = parseInt(faceAnalysisConfig.face_search_default_top_k);
+      if (faceAnalysisConfig.face_search_min_similarity) transformedSettings.searchMinSimilarity = parseFloat(faceAnalysisConfig.face_search_min_similarity);
+      if (faceAnalysisConfig.face_embedding_cache_ttl_minutes) transformedSettings.embeddingCacheTtlSeconds = parseInt(faceAnalysisConfig.face_embedding_cache_ttl_minutes) * 60;
+      if (faceAnalysisConfig.face_python_sidecar_url) transformedSettings.pythonSidecarUrl = faceAnalysisConfig.face_python_sidecar_url;
+      if (faceAnalysisConfig.face_enable_fallback_detection) transformedSettings.enableFallbackDetection = faceAnalysisConfig.face_enable_fallback_detection === 'true';
+      if (faceAnalysisConfig.face_enable_alignment) transformedSettings.enableAlignment = faceAnalysisConfig.face_enable_alignment === 'true';
+
+      if (Object.keys(transformedSettings).length > 0) {
+        console.log('Syncing Face Analysis config for org:', orgId);
+        // Fire and forget
+        faceAnalysisClient.updateOrgSettings(orgId, transformedSettings).catch(err => {
+          console.error('Failed to sync config in background:', err);
+        });
+      }
+    }
   }
 
   // Initialize default configs if they don't exist
@@ -396,6 +451,13 @@ export class ConfigService {
 
   async getFaceAnalysisApiKey(): Promise<string> {
     return (await this.get('face_analysis_api_key', '')) ?? '';
+  }
+
+  async getEventDeletionConfig() {
+    return {
+      mode: await this.get('event_deletion_mode', 'soft') as 'soft' | 'hard',
+      trashPath: await this.get('storage_trash_path', '_trash') ?? '_trash',
+    };
   }
 }
 

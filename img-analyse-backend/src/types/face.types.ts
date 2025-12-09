@@ -55,6 +55,24 @@ export interface DetectedFace {
   landmarks?: FaceLandmarks;
   /** Estimated yaw angle in degrees (for profile detection) */
   yawAngle?: number;
+  /** Estimated age */
+  age?: {
+    low: number;
+    high: number;
+  };
+  /** Estimated gender */
+  gender?: {
+    value: 'male' | 'female';
+    probability: number;
+  };
+  /** Head pose (pitch, roll, yaw) */
+  pose?: {
+    pitch: number;
+    roll: number;
+    yaw: number;
+  };
+  /** 106-point 2D facial landmarks */
+  landmarks2d106?: Array<[number, number]>;
   /** Which detector found this face */
   detectorSource: 'compreface' | 'yunet' | 'scrfd';
 }

@@ -96,6 +96,7 @@ class PythonSidecarService {
   async detectWithYuNet(settings: OrgSettings, imageBuffer: Buffer): Promise<DetectedFace[]> {
     const startTime = Date.now();
     const client = this.createClient(settings);
+    logger.info(`Calling Python Sidecar (YuNet) at ${client.defaults.baseURL}...`);
 
     try {
       const formData = new FormData();

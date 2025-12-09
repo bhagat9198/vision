@@ -5,6 +5,7 @@
  */
 
 import type { Organization } from '../../../generated/prisma/client.js';
+import { env } from '../../config/env.js';
 
 // =============================================================================
 // REQUEST/RESPONSE TYPES
@@ -91,9 +92,9 @@ export function toOrgSettings(org: Organization): OrgSettings {
     orgId: org.id,
     name: org.name,
     isActive: org.isActive,
-    comprefaceUrl: org.comprefaceUrl,
-    comprefaceRecognitionApiKey: org.comprefaceRecognitionApiKey,
-    comprefaceDetectionApiKey: org.comprefaceDetectionApiKey,
+    comprefaceUrl: org.comprefaceUrl || env.comprefaceUrl,
+    comprefaceRecognitionApiKey: org.comprefaceRecognitionApiKey || env.comprefaceRecognitionApiKey,
+    comprefaceDetectionApiKey: org.comprefaceDetectionApiKey || env.comprefaceDetectionApiKey,
     faceDetectionMode: org.faceDetectionMode,
     imageSourceMode: org.imageSourceMode,
     sharedStoragePath: org.sharedStoragePath,
@@ -103,7 +104,7 @@ export function toOrgSettings(org: Organization): OrgSettings {
     searchDefaultTopK: org.searchDefaultTopK,
     searchMinSimilarity: org.searchMinSimilarity,
     embeddingCacheTtlSeconds: org.embeddingCacheTtlSeconds,
-    pythonSidecarUrl: org.pythonSidecarUrl,
+    pythonSidecarUrl: org.pythonSidecarUrl || env.pythonSidecarUrl,
     enableFallbackDetection: org.enableFallbackDetection,
     enableAlignment: org.enableAlignment,
   };

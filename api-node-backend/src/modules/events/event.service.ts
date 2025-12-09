@@ -2,6 +2,8 @@ import { Prisma } from '../../lib/prisma.js';
 import { prisma } from '../../config/database.js';
 import { NotFoundError, ForbiddenError, UnauthorizedError } from '../../common/exceptions/AppError.js';
 import { getPagination } from '../../common/utils/pagination.js';
+import { configService } from '../config/config.service.js';
+import { eventCleanupQueue } from '../../queues/event-cleanup.queue.js';
 import type { CreateEventDto, UpdateEventDto, EventQueryDto } from './event.dto.js';
 
 // Helper to parse ID - returns { id, displayId } based on input
@@ -185,6 +187,26 @@ export class EventService {
 
   async delete(idOrDisplayId: string, photographerId: string) {
     const event = await this.findById(idOrDisplayId, photographerId);
+
+    // Get configuration for deletion
+    const { mode, trashPath } = await configService.getEventDeletionConfig();
+    const orgId = await configService.getOrganizationId();
+
+    // Dispatch cleanup job
+    // We use numeric displayIds for the path if that's how they are stored (verified in image-processor.service.ts)
+    // image-processor uses: ${orgId}/${photographerDisplayId}/${eventDisplayId}/...
+    const photographerDisplayId = event.photographer.displayId.toString();
+    const eventDisplayId = event.displayId.toString();
+
+    await eventCleanupQueue.add('cleanup-event', {
+      orgId,
+      photographerId: photographerDisplayId, // Path uses displayId
+      eventId: eventDisplayId,             // Path uses displayId
+      eventUuid: event.id,                 // ID for Qdrant/Face Analysis
+      deletionMode: mode,
+      trashPath,
+    });
+
     await prisma.event.delete({ where: { id: event.id } });
   }
 
