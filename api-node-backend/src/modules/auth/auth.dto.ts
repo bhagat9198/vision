@@ -26,6 +26,7 @@ export const sendOtpSchema = z.object({
   email: z.string().email('Invalid email format').optional(),
   phone: z.string().min(10, 'Invalid phone number').optional(),
   type: z.enum(['signup', 'login', 'password_reset']),
+  userType: z.enum(['photographer', 'client']).optional().default('photographer'),
 }).refine(data => data.email || data.phone, {
   message: 'Either email or phone is required',
 });
@@ -35,6 +36,7 @@ export const verifyOtpSchema = z.object({
   phone: z.string().min(10, 'Invalid phone number').optional(),
   otp: z.string().min(6, 'OTP must be 6 digits').max(6),
   type: z.enum(['signup', 'login', 'password_reset']),
+  userType: z.enum(['photographer', 'client']).optional().default('photographer'),
 }).refine(data => data.email || data.phone, {
   message: 'Either email or phone is required',
 });

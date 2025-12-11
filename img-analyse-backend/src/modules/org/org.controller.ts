@@ -21,7 +21,7 @@ import type { Organization } from '../../../generated/prisma/client.js';
  */
 export async function registerOrg(req: Request, res: Response) {
   try {
-    const { name } = req.body;
+    const { name, slug } = req.body;
 
     if (!name || typeof name !== 'string' || name.trim().length < 2) {
       return res.status(400).json({
@@ -30,14 +30,23 @@ export async function registerOrg(req: Request, res: Response) {
       });
     }
 
-    const result = await orgService.register({ name: name.trim() });
+    const result = await orgService.register({
+      name: name.trim(),
+      slug: slug ? slug.trim() : undefined
+    });
 
     return res.status(201).json({
       success: true,
       data: result,
       message: 'Organization registered successfully. Save your API key securely!',
     });
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message && error.message.includes('slug')) {
+      return res.status(409).json({
+        success: false,
+        error: error.message,
+      });
+    }
     logger.error('Failed to register organization:', error);
     return res.status(500).json({
       success: false,

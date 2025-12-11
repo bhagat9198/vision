@@ -13,12 +13,20 @@ export class ConfigController {
       const googleLogin = await configService.get('photographer_google_login_enabled', 'false');
       const facebookLogin = await configService.get('photographer_facebook_login_enabled', 'false');
       const appleLogin = await configService.get('photographer_apple_login_enabled', 'false');
+
+      // User auth settings
+      const userEmailVerification = await configService.get('user_email_verification_enabled', 'false');
+      const userPhoneAuth = await configService.get('user_phone_auth_enabled', 'false');
+
       const publicConfig = {
         photographerEmailVerificationEnabled: emailVerification === 'true',
         photographerPhoneAuthEnabled: phoneAuth === 'true',
         photographerGoogleLoginEnabled: googleLogin === 'true',
         photographerFacebookLoginEnabled: facebookLogin === 'true',
         photographerAppleLoginEnabled: appleLogin === 'true',
+
+        userEmailVerificationEnabled: userEmailVerification === 'true',
+        userPhoneAuthEnabled: userPhoneAuth === 'true',
       };
       sendSuccess(res, publicConfig, 200, 'Public auth config retrieved');
     } catch (error) {

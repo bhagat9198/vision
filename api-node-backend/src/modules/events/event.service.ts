@@ -99,7 +99,7 @@ export class EventService {
       where: id ? { id } : { displayId },
       include: {
         photographer: {
-          select: { id: true, displayId: true, name: true, avatar: true, bio: true, website: true, instagram: true },
+          select: { id: true, displayId: true, username: true, name: true, avatar: true, bio: true, website: true, instagram: true },
         },
         albums: { orderBy: { sortOrder: 'asc' } },
         _count: { select: { photos: true, albums: true } },

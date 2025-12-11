@@ -7,6 +7,13 @@ export const DEFAULT_CONFIGS: Record<string, { value: string; options?: string[]
   email_verification_enabled: { value: 'false' },
   phone_auth_enabled: { value: 'false' },
 
+  // User Auth settings
+  user_email_verification_enabled: { value: 'true' },
+  user_phone_auth_enabled: { value: 'true' },
+  user_google_login_enabled: { value: 'true' },
+  user_facebook_login_enabled: { value: 'true' },
+  user_apple_login_enabled: { value: 'true' },
+
   // SMTP Provider
   smtp_enabled: { value: 'false' },
   smtp_host: { value: '' },
@@ -117,6 +124,8 @@ export const DEFAULT_CONFIGS: Record<string, { value: string; options?: string[]
   // These link to template IDs in the MessageTemplate table
   photographer_email_otp_template: { value: '' }, // Template ID for photographer email OTP
   photographer_phone_otp_template: { value: '' }, // Template ID for photographer phone OTP
+  user_email_otp_template: { value: '' }, // Template ID for user email OTP
+  user_phone_otp_template: { value: '' }, // Template ID for user phone OTP
 };
 
 export class ConfigService {

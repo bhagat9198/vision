@@ -1,10 +1,14 @@
 import { z } from 'zod';
 
 export const createCommentSchema = z.object({
-  text: z.string().min(1, 'Comment text is required').max(1000, 'Comment is too long'),
-  userName: z.string().min(1, 'User name is required'),
+  text: z.string().max(1000, 'Comment is too long').optional(),
+  content: z.string().max(1000, 'Comment is too long').optional(), // Legacy alias
+  userName: z.string().optional(),
   userAvatar: z.string().url().optional(),
   userEmail: z.string().email().optional(),
+}).refine(data => data.text || data.content, {
+  message: "Comment text is required",
+  path: ["text"]
 });
 
 export const commentQuerySchema = z.object({

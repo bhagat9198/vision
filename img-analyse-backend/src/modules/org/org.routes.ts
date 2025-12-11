@@ -49,6 +49,10 @@ const router = Router();
  *                 type: string
  *                 minLength: 2
  *                 example: "My Photography Studio"
+ *               slug:
+ *                 type: string
+ *                 description: "Unique slug for the organization (optional, auto-generated from name if not provided)"
+ *                 example: "my_photography_studio"
  *     responses:
  *       201:
  *         description: Organization registered successfully

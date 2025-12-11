@@ -13,6 +13,7 @@ import { env } from '../../config/env.js';
 
 export interface RegisterOrgRequest {
   name: string;
+  slug?: string;
 }
 
 export interface RegisterOrgResponse {

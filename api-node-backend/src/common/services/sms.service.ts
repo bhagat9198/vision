@@ -17,6 +17,7 @@ interface BulkSmsConfig {
 interface TemplateData {
   templateText: string;
   dltTemplateId?: string;
+  variables?: string[];
 }
 
 export class SmsService {
@@ -58,6 +59,7 @@ export class SmsService {
     return {
       templateText: template.templateText,
       dltTemplateId: template.templateId || undefined,
+      variables: template.variables,
     };
   }
 
@@ -145,13 +147,36 @@ export class SmsService {
   }
 
   // Send OTP for photographer signup/login
-  async sendOtpForPhotographer(phone: string, otp: string, type: 'signup' | 'login' | 'password_reset'): Promise<SmsResponse> {
-    // Get template from config
-    const configKey = 'photographer_phone_otp_template';
-    const template = await this.getTemplateFromConfig(configKey);
+  // Get template by ID
+  private async getTemplateById(templateId: string): Promise<TemplateData | null> {
+    const template = await prisma.messageTemplate.findUnique({ where: { id: templateId } });
+    if (!template) {
+      logger.warn('[SMS] Template not found by ID', { templateId });
+      return null;
+    }
+    return {
+      templateText: template.templateText,
+      dltTemplateId: template.templateId || undefined,
+      variables: template.variables,
+    };
+  }
+
+  // Send OTP for photographer/user signup/login
+  async sendOtpForPhotographer(phone: string, otp: string, type: 'signup' | 'login' | 'password_reset', templateId?: string): Promise<SmsResponse> {
+    let template: TemplateData | null = null;
+
+    if (templateId) {
+      template = await this.getTemplateById(templateId);
+    }
+
+    // Fallback to default photographer config if no templateId
+    if (!template) {
+      const configKey = 'photographer_phone_otp_template';
+      template = await this.getTemplateFromConfig(configKey);
+    }
 
     if (!template) {
-      logger.error('[SMS] No template configured for photographer phone OTP');
+      logger.error('[SMS] No template configured for phone OTP');
       return { success: false, message: 'SMS template not configured', provider: 'none' };
     }
 
@@ -163,7 +188,7 @@ export class SmsService {
         otp: otp,
         validMinutes: '10',
       },
-      template.variables || ['otp', 'validMinutes'] // Default order if not specified
+      (template as any).variables || ['otp', 'validMinutes']
     );
 
     return this.sendViaBulkSms(phone, message, template.dltTemplateId);

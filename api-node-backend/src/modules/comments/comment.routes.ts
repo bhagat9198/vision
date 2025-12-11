@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { commentController } from './comment.controller.js';
 import { validate } from '../../middleware/validate.middleware.js';
-import { authenticate } from '../../middleware/auth.middleware.js';
+import { authenticate, optionalAuth } from '../../middleware/auth.middleware.js';
 import { createCommentSchema } from './comment.dto.js';
 
 const router = Router();
@@ -38,7 +38,7 @@ const router = Router();
  *             schema:
  *               $ref: '#/components/schemas/SuccessResponse'
  */
-router.post('/photo/:photoId', validate(createCommentSchema), commentController.create);
+router.post('/photo/:photoId', optionalAuth, validate(createCommentSchema), commentController.create);
 /**
  * @swagger
  * /comments/photo/{photoId}:

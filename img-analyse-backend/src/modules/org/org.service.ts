@@ -22,9 +22,9 @@ const API_KEY_CACHE_PREFIX = 'api_key:';
  * Generate a secure random API key.
  */
 function generateApiKey(): string {
-  const prefix = 'img_';
+  // Removed prefix 'img_' as per requirement
   const randomPart = randomBytes(24).toString('base64url');
-  return `${prefix}${randomPart}`;
+  return randomPart;
 }
 
 // =============================================================================
@@ -39,33 +39,43 @@ export const orgService = {
   async register(data: RegisterOrgRequest): Promise<RegisterOrgResponse> {
     logger.info(`Registering new organization: ${data.name}`);
 
-    const org = await prisma.organization.create({
-      data: {
-        name: data.name,
-        apiKeys: {
-          create: {
-            key: generateApiKey(),
-            name: 'Default',
+    const slug = data.slug || data.name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+
+    try {
+      const org = await prisma.organization.create({
+        data: {
+          name: data.name,
+          slug,
+          apiKeys: {
+            create: {
+              key: generateApiKey(),
+              name: 'Default',
+            },
           },
         },
-      },
-      include: {
-        apiKeys: true,
-      },
-    });
+        include: {
+          apiKeys: true,
+        },
+      });
 
-    const apiKey = org.apiKeys[0]!;
+      const apiKey = org.apiKeys[0]!;
 
-    logger.info(`Organization registered: ${org.id} with API key: ${apiKey.id}`);
+      logger.info(`Organization registered: ${org.id} with API key: ${apiKey.id}`);
 
-    return {
-      organization: org,
-      apiKey: {
-        id: apiKey.id,
-        key: apiKey.key,
-        name: apiKey.name,
-      },
-    };
+      return {
+        organization: org,
+        apiKey: {
+          id: apiKey.id,
+          key: apiKey.key,
+          name: apiKey.name,
+        },
+      };
+    } catch (error: any) {
+      if (error.code === 'P2002' && error.meta?.target?.includes('slug')) {
+        throw new Error(`Organization with slug '${slug}' already exists. Please choose a different name or provide a unique slug.`);
+      }
+      throw error;
+    }
   },
 
   /**

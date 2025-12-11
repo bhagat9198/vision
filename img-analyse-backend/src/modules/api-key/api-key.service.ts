@@ -26,9 +26,9 @@ const API_KEY_CACHE_PREFIX = 'api_key:';
  * Generate a secure random API key.
  */
 function generateApiKey(): string {
-  const prefix = 'img_';
+  // Removed prefix 'img_' as per requirement
   const randomPart = randomBytes(24).toString('base64url');
-  return `${prefix}${randomPart}`;
+  return randomPart;
 }
 
 // =============================================================================

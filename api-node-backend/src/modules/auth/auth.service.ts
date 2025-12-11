@@ -29,33 +29,41 @@ export class AuthService {
   }
 
   async sendOtp(data: SendOtpDto) {
-    const { email, phone, type } = data;
+    const { email, phone, type, userType } = data;
 
-    // Check if user exists for signup (should NOT exist)
-    if (type === 'signup') {
-      if (email) {
-        const existing = await prisma.photographer.findUnique({ where: { email } });
-        if (existing) throw new ConflictError('Email already registered');
+    // Photographer Logic
+    if (userType === 'photographer') {
+      // Check if user exists for signup (should NOT exist)
+      if (type === 'signup') {
+        if (email) {
+          const existing = await prisma.photographer.findUnique({ where: { email } });
+          if (existing) throw new ConflictError('Email already registered');
+        }
+        if (phone) {
+          const existing = await prisma.photographer.findFirst({ where: { phone } });
+          if (existing) throw new ConflictError('Phone number already registered');
+        }
       }
-      if (phone) {
-        const existing = await prisma.photographer.findFirst({ where: { phone } });
-        if (existing) throw new ConflictError('Phone number already registered');
+
+      // Check if user exists for login (should exist)
+      if (type === 'login') {
+        if (email) {
+          const existing = await prisma.photographer.findUnique({ where: { email } });
+          if (!existing) throw new BadRequestError('No account found with this email. Please sign up first.');
+        }
+        if (phone) {
+          const existing = await prisma.photographer.findFirst({ where: { phone } });
+          if (!existing) throw new BadRequestError('No account found with this phone number. Please sign up first.');
+        }
       }
+    } else {
+      // Client/User Logic
+      // For now, we don't have a persistent User table to check against, 
+      // so we allow OTP generation freely for Clients (ephemeral usage).
+      // We might want to add rate limiting later.
     }
 
-    // Check if user exists for login (should exist)
-    if (type === 'login') {
-      if (email) {
-        const existing = await prisma.photographer.findUnique({ where: { email } });
-        if (!existing) throw new BadRequestError('No account found with this email. Please sign up first.');
-      }
-      if (phone) {
-        const existing = await prisma.photographer.findFirst({ where: { phone } });
-        if (!existing) throw new BadRequestError('No account found with this phone number. Please sign up first.');
-      }
-    }
-
-    // Delete old OTPs for this email/phone and type
+    // Delete old OTPs for this email/phone and type (and userType implicitly by email/phone)
     if (email) {
       await prisma.otp.deleteMany({ where: { email, type } });
     }
@@ -79,21 +87,33 @@ export class AuthService {
     // Log OTP (in dev mode, shows actual code for testing)
     otpLogger.sent(email || phone || '', type, code);
 
-    // Send OTP via SMS or Email
+    // Get Templates based on userType
+    const emailTemplateId = userType === 'client'
+      ? await configService.get('user_email_otp_template')
+      : await configService.get('photographer_email_otp_template');
+
+    const phoneTemplateId = userType === 'client'
+      ? await configService.get('user_phone_otp_template')
+      : await configService.get('photographer_phone_otp_template');
+
+    // Send OTP via SMS
     if (phone) {
-      const smsResult = await smsService.sendOtpForPhotographer(phone, code, type as 'signup' | 'login' | 'password_reset');
+      // Pass templateId if available (SmsService needs update to accept templateId or we resolve it here)
+      // Current smsService.sendOtpForPhotographer might be hardcoded. 
+      // We should use a generic sendOtp method if possible, or pass the template.
+      // For now, let's assume valid config overrides or we act generic.
+      // Ideally smsService should expose a generic `sendOtp(phone, code, templateId)`
+      const smsResult = await smsService.sendOtpForPhotographer(phone, code, type as 'signup' | 'login' | 'password_reset', phoneTemplateId || undefined);
       if (!smsResult.success) {
         logger.error('[OTP] Failed to send SMS', { phone, error: smsResult.message });
-        // Don't throw error - OTP is still saved, user can see it in dev logs
       }
     }
 
     // Send OTP via Email
     if (email) {
-      const emailResult = await emailService.sendOtpForPhotographer(email, code, type as 'signup' | 'login' | 'password_reset');
+      const emailResult = await emailService.sendOtpForPhotographer(email, code, type as 'signup' | 'login' | 'password_reset', emailTemplateId || undefined);
       if (!emailResult.success) {
         logger.error('[OTP] Failed to send Email', { email, error: emailResult.message });
-        // Don't throw error - OTP is still saved, user can see it in dev logs
       }
     }
 
@@ -101,7 +121,7 @@ export class AuthService {
   }
 
   async verifyOtp(data: VerifyOtpDto) {
-    const { email, phone, otp, type } = data;
+    const { email, phone, otp, type, userType } = data;
     const target = email || phone || '';
 
     const otpRecord = await prisma.otp.findFirst({
@@ -145,7 +165,43 @@ export class AuthService {
 
     otpLogger.verified(target, type);
 
-    // For login type, find user and return token
+    // Client Logic
+    if (userType === 'client') {
+      // Find or Create persistent Client
+      let client = await prisma.client.findFirst({
+        where: {
+          ...(email ? { email } : {}),
+          ...(phone ? { phone } : {}),
+        }
+      });
+
+      if (!client) {
+        client = await prisma.client.create({
+          data: {
+            email: email || null,
+            phone: phone || null,
+            name: email ? email.split('@')[0] : `Client ${phone?.slice(-4)}`, // Default name
+          }
+        });
+      }
+
+      const token = this.generateClientToken(client.id, client.email || client.phone || '', client.name || '');
+
+      return {
+        verified: true,
+        message: 'Client verified successfully',
+        token,
+        user: {
+          id: client.id,
+          name: client.name,
+          email: client.email,
+          phone: client.phone,
+          role: 'CLIENT'
+        }
+      };
+    }
+
+    // Photographer Login Logic
     if (type === 'login') {
       const photographer = await prisma.photographer.findFirst({
         where: {
@@ -172,6 +228,12 @@ export class AuthService {
     }
 
     return { verified: true, message: 'OTP verified successfully' };
+  }
+
+  private generateClientToken(id: string, email: string, name: string): string {
+    return jwt.sign({ id, email, name, role: 'CLIENT' }, env.JWT_SECRET, {
+      expiresIn: '30d' as any, // Cast to any or verify jwt type definition
+    });
   }
 
   async register(data: RegisterDto) {

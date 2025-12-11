@@ -8,7 +8,39 @@ export class CommentController {
   async create(req: Request, res: Response, next: NextFunction) {
     try {
       const { photoId } = req.params;
-      const data = req.body as CreateCommentDto;
+      const body = req.body;
+
+      // Handle alias and defaults
+      const text = body.text || body.content;
+
+      // Get user info from auth token if available, otherwise use body or default
+      const user = req.user;
+
+      let userName = body.userName;
+      let userEmail = body.userEmail;
+
+      if (user) {
+        if (user.role === 'PHOTOGRAPHER') {
+          userName = userName || 'Photographer';
+          userEmail = userEmail || user.email;
+        } else if (user.role === 'CLIENT') {
+          // For clients, user.email might be phone if they logged in via phone
+          // In auth.service, we map the persistent client fields to req.user
+          // So user.name should be the persistent name
+          userName = (user as any).name || userName || 'Guest User';
+          userEmail = userEmail || user.email;
+        }
+      }
+
+      userName = userName || 'Guest User';
+
+      const data: CreateCommentDto = {
+        text,
+        userName,
+        userEmail,
+        userAvatar: body.userAvatar
+      };
+
       const comment = await commentService.create(photoId as string, data);
       sendCreated(res, comment, 'Comment added successfully');
     } catch (error) {

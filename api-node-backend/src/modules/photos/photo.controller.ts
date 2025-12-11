@@ -43,7 +43,8 @@ export class PhotoController {
   async findById(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const photo = await photoService.findById(id as string);
+      const { eventId } = req.query as { eventId?: string };
+      const photo = await photoService.findById(id as string, eventId);
       sendSuccess(res, photo);
     } catch (error) {
       next(error);
@@ -79,6 +80,37 @@ export class PhotoController {
       const data = req.body as LikePhotoDto;
       const result = await photoService.toggleLike(id as string, data);
       sendSuccess(res, result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async toggleFavorite(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const data = req.body as LikePhotoDto;
+      const result = await photoService.toggleFavorite(id as string, data);
+      sendSuccess(res, result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getMyLikes(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { user } = req as AuthenticatedRequest;
+      const likes = await photoService.getLikesByUser(user.email);
+      sendSuccess(res, likes);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getMyFavorites(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { user } = req as AuthenticatedRequest;
+      const favorites = await photoService.getFavoritesByUser(user.email);
+      sendSuccess(res, favorites);
     } catch (error) {
       next(error);
     }

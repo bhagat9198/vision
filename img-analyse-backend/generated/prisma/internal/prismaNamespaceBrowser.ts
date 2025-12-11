@@ -72,6 +72,7 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 export const OrganizationScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  slug: 'slug',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',

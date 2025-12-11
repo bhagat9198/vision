@@ -113,11 +113,30 @@ export class PhotoService {
     return { photos, total, page, limit };
   }
 
-  async findById(idOrDisplayId: string) {
+  async findById(idOrDisplayId: string, eventIdOrDisplayId?: string) {
     const { id, displayId } = parseId(idOrDisplayId);
 
+    // If looking up by displayId, we optionally need eventId to be safe
+    // But since displayId is autoincremented globally (for now), collision is unlikely but possible if sequence reused.
+    // However, scoping by eventId is safer and requested.
+
+    let eventId: string | undefined;
+    if (eventIdOrDisplayId) {
+      // Resolve event ID first
+      const event = await prisma.event.findFirst({
+        where: parseId(eventIdOrDisplayId).id ? { id: eventIdOrDisplayId } : { displayId: parseInt(eventIdOrDisplayId) },
+        select: { id: true }
+      });
+      if (event) eventId = event.id;
+    }
+
     const photo = await prisma.photo.findFirst({
-      where: id ? { id } : { displayId },
+      where: {
+        AND: [
+          id ? { id } : { displayId },
+          eventId ? { eventId } : {}
+        ]
+      },
       include: {
         album: { select: { id: true, displayId: true, name: true } },
         event: { select: { id: true, displayId: true, name: true, photographerId: true } },
@@ -183,6 +202,95 @@ export class PhotoService {
     });
 
     return { liked: true };
+  }
+
+  async toggleFavorite(idOrDisplayId: string, data: LikePhotoDto) {
+    if (!data.sessionId && !data.userEmail) {
+      throw new BadRequestError('Either sessionId or userEmail is required');
+    }
+
+    const photo = await this.findById(idOrDisplayId);
+
+    const existing = await prisma.favoritePhoto.findFirst({
+      where: {
+        photoId: photo.id,
+        ...(data.sessionId ? { sessionId: data.sessionId } : { userEmail: data.userEmail }),
+      },
+    });
+
+    if (existing) {
+      await prisma.favoritePhoto.delete({ where: { id: existing.id } });
+      return { favorited: false };
+    }
+
+    // Need eventId for FavoriteFolder logic, default to event from photo
+    // But FavoritePhoto model requires folderId? No, folderId is optional.
+    await prisma.favoritePhoto.create({
+      data: {
+        photoId: photo.id,
+        ...data
+      },
+    });
+
+    return { favorited: true };
+  }
+
+  async getLikesByUser(email: string) {
+    const likes = await prisma.photoLike.findMany({
+      where: { userEmail: email },
+      include: {
+        photo: {
+          select: {
+            id: true,
+            displayId: true,
+            url: true,
+            thumbnail: true,
+            eventId: true,
+            event: { select: { id: true, displayId: true, name: true } }
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    // Transform to match frontend expectation
+    return likes.map(like => ({
+      photoId: like.photoId, // Keep UUID for interaction hooks if needed? Or switch to displayId? 
+      // Frontend expects photoId to be distinct.
+      displayId: like.photo.displayId,
+      eventId: like.photo.event.displayId.toString(), // event.displayId is Int
+      likedAt: like.createdAt.toISOString(),
+      thumbnail: like.photo.thumbnail,
+      url: like.photo.url
+    }));
+  }
+
+  async getFavoritesByUser(email: string) {
+    const favorites = await prisma.favoritePhoto.findMany({
+      where: { userEmail: email },
+      include: {
+        photo: {
+          select: {
+            id: true,
+            displayId: true,
+            url: true,
+            thumbnail: true,
+            eventId: true,
+            event: { select: { id: true, displayId: true, name: true } }
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    return favorites.map(fav => ({
+      photoId: fav.photoId,
+      displayId: fav.photo.displayId,
+      eventId: fav.photo.event.displayId.toString(),
+      favoritedAt: fav.createdAt.toISOString(),
+      thumbnail: fav.photo.thumbnail,
+      url: fav.photo.url
+    }));
   }
 }
 

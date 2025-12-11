@@ -146,12 +146,36 @@ export class EmailService {
   }
 
   // Send OTP for photographer signup/login
-  async sendOtpForPhotographer(email: string, otp: string, type: 'signup' | 'login' | 'password_reset'): Promise<EmailResponse> {
-    const configKey = 'photographer_email_otp_template';
-    const template = await this.getTemplateFromConfig(configKey);
+  // Get template by ID
+  private async getTemplateById(templateId: string): Promise<TemplateData | null> {
+    const template = await prisma.messageTemplate.findUnique({ where: { id: templateId } });
+    if (!template) {
+      logger.warn('[Email] Template not found by ID', { templateId });
+      return null;
+    }
+    return {
+      templateText: template.templateText,
+      subject: template.name,
+      isHtml: template.isHtml,
+    };
+  }
+
+  // Send OTP for photographer/user signup/login
+  async sendOtpForPhotographer(email: string, otp: string, type: 'signup' | 'login' | 'password_reset', templateId?: string): Promise<EmailResponse> {
+    let template: TemplateData | null = null;
+
+    if (templateId) {
+      template = await this.getTemplateById(templateId);
+    }
+
+    // Fallback if no templateId
+    if (!template) {
+      const configKey = 'photographer_email_otp_template';
+      template = await this.getTemplateFromConfig(configKey);
+    }
 
     if (!template) {
-      logger.error('[Email] No template configured for photographer email OTP');
+      logger.error('[Email] No template configured for email OTP');
       return { success: false, message: 'Email template not configured', provider: 'none' };
     }
 

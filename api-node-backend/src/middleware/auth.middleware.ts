@@ -8,6 +8,8 @@ import { AppError } from '../common/exceptions/AppError.js';
 export interface AuthPayload {
   id: string;
   email: string;
+  name?: string;
+  role?: string;
 }
 
 declare global {
@@ -31,12 +33,18 @@ export const authenticate = async (
     }
 
     const token = authHeader.split(' ')[1];
-    
+
     if (!token) {
       throw new AppError('Invalid token format', StatusCodes.UNAUTHORIZED);
     }
 
     const decoded = jwt.verify(token, env.JWT_SECRET) as AuthPayload;
+
+    // If Client, bypass database check (ephemeral user)
+    if (decoded.role === 'CLIENT') {
+      req.user = decoded;
+      return next();
+    }
 
     // Verify user exists and is active
     const photographer = await prisma.photographer.findUnique({
@@ -48,7 +56,7 @@ export const authenticate = async (
       throw new AppError('User not found or inactive', StatusCodes.UNAUTHORIZED);
     }
 
-    req.user = { id: photographer.id, email: photographer.email };
+    req.user = { id: photographer.id, email: photographer.email || '', role: 'PHOTOGRAPHER' };
     next();
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
@@ -80,16 +88,22 @@ export const optionalAuth = async (
     if (!token) return next();
 
     const decoded = jwt.verify(token, env.JWT_SECRET) as AuthPayload;
-    
+
+    // If Client, bypass database check
+    if (decoded.role === 'CLIENT') {
+      req.user = decoded;
+      return next();
+    }
+
     const photographer = await prisma.photographer.findUnique({
       where: { id: decoded.id },
       select: { id: true, email: true, isActive: true },
     });
 
     if (photographer && photographer.isActive) {
-      req.user = { id: photographer.id, email: photographer.email };
+      req.user = { id: photographer.id, email: photographer.email || '', role: 'PHOTOGRAPHER' };
     }
-    
+
     next();
   } catch {
     // Silently fail for optional auth
