@@ -12,6 +12,9 @@ import { redisClient } from '../config/redis.js';
 import { env } from '../config/env.js';
 import { logger } from '../utils/logger.js';
 import { toOrgSettings, type OrgSettings } from '../modules/org/org.types.js';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-jwt-secret-123';
 
 // =============================================================================
 // TYPES
@@ -76,11 +79,35 @@ export async function requireOrgAuth(
   next: NextFunction
 ): Promise<void> {
   const apiKey = req.headers['x-api-key'] as string;
+  const authToken = req.headers['x-auth-token'] as string;
 
+  // 1. Check for Auth Token first
+  if (authToken) {
+    try {
+      const decoded = jwt.verify(authToken, JWT_SECRET);
+      (req as any).user = decoded;
+      // For admin access via token, we might not set orgSettings/orgId strictly
+      // But we allow proceed. Controller logic might need to handle missing orgSettings if it relied on it.
+      // However, for GET /orgs/:id, we just want to fetch the org.
+      next();
+      return;
+    } catch (error) {
+      // If token is invalid, we fall through to check API key? 
+      // Or stricter: if token provided but invalid -> 401?
+      // User said "either one is required". If token is present but bad, it's bad auth.
+      res.status(401).json({
+        success: false,
+        error: 'Unauthorized: Invalid token',
+      });
+      return;
+    }
+  }
+
+  // 2. If no token, Check for API Key
   if (!apiKey) {
     res.status(401).json({
       success: false,
-      error: 'API key required. Set x-api-key header.',
+      error: 'Authentication required. Provide x-auth-token OR x-api-key.',
     });
     return;
   }

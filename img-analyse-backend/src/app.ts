@@ -16,6 +16,7 @@ import { requireOrgAuth, requireOrgSettings } from './middleware/org-auth.js';
 import { logger } from './utils/logger.js';
 import { orgRoutes } from './modules/org/index.js';
 import { apiKeyRoutes } from './modules/api-key/index.js';
+import { authRoutes } from './modules/auth/index.js';
 import { swaggerSpec } from './config/swagger.js';
 import { requestLogger } from './middleware/request-logger.js';
 
@@ -40,7 +41,7 @@ export function createApp(): Express {
   app.use(cors({
     origin: process.env.CORS_ORIGIN || '*',
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-internal-key', 'x-api-key', 'x-master-key'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-internal-key', 'x-api-key', 'x-master-key', 'x-auth-token'],
   }));
 
   // Parse JSON bodies
@@ -75,6 +76,9 @@ export function createApp(): Express {
   // Health routes (no auth required)
   app.use('/health', healthRoutes);
 
+  // Auth routes
+  app.use('/auth', authRoutes);
+
   // Organization management routes
   app.use('/orgs', orgRoutes);
 
@@ -82,8 +86,8 @@ export function createApp(): Express {
   app.use('/orgs/:orgId/api-keys', apiKeyRoutes);
 
   // API routes (org auth required)
-  // Index routes require CompreFace to be configured
-  app.use('/api/v1/index', requireOrgAuth, requireOrgSettings('comprefaceUrl', 'comprefaceRecognitionApiKey'), indexRoutes);
+  // Index routes require CompreFace to be configured (enforced in specific routes)
+  app.use('/api/v1/index', requireOrgAuth, indexRoutes);
   // Search routes require CompreFace to be configured
   app.use('/api/v1/search', requireOrgAuth, requireOrgSettings('comprefaceUrl', 'comprefaceRecognitionApiKey'), searchRoutes);
 

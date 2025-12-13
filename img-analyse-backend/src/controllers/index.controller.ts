@@ -12,6 +12,7 @@
  */
 
 import type { Request, Response } from 'express';
+import { prisma } from '../config/database.js';
 import { faceDetectionService, qdrantService } from '../services/index.js';
 import { fetchImageFromUrl, readImageFromPath } from '../utils/index.js';
 import { logger } from '../utils/logger.js';
@@ -44,6 +45,29 @@ export const indexController = {
         mode: settings.imageSourceMode,
         hasUrl: !!imageUrl,
         hasPath: !!imagePath
+      });
+
+      // Track indexing status
+      await prisma.eventImageStatus.upsert({
+        where: {
+          eventId_photoId: {
+            eventId,
+            photoId,
+          },
+        },
+        update: {
+          status: 'PROCESSING',
+          error: null,
+          orgId: settings.orgId,
+          imageUrl: imageUrl || null,
+        },
+        create: {
+          eventId,
+          photoId,
+          orgId: settings.orgId,
+          status: 'PROCESSING',
+          imageUrl: imageUrl || null,
+        },
       });
 
       if (!photoId || !eventId) {
@@ -108,15 +132,61 @@ export const indexController = {
 
       logger.info(`Indexed photo ${photoId}: ${result.facesIndexed} faces in ${result.processingTimeMs}ms`, { result });
 
+      // Update status to COMPLETED
+      await prisma.eventImageStatus.update({
+        where: {
+          eventId_photoId: {
+            eventId,
+            photoId,
+          },
+        },
+        data: {
+          status: 'COMPLETED',
+          error: null,
+          facesDetected: result.facesDetected,
+          facesIndexed: result.facesIndexed,
+        },
+      });
+
       res.json({
         success: true,
         data: result,
       } as ApiResponse<IndexPhotoResult>);
     } catch (error) {
       logger.error('Failed to index photo:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to index photo';
+
+      // Update status to FAILED if we have required IDs (we might not if validation failed early)
+      const { photoId, eventId } = req.body as IndexPhotoRequest;
+      if (photoId && eventId) {
+        try {
+          await prisma.eventImageStatus.upsert({
+            where: {
+              eventId_photoId: {
+                eventId,
+                photoId,
+              },
+            },
+            update: {
+              status: 'FAILED',
+              error: errorMessage,
+            },
+            create: {
+              eventId,
+              photoId,
+              orgId: req.orgSettings?.orgId || 'unknown',
+              status: 'FAILED',
+              error: errorMessage,
+            },
+          });
+        } catch (dbError) {
+          logger.error('Failed to update indexing status:', dbError);
+        }
+      }
+
       res.status(500).json({
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to index photo',
+        error: errorMessage,
       } as ApiResponse);
     }
   },
@@ -138,7 +208,20 @@ export const indexController = {
         return;
       }
 
+      // 1. Delete faces from Qdrant (Hard delete of vectors)
       await qdrantService.deleteFacesForPhoto(settings.orgId, eventId, photoId);
+
+      // 2. Soft delete in Postgres (Mark as inactive)
+      await prisma.eventImageStatus.updateMany({
+        where: {
+          eventId,
+          photoId,
+        },
+        data: {
+          isActive: false,
+          facesIndexed: 0, // Faces are gone from Qdrant
+        },
+      });
 
       res.json({
         success: true,
@@ -170,7 +253,19 @@ export const indexController = {
         return;
       }
 
+      // 1. Delete Qdrant collection (Hard delete of vectors)
       await qdrantService.deleteCollection(settings.orgId, eventId);
+
+      // 2. Soft delete in Postgres (Mark all images as inactive)
+      await prisma.eventImageStatus.updateMany({
+        where: {
+          eventId,
+        },
+        data: {
+          isActive: false,
+          facesIndexed: 0,
+        },
+      });
 
       res.json({
         success: true,
@@ -230,6 +325,66 @@ export const indexController = {
       res.status(500).json({
         success: false,
         error: error instanceof Error ? error.message : 'Failed to get event stats',
+      } as ApiResponse);
+    }
+  },
+
+  /**
+   * Get image statuses for an event.
+   */
+  async getEventImages(req: Request, res: Response): Promise<void> {
+    try {
+      const { eventId } = req.params;
+      const { status } = req.query;
+
+      if (!eventId) {
+        res.status(400).json({
+          success: false,
+          error: 'eventId is required',
+        } as ApiResponse);
+        return;
+      }
+
+      const where: any = { eventId };
+
+      if (status === 'DELETED') {
+        where.isActive = false;
+      } else {
+        where.isActive = true;
+        if (status && status !== 'ALL') {
+          where.status = status;
+        }
+      }
+
+      const images = await prisma.eventImageStatus.findMany({
+        where,
+        orderBy: { updatedAt: 'desc' },
+        take: 1000,
+      });
+
+      // Calculate stats based on active/inactive
+      const total = await prisma.eventImageStatus.count({ where: { eventId, isActive: true } });
+      const completed = await prisma.eventImageStatus.count({ where: { eventId, status: 'COMPLETED', isActive: true } });
+      const failed = await prisma.eventImageStatus.count({ where: { eventId, status: 'FAILED', isActive: true } });
+      const processing = await prisma.eventImageStatus.count({ where: { eventId, status: 'PROCESSING', isActive: true } });
+
+      res.json({
+        success: true,
+        data: {
+          stats: {
+            total,
+            completed,
+            failed,
+            processing,
+          },
+          images,
+        },
+      } as ApiResponse);
+    } catch (error) {
+      logger.error('Failed to get event images:', error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get event images',
       } as ApiResponse);
     }
   },

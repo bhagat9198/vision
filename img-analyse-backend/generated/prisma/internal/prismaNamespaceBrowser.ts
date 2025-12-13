@@ -50,7 +50,9 @@ export const AnyNull = runtime.objectEnumValues.instances.AnyNull
 
 export const ModelName = {
   Organization: 'Organization',
-  ApiKey: 'ApiKey'
+  ApiKey: 'ApiKey',
+  User: 'User',
+  EventImageStatus: 'EventImageStatus'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -107,6 +109,37 @@ export const ApiKeyScalarFieldEnum = {
 } as const
 
 export type ApiKeyScalarFieldEnum = (typeof ApiKeyScalarFieldEnum)[keyof typeof ApiKeyScalarFieldEnum]
+
+
+export const UserScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  password: 'password',
+  name: 'name',
+  role: 'role',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const EventImageStatusScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  photoId: 'photoId',
+  orgId: 'orgId',
+  status: 'status',
+  isActive: 'isActive',
+  error: 'error',
+  imageUrl: 'imageUrl',
+  facesDetected: 'facesDetected',
+  facesIndexed: 'facesIndexed',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EventImageStatusScalarFieldEnum = (typeof EventImageStatusScalarFieldEnum)[keyof typeof EventImageStatusScalarFieldEnum]
 
 
 export const SortOrder = {

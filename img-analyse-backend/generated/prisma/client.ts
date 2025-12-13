@@ -54,3 +54,13 @@ export type Organization = Prisma.OrganizationModel
  * ApiKey - authentication keys for organizations
  */
 export type ApiKey = Prisma.ApiKeyModel
+/**
+ * Model User
+ * User - system administrators
+ */
+export type User = Prisma.UserModel
+/**
+ * Model EventImageStatus
+ * EventImageStatus - tracks indexing status of individual images
+ */
+export type EventImageStatus = Prisma.EventImageStatusModel

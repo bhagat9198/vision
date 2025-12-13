@@ -13,8 +13,11 @@ import {
   updateOrgSettings,
   deactivateOrg,
   listOrgs,
+  listAllCollections,
+  listOrgCollections,
 } from './org.controller.js';
 import { requireMasterKey, requireOrgAuth } from '../../middleware/org-auth.js';
+import { verifyAuth } from '../../middleware/auth.js';
 
 const router = Router();
 
@@ -65,7 +68,7 @@ const router = Router();
  *       401:
  *         description: Invalid master API key
  */
-router.post('/register', requireMasterKey, registerOrg);
+router.post('/register', verifyAuth, registerOrg);
 
 /**
  * @swagger
@@ -89,7 +92,42 @@ router.post('/register', requireMasterKey, registerOrg);
  *             schema:
  *               $ref: '#/components/schemas/OrganizationListResponse'
  */
-router.get('/', requireMasterKey, listOrgs);
+router.get('/', verifyAuth, listOrgs);
+
+/**
+ * @swagger
+ * /orgs/collections:
+ *   get:
+ *     summary: List all Qdrant collections (admin)
+ *     tags: [Organizations]
+ *     security:
+ *       - MasterKeyAuth: []
+ *     responses:
+ *       200:
+ *         description: List of all collections with stats
+ */
+router.get('/collections', verifyAuth, listAllCollections);
+
+/**
+ * @swagger
+ * /orgs/{id}/collections:
+ *   get:
+ *     summary: List Qdrant collections for an organization
+ *     tags: [Organizations]
+ *     security:
+ *       - ApiKeyAuth: []
+ *       - AuthToken: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of collections for the organization
+ */
+router.get('/:id/collections', requireOrgAuth, listOrgCollections);
 
 /**
  * @swagger
@@ -99,6 +137,7 @@ router.get('/', requireMasterKey, listOrgs);
  *     tags: [Organizations]
  *     security:
  *       - ApiKeyAuth: []
+ *       - AuthToken: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -125,6 +164,7 @@ router.get('/:id', requireOrgAuth, getOrg);
  *     tags: [Organizations]
  *     security:
  *       - ApiKeyAuth: []
+ *       - AuthToken: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -161,6 +201,7 @@ router.patch('/:id/settings', requireOrgAuth, updateOrgSettings);
  *     tags: [Organizations]
  *     security:
  *       - ApiKeyAuth: []
+ *       - AuthToken: []
  *     parameters:
  *       - in: path
  *         name: id

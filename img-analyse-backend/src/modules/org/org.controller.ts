@@ -10,6 +10,8 @@ import type { Request, Response } from 'express';
 import { orgService } from './org.service.js';
 import { logger } from '../../utils/logger.js';
 import type { Organization } from '../../../generated/prisma/client.js';
+import { qdrantService } from '../../services/index.js';
+import { prisma } from '../../config/database.js';
 
 // =============================================================================
 // CONTROLLERS
@@ -186,6 +188,144 @@ export async function listOrgs(req: Request, res: Response) {
     return res.status(500).json({
       success: false,
       error: 'Failed to list organizations',
+    });
+  }
+}
+
+/**
+ * GET /orgs/collections
+ * List all Qdrant collections across all organizations (admin only).
+ */
+/**
+ * GET /orgs/collections
+ * List all Qdrant collections across all organizations (admin only).
+ */
+export async function listAllCollections(req: Request, res: Response) {
+  try {
+    const collections = await qdrantService.listAllCollections();
+
+    // Fetch active indexing jobs from DB
+    const activeJobs = await prisma.eventImageStatus.groupBy({
+      by: ['eventId'],
+      where: {
+        status: {
+          in: ['PENDING', 'PROCESSING'],
+        },
+      },
+      _count: {
+        _all: true,
+      },
+    });
+
+    // Fetch DELETED events (where all images are inactive)
+    const deletedEvents = await prisma.eventImageStatus.groupBy({
+      by: ['eventId', 'orgId'],
+      where: {
+        isActive: false,
+      },
+      _count: {
+        _all: true,
+      },
+    });
+
+    // Create map of eventId -> pending count
+    const pendingMap = new Map(activeJobs.map(j => [j.eventId, j._count._all]));
+
+    // Helper to get active events set
+    const activeEventIds = new Set<string>();
+
+    // Augment Qdrant collections
+    const activeCollections = collections.map(c => {
+      const match = c.collectionName.match(/^org_(.+)_event_(.+)_faces$/);
+      const eventId = match ? match[2] : null; // capture group 2 is eventId
+
+      if (eventId) activeEventIds.add(eventId);
+
+      const pendingCount = eventId ? (pendingMap.get(eventId) || 0) : 0;
+
+      return {
+        ...c,
+        pendingCount,
+        isIndexing: pendingCount > 0
+      };
+    });
+
+    // Create ghost collections for deleted events
+    // Only if they are NOT in the active Qdrant list
+    const deletedCollections = deletedEvents
+      .filter(e => !activeEventIds.has(e.eventId))
+      .map(e => ({
+        collectionName: `org_${e.orgId}_event_${e.eventId}_faces`,
+        eventId: e.eventId,
+        orgId: e.orgId,
+        vectorCount: 0,
+        indexedVectorCount: 0,
+        status: 'deleted', // Special status for UI
+        pendingCount: 0,
+        isIndexing: false,
+      }));
+
+    const allCollections = [...activeCollections, ...deletedCollections];
+
+    // Group by org for easier consumption
+    const totalVectors = allCollections.reduce((sum, c) => sum + c.vectorCount, 0);
+    const totalIndexed = allCollections.reduce((sum, c) => sum + c.indexedVectorCount, 0);
+
+    return res.json({
+      success: true,
+      data: {
+        totalCollections: allCollections.length,
+        totalVectors,
+        totalIndexed,
+        collections: allCollections,
+      },
+    });
+  } catch (error) {
+    logger.error('Failed to list all collections:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to list collections',
+    });
+  }
+}
+
+/**
+ * GET /orgs/:id/collections
+ * List all Qdrant collections for a specific organization.
+ */
+export async function listOrgCollections(req: Request, res: Response) {
+  try {
+    const id = req.params.id as string;
+
+    const existing = await orgService.getById(id);
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        error: 'Organization not found',
+      });
+    }
+
+    const collections = await qdrantService.getOrgCollectionsWithInfo(id);
+
+    const totalVectors = collections.reduce((sum, c) => sum + c.vectorCount, 0);
+    const totalIndexed = collections.reduce((sum, c) => sum + c.indexedVectorCount, 0);
+
+    return res.json({
+      success: true,
+      data: {
+        orgId: id,
+        orgName: existing.name,
+        totalCollections: collections.length,
+        totalVectors,
+        totalIndexed,
+        collections,
+      },
+    });
+  } catch (error) {
+    logger.error('Failed to list org collections:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to list collections',
     });
   }
 }

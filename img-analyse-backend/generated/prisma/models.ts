@@ -10,4 +10,6 @@
  */
 export type * from './models/Organization'
 export type * from './models/ApiKey'
+export type * from './models/User'
+export type * from './models/EventImageStatus'
 export type * from './commonInputTypes'

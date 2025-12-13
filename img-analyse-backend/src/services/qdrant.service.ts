@@ -293,6 +293,98 @@ class QdrantService {
       throw error;
     }
   }
+
+  /**
+   * List all collections with detailed info (admin only).
+   * Returns all collections across all organizations.
+   */
+  async listAllCollections(): Promise<Array<{
+    collectionName: string;
+    orgId: string;
+    eventId: string;
+    vectorCount: number;
+    indexedVectorCount: number;
+    status: string;
+  }>> {
+    try {
+      const collections = await qdrantClient.getCollections();
+      const faceCollections = collections.collections.filter(
+        (c) => c.name.startsWith('org_') && c.name.endsWith('_faces')
+      );
+
+      const results = await Promise.all(
+        faceCollections.map(async (c) => {
+          // Parse collection name: org_{orgId}_event_{eventId}_faces
+          const match = c.name.match(/^org_(.+)_event_(.+)_faces$/);
+          if (!match || !match[1] || !match[2]) return null;
+
+          const orgId = match[1];
+          const eventId = match[2];
+
+          try {
+            const info = await qdrantClient.getCollection(c.name);
+            return {
+              collectionName: c.name,
+              orgId,
+              eventId,
+              vectorCount: info.points_count ?? 0,
+              indexedVectorCount: info.indexed_vectors_count ?? 0,
+              status: info.status as string,
+            };
+          } catch {
+            return null;
+          }
+        })
+      );
+
+      return results.filter((r) => r !== null) as Array<{
+        collectionName: string;
+        orgId: string;
+        eventId: string;
+        vectorCount: number;
+        indexedVectorCount: number;
+        status: string;
+      }>;
+    } catch (error) {
+      logger.error('Failed to list all collections:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get detailed info for collections of a specific org.
+   */
+  async getOrgCollectionsWithInfo(orgId: string): Promise<Array<{
+    collectionName: string;
+    eventId: string;
+    vectorCount: number;
+    indexedVectorCount: number;
+    status: string;
+  }>> {
+    try {
+      const eventIds = await this.listEventCollections(orgId);
+
+      const results = await Promise.all(
+        eventIds.map(async (eventId) => {
+          const info = await this.getCollectionInfo(orgId, eventId);
+          if (!info) return null;
+
+          return {
+            collectionName: getOrgCollectionName(orgId, eventId),
+            eventId,
+            vectorCount: info.vectorCount,
+            indexedVectorCount: info.indexedVectorCount,
+            status: info.status,
+          };
+        })
+      );
+
+      return results.filter((r): r is NonNullable<typeof r> => r !== null);
+    } catch (error) {
+      logger.error(`Failed to get collections for org ${orgId}:`, error);
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance

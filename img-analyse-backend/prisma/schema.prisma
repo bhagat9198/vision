@@ -67,6 +67,7 @@ model Organization {
 
   // === Relations ===
   apiKeys ApiKey[]
+  eventImageStatuses EventImageStatus[]
 
   @@map("organizations")
 }
@@ -88,3 +89,49 @@ model ApiKey {
   @@map("api_keys")
 }
 
+/// User - system administrators
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String   // Hashed
+  name      String?
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+// ============ TRACKING MODELS ============
+
+enum IndexingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+/// EventImageStatus - tracks indexing status of individual images
+model EventImageStatus {
+  id        String         @id @default(uuid())
+  eventId   String
+  photoId   String
+  orgId         String
+  status        IndexingStatus @default(PENDING)
+  isActive      Boolean        @default(true)
+  error         String?
+  imageUrl      String?        // URL to display the image
+  facesDetected Int            @default(0)
+  facesIndexed  Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, photoId])
+  @@index([eventId])
+  @@index([orgId])
+  @@map("event_image_statuses")
+}
+
+  

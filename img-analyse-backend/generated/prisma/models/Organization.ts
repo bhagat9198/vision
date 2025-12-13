@@ -361,6 +361,7 @@ export type OrganizationWhereInput = {
   enableFallbackDetection?: Prisma.BoolFilter<"Organization"> | boolean
   enableAlignment?: Prisma.BoolFilter<"Organization"> | boolean
   apiKeys?: Prisma.ApiKeyListRelationFilter
+  eventImageStatuses?: Prisma.EventImageStatusListRelationFilter
 }
 
 export type OrganizationOrderByWithRelationInput = {
@@ -386,6 +387,7 @@ export type OrganizationOrderByWithRelationInput = {
   enableFallbackDetection?: Prisma.SortOrder
   enableAlignment?: Prisma.SortOrder
   apiKeys?: Prisma.ApiKeyOrderByRelationAggregateInput
+  eventImageStatuses?: Prisma.EventImageStatusOrderByRelationAggregateInput
 }
 
 export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
@@ -414,6 +416,7 @@ export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
   enableFallbackDetection?: Prisma.BoolFilter<"Organization"> | boolean
   enableAlignment?: Prisma.BoolFilter<"Organization"> | boolean
   apiKeys?: Prisma.ApiKeyListRelationFilter
+  eventImageStatuses?: Prisma.EventImageStatusListRelationFilter
 }, "id" | "slug">
 
 export type OrganizationOrderByWithAggregationInput = {
@@ -495,6 +498,7 @@ export type OrganizationCreateInput = {
   enableFallbackDetection?: boolean
   enableAlignment?: boolean
   apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutOrgInput
+  eventImageStatuses?: Prisma.EventImageStatusCreateNestedManyWithoutOrgInput
 }
 
 export type OrganizationUncheckedCreateInput = {
@@ -520,6 +524,7 @@ export type OrganizationUncheckedCreateInput = {
   enableFallbackDetection?: boolean
   enableAlignment?: boolean
   apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutOrgInput
+  eventImageStatuses?: Prisma.EventImageStatusUncheckedCreateNestedManyWithoutOrgInput
 }
 
 export type OrganizationUpdateInput = {
@@ -545,6 +550,7 @@ export type OrganizationUpdateInput = {
   enableFallbackDetection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   apiKeys?: Prisma.ApiKeyUpdateManyWithoutOrgNestedInput
+  eventImageStatuses?: Prisma.EventImageStatusUpdateManyWithoutOrgNestedInput
 }
 
 export type OrganizationUncheckedUpdateInput = {
@@ -570,6 +576,7 @@ export type OrganizationUncheckedUpdateInput = {
   enableFallbackDetection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutOrgNestedInput
+  eventImageStatuses?: Prisma.EventImageStatusUncheckedUpdateManyWithoutOrgNestedInput
 }
 
 export type OrganizationCreateManyInput = {
@@ -791,6 +798,20 @@ export type OrganizationUpdateOneRequiredWithoutApiKeysNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutApiKeysInput, Prisma.OrganizationUpdateWithoutApiKeysInput>, Prisma.OrganizationUncheckedUpdateWithoutApiKeysInput>
 }
 
+export type OrganizationCreateNestedOneWithoutEventImageStatusesInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutEventImageStatusesInput, Prisma.OrganizationUncheckedCreateWithoutEventImageStatusesInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutEventImageStatusesInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+}
+
+export type OrganizationUpdateOneRequiredWithoutEventImageStatusesNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutEventImageStatusesInput, Prisma.OrganizationUncheckedCreateWithoutEventImageStatusesInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutEventImageStatusesInput
+  upsert?: Prisma.OrganizationUpsertWithoutEventImageStatusesInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutEventImageStatusesInput, Prisma.OrganizationUpdateWithoutEventImageStatusesInput>, Prisma.OrganizationUncheckedUpdateWithoutEventImageStatusesInput>
+}
+
 export type OrganizationCreateWithoutApiKeysInput = {
   id?: string
   name: string
@@ -813,6 +834,7 @@ export type OrganizationCreateWithoutApiKeysInput = {
   pythonSidecarUrl?: string | null
   enableFallbackDetection?: boolean
   enableAlignment?: boolean
+  eventImageStatuses?: Prisma.EventImageStatusCreateNestedManyWithoutOrgInput
 }
 
 export type OrganizationUncheckedCreateWithoutApiKeysInput = {
@@ -837,6 +859,7 @@ export type OrganizationUncheckedCreateWithoutApiKeysInput = {
   pythonSidecarUrl?: string | null
   enableFallbackDetection?: boolean
   enableAlignment?: boolean
+  eventImageStatuses?: Prisma.EventImageStatusUncheckedCreateNestedManyWithoutOrgInput
 }
 
 export type OrganizationCreateOrConnectWithoutApiKeysInput = {
@@ -877,6 +900,7 @@ export type OrganizationUpdateWithoutApiKeysInput = {
   pythonSidecarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enableFallbackDetection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  eventImageStatuses?: Prisma.EventImageStatusUpdateManyWithoutOrgNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutApiKeysInput = {
@@ -901,6 +925,123 @@ export type OrganizationUncheckedUpdateWithoutApiKeysInput = {
   pythonSidecarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enableFallbackDetection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  eventImageStatuses?: Prisma.EventImageStatusUncheckedUpdateManyWithoutOrgNestedInput
+}
+
+export type OrganizationCreateWithoutEventImageStatusesInput = {
+  id?: string
+  name: string
+  slug: string
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  comprefaceUrl?: string | null
+  comprefaceRecognitionApiKey?: string | null
+  comprefaceDetectionApiKey?: string | null
+  faceDetectionMode?: $Enums.FaceDetectionMode
+  imageSourceMode?: $Enums.ImageSourceMode
+  sharedStoragePath?: string | null
+  minConfidence?: number
+  minSizePx?: number
+  skipExtremeAngles?: boolean
+  searchDefaultTopK?: number
+  searchMinSimilarity?: number
+  embeddingCacheTtlSeconds?: number
+  pythonSidecarUrl?: string | null
+  enableFallbackDetection?: boolean
+  enableAlignment?: boolean
+  apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutOrgInput
+}
+
+export type OrganizationUncheckedCreateWithoutEventImageStatusesInput = {
+  id?: string
+  name: string
+  slug: string
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  comprefaceUrl?: string | null
+  comprefaceRecognitionApiKey?: string | null
+  comprefaceDetectionApiKey?: string | null
+  faceDetectionMode?: $Enums.FaceDetectionMode
+  imageSourceMode?: $Enums.ImageSourceMode
+  sharedStoragePath?: string | null
+  minConfidence?: number
+  minSizePx?: number
+  skipExtremeAngles?: boolean
+  searchDefaultTopK?: number
+  searchMinSimilarity?: number
+  embeddingCacheTtlSeconds?: number
+  pythonSidecarUrl?: string | null
+  enableFallbackDetection?: boolean
+  enableAlignment?: boolean
+  apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutOrgInput
+}
+
+export type OrganizationCreateOrConnectWithoutEventImageStatusesInput = {
+  where: Prisma.OrganizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutEventImageStatusesInput, Prisma.OrganizationUncheckedCreateWithoutEventImageStatusesInput>
+}
+
+export type OrganizationUpsertWithoutEventImageStatusesInput = {
+  update: Prisma.XOR<Prisma.OrganizationUpdateWithoutEventImageStatusesInput, Prisma.OrganizationUncheckedUpdateWithoutEventImageStatusesInput>
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutEventImageStatusesInput, Prisma.OrganizationUncheckedCreateWithoutEventImageStatusesInput>
+  where?: Prisma.OrganizationWhereInput
+}
+
+export type OrganizationUpdateToOneWithWhereWithoutEventImageStatusesInput = {
+  where?: Prisma.OrganizationWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUpdateWithoutEventImageStatusesInput, Prisma.OrganizationUncheckedUpdateWithoutEventImageStatusesInput>
+}
+
+export type OrganizationUpdateWithoutEventImageStatusesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  faceDetectionMode?: Prisma.EnumFaceDetectionModeFieldUpdateOperationsInput | $Enums.FaceDetectionMode
+  imageSourceMode?: Prisma.EnumImageSourceModeFieldUpdateOperationsInput | $Enums.ImageSourceMode
+  sharedStoragePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  minConfidence?: Prisma.FloatFieldUpdateOperationsInput | number
+  minSizePx?: Prisma.IntFieldUpdateOperationsInput | number
+  skipExtremeAngles?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  searchDefaultTopK?: Prisma.IntFieldUpdateOperationsInput | number
+  searchMinSimilarity?: Prisma.FloatFieldUpdateOperationsInput | number
+  embeddingCacheTtlSeconds?: Prisma.IntFieldUpdateOperationsInput | number
+  pythonSidecarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enableFallbackDetection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  apiKeys?: Prisma.ApiKeyUpdateManyWithoutOrgNestedInput
+}
+
+export type OrganizationUncheckedUpdateWithoutEventImageStatusesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  faceDetectionMode?: Prisma.EnumFaceDetectionModeFieldUpdateOperationsInput | $Enums.FaceDetectionMode
+  imageSourceMode?: Prisma.EnumImageSourceModeFieldUpdateOperationsInput | $Enums.ImageSourceMode
+  sharedStoragePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  minConfidence?: Prisma.FloatFieldUpdateOperationsInput | number
+  minSizePx?: Prisma.IntFieldUpdateOperationsInput | number
+  skipExtremeAngles?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  searchDefaultTopK?: Prisma.IntFieldUpdateOperationsInput | number
+  searchMinSimilarity?: Prisma.FloatFieldUpdateOperationsInput | number
+  embeddingCacheTtlSeconds?: Prisma.IntFieldUpdateOperationsInput | number
+  pythonSidecarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enableFallbackDetection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutOrgNestedInput
 }
 
 
@@ -910,10 +1051,12 @@ export type OrganizationUncheckedUpdateWithoutApiKeysInput = {
 
 export type OrganizationCountOutputType = {
   apiKeys: number
+  eventImageStatuses: number
 }
 
 export type OrganizationCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   apiKeys?: boolean | OrganizationCountOutputTypeCountApiKeysArgs
+  eventImageStatuses?: boolean | OrganizationCountOutputTypeCountEventImageStatusesArgs
 }
 
 /**
@@ -931,6 +1074,13 @@ export type OrganizationCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types
  */
 export type OrganizationCountOutputTypeCountApiKeysArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ApiKeyWhereInput
+}
+
+/**
+ * OrganizationCountOutputType without action
+ */
+export type OrganizationCountOutputTypeCountEventImageStatusesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EventImageStatusWhereInput
 }
 
 
@@ -957,6 +1107,7 @@ export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   enableFallbackDetection?: boolean
   enableAlignment?: boolean
   apiKeys?: boolean | Prisma.Organization$apiKeysArgs<ExtArgs>
+  eventImageStatuses?: boolean | Prisma.Organization$eventImageStatusesArgs<ExtArgs>
   _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["organization"]>
 
@@ -1035,6 +1186,7 @@ export type OrganizationSelectScalar = {
 export type OrganizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "isActive" | "createdAt" | "updatedAt" | "comprefaceUrl" | "comprefaceRecognitionApiKey" | "comprefaceDetectionApiKey" | "faceDetectionMode" | "imageSourceMode" | "sharedStoragePath" | "minConfidence" | "minSizePx" | "skipExtremeAngles" | "searchDefaultTopK" | "searchMinSimilarity" | "embeddingCacheTtlSeconds" | "pythonSidecarUrl" | "enableFallbackDetection" | "enableAlignment", ExtArgs["result"]["organization"]>
 export type OrganizationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   apiKeys?: boolean | Prisma.Organization$apiKeysArgs<ExtArgs>
+  eventImageStatuses?: boolean | Prisma.Organization$eventImageStatusesArgs<ExtArgs>
   _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type OrganizationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1044,6 +1196,7 @@ export type $OrganizationPayload<ExtArgs extends runtime.Types.Extensions.Intern
   name: "Organization"
   objects: {
     apiKeys: Prisma.$ApiKeyPayload<ExtArgs>[]
+    eventImageStatuses: Prisma.$EventImageStatusPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1462,6 +1615,7 @@ readonly fields: OrganizationFieldRefs;
 export interface Prisma__OrganizationClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   apiKeys<T extends Prisma.Organization$apiKeysArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$apiKeysArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ApiKeyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  eventImageStatuses<T extends Prisma.Organization$eventImageStatusesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$eventImageStatusesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventImageStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1921,6 +2075,30 @@ export type Organization$apiKeysArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.ApiKeyScalarFieldEnum | Prisma.ApiKeyScalarFieldEnum[]
+}
+
+/**
+ * Organization.eventImageStatuses
+ */
+export type Organization$eventImageStatusesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EventImageStatus
+   */
+  select?: Prisma.EventImageStatusSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EventImageStatus
+   */
+  omit?: Prisma.EventImageStatusOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EventImageStatusInclude<ExtArgs> | null
+  where?: Prisma.EventImageStatusWhereInput
+  orderBy?: Prisma.EventImageStatusOrderByWithRelationInput | Prisma.EventImageStatusOrderByWithRelationInput[]
+  cursor?: Prisma.EventImageStatusWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EventImageStatusScalarFieldEnum | Prisma.EventImageStatusScalarFieldEnum[]
 }
 
 /**

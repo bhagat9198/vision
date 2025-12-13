@@ -180,6 +180,12 @@ class CompreFaceService {
       logger.debug(`CompreFace detectAndEmbed: ${faces.length} faces in ${Date.now() - startTime}ms`);
       return faces;
     } catch (error: any) {
+      // Handle known "No face found" error gracefully
+      if (error.response?.data?.code === 28 || error.response?.data?.message === 'No face is found in the given image') {
+        logger.debug('CompreFace reported no face found (code 28). Returning empty result.');
+        return [];
+      }
+
       if (error.response?.data) {
         logger.error(`CompreFace request failed. Status: ${error.response.status}, Data: ${JSON.stringify(error.response.data)}`);
       }

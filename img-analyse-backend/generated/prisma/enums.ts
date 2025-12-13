@@ -24,3 +24,13 @@ export const ImageSourceMode = {
 } as const
 
 export type ImageSourceMode = (typeof ImageSourceMode)[keyof typeof ImageSourceMode]
+
+
+export const IndexingStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED'
+} as const
+
+export type IndexingStatus = (typeof IndexingStatus)[keyof typeof IndexingStatus]

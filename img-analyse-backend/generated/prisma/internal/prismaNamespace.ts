@@ -391,7 +391,9 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   Organization: 'Organization',
-  ApiKey: 'ApiKey'
+  ApiKey: 'ApiKey',
+  User: 'User',
+  EventImageStatus: 'EventImageStatus'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -407,7 +409,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organization" | "apiKey"
+    modelProps: "organization" | "apiKey" | "user" | "eventImageStatus"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -559,6 +561,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    User: {
+      payload: Prisma.$UserPayload<ExtArgs>
+      fields: Prisma.UserFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.UserFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.UserFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPayload>
+        }
+        findFirst: {
+          args: Prisma.UserFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.UserFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPayload>
+        }
+        findMany: {
+          args: Prisma.UserFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPayload>[]
+        }
+        create: {
+          args: Prisma.UserCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPayload>
+        }
+        createMany: {
+          args: Prisma.UserCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.UserCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPayload>[]
+        }
+        delete: {
+          args: Prisma.UserDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPayload>
+        }
+        update: {
+          args: Prisma.UserUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPayload>
+        }
+        deleteMany: {
+          args: Prisma.UserDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.UserUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.UserUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPayload>[]
+        }
+        upsert: {
+          args: Prisma.UserUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UserPayload>
+        }
+        aggregate: {
+          args: Prisma.UserAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateUser>
+        }
+        groupBy: {
+          args: Prisma.UserGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.UserCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UserCountAggregateOutputType> | number
+        }
+      }
+    }
+    EventImageStatus: {
+      payload: Prisma.$EventImageStatusPayload<ExtArgs>
+      fields: Prisma.EventImageStatusFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EventImageStatusFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventImageStatusPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EventImageStatusFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventImageStatusPayload>
+        }
+        findFirst: {
+          args: Prisma.EventImageStatusFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventImageStatusPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EventImageStatusFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventImageStatusPayload>
+        }
+        findMany: {
+          args: Prisma.EventImageStatusFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventImageStatusPayload>[]
+        }
+        create: {
+          args: Prisma.EventImageStatusCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventImageStatusPayload>
+        }
+        createMany: {
+          args: Prisma.EventImageStatusCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EventImageStatusCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventImageStatusPayload>[]
+        }
+        delete: {
+          args: Prisma.EventImageStatusDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventImageStatusPayload>
+        }
+        update: {
+          args: Prisma.EventImageStatusUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventImageStatusPayload>
+        }
+        deleteMany: {
+          args: Prisma.EventImageStatusDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EventImageStatusUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EventImageStatusUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventImageStatusPayload>[]
+        }
+        upsert: {
+          args: Prisma.EventImageStatusUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventImageStatusPayload>
+        }
+        aggregate: {
+          args: Prisma.EventImageStatusAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEventImageStatus>
+        }
+        groupBy: {
+          args: Prisma.EventImageStatusGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EventImageStatusGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EventImageStatusCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EventImageStatusCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -636,6 +786,37 @@ export const ApiKeyScalarFieldEnum = {
 } as const
 
 export type ApiKeyScalarFieldEnum = (typeof ApiKeyScalarFieldEnum)[keyof typeof ApiKeyScalarFieldEnum]
+
+
+export const UserScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  password: 'password',
+  name: 'name',
+  role: 'role',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const EventImageStatusScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  photoId: 'photoId',
+  orgId: 'orgId',
+  status: 'status',
+  isActive: 'isActive',
+  error: 'error',
+  imageUrl: 'imageUrl',
+  facesDetected: 'facesDetected',
+  facesIndexed: 'facesIndexed',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EventImageStatusScalarFieldEnum = (typeof EventImageStatusScalarFieldEnum)[keyof typeof EventImageStatusScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -758,6 +939,20 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
     
 
+
+/**
+ * Reference to a field of type 'IndexingStatus'
+ */
+export type EnumIndexingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IndexingStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'IndexingStatus[]'
+ */
+export type ListEnumIndexingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IndexingStatus[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -847,6 +1042,8 @@ export interface PrismaClientOptions {
 export type GlobalOmitConfig = {
   organization?: Prisma.OrganizationOmit
   apiKey?: Prisma.ApiKeyOmit
+  user?: Prisma.UserOmit
+  eventImageStatus?: Prisma.EventImageStatusOmit
 }
 
 /* Types for Logging */

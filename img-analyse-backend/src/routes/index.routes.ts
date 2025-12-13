@@ -9,6 +9,7 @@
 import { Router, RequestHandler } from 'express';
 import multer from 'multer';
 import { indexController } from '../controllers/index.js';
+import { requireOrgSettings } from '../middleware/org-auth.js';
 
 const router = Router();
 
@@ -27,6 +28,9 @@ const upload = multer({
     }
   },
 });
+
+// Settings required for indexing operations
+const requireCompreFace = requireOrgSettings('comprefaceUrl', 'comprefaceRecognitionApiKey');
 
 /**
  * @swagger
@@ -73,7 +77,7 @@ const upload = multer({
  *       401:
  *         description: Unauthorized
  */
-router.post('/photo', upload.single('image') as unknown as RequestHandler, indexController.indexPhoto);
+router.post('/photo', requireCompreFace, upload.single('image') as unknown as RequestHandler, indexController.indexPhoto);
 
 /**
  * @swagger
@@ -98,7 +102,7 @@ router.post('/photo', upload.single('image') as unknown as RequestHandler, index
  *       200:
  *         description: Faces deleted
  */
-router.delete('/photo/:photoId', indexController.deletePhoto);
+router.delete('/photo/:photoId', requireCompreFace, indexController.deletePhoto);
 
 /**
  * @swagger
@@ -118,7 +122,7 @@ router.delete('/photo/:photoId', indexController.deletePhoto);
  *       200:
  *         description: All faces for event deleted
  */
-router.delete('/event/:eventId', indexController.deleteEvent);
+router.delete('/event/:eventId', requireCompreFace, indexController.deleteEvent);
 
 /**
  * @swagger
@@ -141,7 +145,32 @@ router.delete('/event/:eventId', indexController.deleteEvent);
  *             schema:
  *               $ref: '#/components/schemas/EventStatsResponse'
  */
-router.get('/event/:eventId/stats', indexController.getEventStats);
+router.get('/event/:eventId/stats', requireCompreFace, indexController.getEventStats);
+
+/**
+ * @swagger
+ * /api/v1/index/event/{eventId}/images:
+ *   get:
+ *     summary: Get indexing status for event images
+ *     tags: [Indexing]
+ *     security:
+ *       - ApiKeyAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: eventId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [PENDING, PROCESSING, COMPLETED, FAILED]
+ *     responses:
+ *       200:
+ *         description: List of images with status
+ */
+router.get('/event/:eventId/images', indexController.getEventImages);
 
 export { router as indexRoutes };
 

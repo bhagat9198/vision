@@ -213,7 +213,10 @@ class FaceDetectionService {
 
         const logsDir = path.join(process.cwd(), 'logs');
         // Use the ID of the first face as a unique identifier for the batch
-        const debugFilename = `debug_viz_${detectedFaces[0].id}_${detectedFaces[0].detectorSource}.jpg`;
+        const firstFace = detectedFaces[0];
+        const debugFilename = firstFace
+          ? `debug_viz_${firstFace.id}_${firstFace.detectorSource}.jpg`
+          : `debug_viz_${Date.now()}.jpg`;
         await fs.writeFile(path.join(logsDir, debugFilename), debugImage);
         logger.info(`Saved debug visualization to ${debugFilename}`);
         logger.info(`BBox Coordinates: ${JSON.stringify(detectedFaces.map(f => f.bbox))}`);
