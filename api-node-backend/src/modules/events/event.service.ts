@@ -35,8 +35,8 @@ export class EventService {
     });
     if (!photographer) throw new NotFoundError('Photographer not found');
 
-    // Generate unique slug: username/event-name
-    let baseSlug = `${photographer.username}/${generateSlug(data.name)}`;
+    // Generate unique slug: username_event-name
+    let baseSlug = `${photographer.username}_${generateSlug(data.name)}`;
     let slug = baseSlug;
     let attempts = 0;
     while (attempts < 10) {

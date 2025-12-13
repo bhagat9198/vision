@@ -52,7 +52,8 @@ export const ModelName = {
   Organization: 'Organization',
   ApiKey: 'ApiKey',
   User: 'User',
-  EventImageStatus: 'EventImageStatus'
+  EventImageStatus: 'EventImageStatus',
+  EventVideoStatus: 'EventVideoStatus'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -137,10 +138,32 @@ export const EventImageStatusScalarFieldEnum = {
   facesDetected: 'facesDetected',
   facesIndexed: 'facesIndexed',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  sourceVideoId: 'sourceVideoId',
+  videoTimestamp: 'videoTimestamp'
 } as const
 
 export type EventImageStatusScalarFieldEnum = (typeof EventImageStatusScalarFieldEnum)[keyof typeof EventImageStatusScalarFieldEnum]
+
+
+export const EventVideoStatusScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  videoId: 'videoId',
+  eventSlug: 'eventSlug',
+  orgId: 'orgId',
+  status: 'status',
+  isActive: 'isActive',
+  error: 'error',
+  videoUrl: 'videoUrl',
+  durationSec: 'durationSec',
+  framesExtracted: 'framesExtracted',
+  facesFound: 'facesFound',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EventVideoStatusScalarFieldEnum = (typeof EventVideoStatusScalarFieldEnum)[keyof typeof EventVideoStatusScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -68,6 +68,7 @@ model Organization {
   // === Relations ===
   apiKeys ApiKey[]
   eventImageStatuses EventImageStatus[]
+  eventVideoStatuses EventVideoStatus[]
 
   @@map("organizations")
 }
@@ -127,6 +128,11 @@ model EventImageStatus {
   createdAt     DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
+  // Video Relation
+  sourceVideoId String?
+  videoTimestamp Float?
+  video EventVideoStatus? @relation(fields: [sourceVideoId], references: [id], onDelete: SetNull)
+
   org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
 
   @@unique([eventId, photoId])
@@ -134,4 +140,36 @@ model EventImageStatus {
   @@index([eventSlug])
   @@index([orgId])
   @@map("event_image_statuses")
+}
+
+/// EventVideoStatus - tracks video processing status
+model EventVideoStatus {
+  id        String         @id @default(uuid())
+  eventId   String
+  videoId   String         // User provided or generated
+  eventSlug String?
+  orgId     String
+  status    IndexingStatus @default(PENDING)
+  isActive  Boolean        @default(true)
+  error     String?
+  videoUrl  String?        // URL to stream/download the video (if applicable)
+  
+  // Stats
+  durationSec    Float     @default(0)
+  framesExtracted Int      @default(0)
+  facesFound     Int       @default(0)
+
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  // Relation to extracted frames
+  frames EventImageStatus[]
+
+  @@unique([eventId, videoId])
+  @@index([eventId])
+  @@index([eventSlug])
+  @@index([orgId])
+  @@map("event_video_statuses")
 }

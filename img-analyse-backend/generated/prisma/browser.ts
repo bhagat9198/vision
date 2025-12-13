@@ -37,3 +37,8 @@ export type User = Prisma.UserModel
  * EventImageStatus - tracks indexing status of individual images
  */
 export type EventImageStatus = Prisma.EventImageStatusModel
+/**
+ * Model EventVideoStatus
+ * EventVideoStatus - tracks video processing status
+ */
+export type EventVideoStatus = Prisma.EventVideoStatusModel

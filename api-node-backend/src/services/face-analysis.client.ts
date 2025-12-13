@@ -58,6 +58,14 @@ export interface EventStats {
   totalPhotos: number;
 }
 
+export interface IndexVideoRequest {
+  videoId: string;
+  eventId: string;
+  eventSlug?: string;
+  videoUrl?: string;
+  videoPath?: string;
+}
+
 // =============================================================================
 // CLIENT CLASS
 // =============================================================================
@@ -143,6 +151,28 @@ class FaceAnalysisClient {
     } catch (error) {
       this.handleError('indexPhoto', error);
       return null;
+    }
+  }
+
+  /**
+   * Index a video: extract frames and index faces.
+   */
+  async indexVideo(request: IndexVideoRequest): Promise<boolean> {
+    if (!(await this.isEnabled())) {
+      logger.debug('Face analysis disabled, skipping indexVideo');
+      return false;
+    }
+
+    try {
+      const client = await this.getClient();
+      await client.post(
+        '/api/v1/index/video',
+        request
+      );
+      return true;
+    } catch (error) {
+      this.handleError('indexVideo', error);
+      return false;
     }
   }
 

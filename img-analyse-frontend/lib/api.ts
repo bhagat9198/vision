@@ -9,6 +9,7 @@ import type {
   EventStats,
   OrgCollectionsResponse,
   AllCollectionsResponse,
+  VideoWithFrames,
 } from "./types";
 
 // =============================================================================
@@ -19,7 +20,7 @@ import Cookies from 'js-cookie';
 
 // ... (imports remain the same) ...
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_IMG_ANALYSE_API_URL || "http://localhost:3002";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_IMG_ANALYSE_API_URL || "http://localhost:3002";
 const AUTH_TOKEN_KEY = 'img-analyse-auth-token';
 
 class ApiClient {
@@ -191,9 +192,29 @@ class ApiClient {
     });
   }
 
-  async getEventImages(eventId: string, status?: string): Promise<ApiResponse<any>> {
-    const query = status ? `?status=${status}` : '';
-    return this.request(`/api/v1/index/event/${eventId}/images${query}`);
+  async getEventImages(eventId: string, status?: string, active?: boolean): Promise<ApiResponse<ImageStatus[]>> {
+    const params = new URLSearchParams();
+    if (status) params.append('status', status);
+    if (active !== undefined) params.append('active', String(active));
+    const query = params.toString() ? `?${params.toString()}` : '';
+
+    return this.request<ApiResponse<ImageStatus[]>>(`/api/v1/index/event/${eventId}/images${query}`);
+  }
+
+  async getEventVideos(eventId: string, includeFrames = false, active?: boolean): Promise<ApiResponse<VideoWithFrames[]>> {
+    const params = new URLSearchParams();
+    if (includeFrames) params.append('includeFrames', 'true');
+    if (active !== undefined) params.append('active', String(active));
+    const query = params.toString() ? `?${params.toString()}` : '';
+
+    return this.request<ApiResponse<VideoWithFrames[]>>(`/api/v1/index/event/${eventId}/videos${query}`);
+  }
+
+  async indexVideo(data: { videoId: string; eventId: string; videoPath?: string; videoUrl?: string; eventSlug?: string }): Promise<ApiResponse> {
+    return this.request('/api/v1/index/video', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   }
 }
 

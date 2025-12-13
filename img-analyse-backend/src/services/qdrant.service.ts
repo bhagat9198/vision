@@ -227,6 +227,42 @@ class QdrantService {
   }
 
   /**
+   * Delete faces for multiple photos (batch).
+   * Useful when deleting a video which has multiple frames.
+   */
+  async deleteFacesForPhotos(orgSlug: string, eventSlug: string, photoIds: string[]): Promise<void> {
+    if (photoIds.length === 0) return;
+
+    const collectionName = getOrgCollectionName(orgSlug, eventSlug);
+    logger.info(`[DELETE_PHOTOS] Request to delete faces for ${photoIds.length} photos in collection ${collectionName}`);
+
+    try {
+      // Build filter: photoId IN [id1, id2, ...]
+      // Qdrant allows 'match' with 'any' for checking if value is in array
+      await qdrantClient.delete(collectionName, {
+        wait: true,
+        filter: {
+          must: [
+            {
+              key: 'photoId',
+              match: { any: photoIds },
+            },
+          ],
+        },
+      });
+
+      logger.info(`[DELETE_PHOTOS] Successfully deleted faces for ${photoIds.length} photos from ${collectionName}`);
+    } catch (error: any) {
+      if (error?.status === 404 || error?.response?.status === 404) {
+        logger.warn(`[DELETE_PHOTOS] Collection ${collectionName} does not exist, skipping deletion.`);
+        return;
+      }
+      logger.error(`[DELETE_PHOTOS] Failed to delete faces for photos:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Delete an entire org's event collection.
    *
    * @param orgSlug - Organization Slug
@@ -261,6 +297,7 @@ class QdrantService {
     vectorCount: number;
     indexedVectorCount: number;
     status: string;
+    collectionName: string;
   } | null> {
     const collectionName = getOrgCollectionName(orgSlug, eventSlug);
 
@@ -271,6 +308,7 @@ class QdrantService {
         vectorCount: info.points_count ?? 0,
         indexedVectorCount: info.indexed_vectors_count ?? 0,
         status: info.status,
+        collectionName,
       };
     } catch (error) {
       // Collection doesn't exist

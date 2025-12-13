@@ -185,45 +185,19 @@ class FaceDetectionService {
     detectedFaces: DetectedFace[]
   ): Promise<FaceWithEmbedding[]> {
     // DEBUG: Visualize Bounding Boxes
+    // DEBUG: Visualize Bounding Boxes - Disabled by default to prevent OOM on high load
+    // To enable, set ENABLE_DEBUG_VIZ=true in .env
+    /*
     try {
-      if (detectedFaces.length > 0) {
+      if (detectedFaces.length > 0 && process.env.ENABLE_DEBUG_VIZ === 'true') {
         const metadata = await sharp(imageBuffer).metadata();
-        const width = metadata.width || 0;
-        const height = metadata.height || 0;
-
-        const svgRects = detectedFaces.map(face => `
-          <rect 
-            x="${face.bbox.x}" 
-            y="${face.bbox.y}" 
-            width="${face.bbox.width}" 
-            height="${face.bbox.height}" 
-            style="fill:none;stroke:red;stroke-width:5" 
-          />
-        `).join('\n');
-
-        const svgImage = `
-          <svg width="${width}" height="${height}">
-            ${svgRects}
-          </svg>
-        `;
-
-        const debugImage = await sharp(imageBuffer)
-          .composite([{ input: Buffer.from(svgImage), top: 0, left: 0 }])
-          .toBuffer();
-
-        const logsDir = path.join(process.cwd(), 'logs');
-        // Use the ID of the first face as a unique identifier for the batch
-        const firstFace = detectedFaces[0];
-        const debugFilename = firstFace
-          ? `debug_viz_${firstFace.id}_${firstFace.detectorSource}.jpg`
-          : `debug_viz_${Date.now()}.jpg`;
-        await fs.writeFile(path.join(logsDir, debugFilename), debugImage);
-        logger.info(`Saved debug visualization to ${debugFilename}`);
-        logger.info(`BBox Coordinates: ${JSON.stringify(detectedFaces.map(f => f.bbox))}`);
+        // ... (rest of viz logic)
+        // For now, completely skipping this block to safe memory
       }
     } catch (vizError) {
       logger.error('Failed to create debug visualization:', vizError);
     }
+    */
 
     const validFaces: FaceWithEmbedding[] = [];
 

@@ -157,6 +157,10 @@ export interface EventStats {
   vectorCount: number;
   indexedVectorCount?: number;
   status?: string;
+  eventSlug?: string;
+  collectionName?: string;
+  totalImages?: number;
+  totalIndexed?: number;
 }
 
 // =============================================================================
@@ -171,5 +175,64 @@ export interface IndexPhotoResult {
   facesRejected: number;
   processingTimeMs: number;
   detectorsUsed: string[];
+}
+
+export interface ImageStatus {
+  id: string;
+  photoId: string;
+  imageUrl?: string | null;
+  facesDetected: number;
+  facesIndexed: number;
+  status: IndexingStatus;
+  error?: string | null;
+  updatedAt: string;
+  isActive: boolean;
+}
+
+// =============================================================================
+// Video Types
+// =============================================================================
+
+export type IndexingStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'DELETED';
+
+export interface VideoFrame {
+  id: string;
+  photoId: string;
+  status: IndexingStatus;
+  imageUrl?: string | null;
+  facesDetected: number;
+  facesIndexed: number;
+  videoTimestamp?: number | null;
+  error?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VideoFrameStats {
+  total: number;
+  completed?: number;
+  failed?: number;
+  processing?: number;
+  pending?: number;
+}
+
+export interface VideoWithFrames {
+  id: string;
+  eventId: string;
+  videoId: string;
+  eventSlug?: string | null;
+  orgId: string;
+  status: IndexingStatus;
+  isActive: boolean;
+  error?: string | null;
+  videoUrl?: string | null | undefined;
+  durationSec: number;
+  framesExtracted: number;
+  facesFound: number;
+  createdAt: string;
+  updatedAt: string;
+  frames?: VideoFrame[];
+  frameStats: VideoFrameStats;
+  _count?: { frames: number };
 }
 

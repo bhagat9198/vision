@@ -9,6 +9,7 @@
 import { Router, RequestHandler } from 'express';
 import multer from 'multer';
 import { indexController } from '../controllers/index.js';
+import { imagesController } from '../controllers/images.controller.js';
 import { requireOrgSettings } from '../middleware/org-auth.js';
 
 const router = Router();
@@ -122,7 +123,7 @@ router.delete('/photo/:photoId', requireCompreFace, indexController.deletePhoto)
  *       200:
  *         description: All faces for event deleted
  */
-router.delete('/event/:eventId', requireCompreFace, indexController.deleteEvent);
+router.delete('/event/:eventId', indexController.deleteEvent);
 
 /**
  * @swagger
@@ -152,6 +153,59 @@ router.post('/event', requireCompreFace, indexController.createEvent);
 
 /**
  * @swagger
+ * /api/v1/index/video:
+ *   post:
+ *     summary: Index a video file
+ *     tags: [Indexing]
+ *     security:
+ *       - ApiKeyAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [videoId, eventId, videoPath]
+ *             properties:
+ *               videoId:
+ *                 type: string
+ *               eventId:
+ *                 type: string
+ *               videoPath:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Video queued
+ */
+router.post('/video', requireCompreFace, indexController.indexVideo);
+
+/**
+ * @swagger
+ * /api/v1/index/video/{videoId}:
+ *   delete:
+ *     summary: Delete a video and its frames
+ *     tags: [Indexing]
+ *     security:
+ *       - ApiKeyAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: videoId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: eventId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Video deleted
+ */
+router.delete('/video/:videoId', indexController.deleteVideo);
+
+/**
+ * @swagger
  * /api/v1/index/event/{eventId}/stats:
  *   get:
  *     summary: Get indexing statistics for an event
@@ -171,7 +225,7 @@ router.post('/event', requireCompreFace, indexController.createEvent);
  *             schema:
  *               $ref: '#/components/schemas/EventStatsResponse'
  */
-router.get('/event/:eventId/stats', requireCompreFace, indexController.getEventStats);
+router.get('/event/:eventId/stats', indexController.getEventStats);
 
 /**
  * @swagger
@@ -196,7 +250,46 @@ router.get('/event/:eventId/stats', requireCompreFace, indexController.getEventS
  *       200:
  *         description: List of images with status
  */
+/**
+ * @swagger
+ * /api/v1/index/event/{eventId}/videos:
+ *   get:
+ *     summary: Get videos for an event
+ *     tags: [Indexing]
+ *     security:
+ *       - ApiKeyAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: eventId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of videos
+ */
+router.get('/event/:eventId/videos', indexController.getEventVideos);
+
+
 router.get('/event/:eventId/images', indexController.getEventImages);
+
+/**
+ * @swagger
+ * /api/v1/index/images/view/{photoId}:
+ *   get:
+ *     summary: View a served image
+ *     tags: [Indexing]
+ *     parameters:
+ *       - in: path
+ *         name: photoId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Image file
+ */
+router.get('/images/view/:photoId', imagesController.viewImage);
 
 export { router as indexRoutes };
 

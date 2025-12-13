@@ -393,7 +393,8 @@ export const ModelName = {
   Organization: 'Organization',
   ApiKey: 'ApiKey',
   User: 'User',
-  EventImageStatus: 'EventImageStatus'
+  EventImageStatus: 'EventImageStatus',
+  EventVideoStatus: 'EventVideoStatus'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -409,7 +410,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organization" | "apiKey" | "user" | "eventImageStatus"
+    modelProps: "organization" | "apiKey" | "user" | "eventImageStatus" | "eventVideoStatus"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -709,6 +710,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    EventVideoStatus: {
+      payload: Prisma.$EventVideoStatusPayload<ExtArgs>
+      fields: Prisma.EventVideoStatusFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EventVideoStatusFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventVideoStatusPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EventVideoStatusFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventVideoStatusPayload>
+        }
+        findFirst: {
+          args: Prisma.EventVideoStatusFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventVideoStatusPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EventVideoStatusFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventVideoStatusPayload>
+        }
+        findMany: {
+          args: Prisma.EventVideoStatusFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventVideoStatusPayload>[]
+        }
+        create: {
+          args: Prisma.EventVideoStatusCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventVideoStatusPayload>
+        }
+        createMany: {
+          args: Prisma.EventVideoStatusCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EventVideoStatusCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventVideoStatusPayload>[]
+        }
+        delete: {
+          args: Prisma.EventVideoStatusDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventVideoStatusPayload>
+        }
+        update: {
+          args: Prisma.EventVideoStatusUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventVideoStatusPayload>
+        }
+        deleteMany: {
+          args: Prisma.EventVideoStatusDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EventVideoStatusUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EventVideoStatusUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventVideoStatusPayload>[]
+        }
+        upsert: {
+          args: Prisma.EventVideoStatusUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventVideoStatusPayload>
+        }
+        aggregate: {
+          args: Prisma.EventVideoStatusAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEventVideoStatus>
+        }
+        groupBy: {
+          args: Prisma.EventVideoStatusGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EventVideoStatusGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EventVideoStatusCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EventVideoStatusCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -814,10 +889,32 @@ export const EventImageStatusScalarFieldEnum = {
   facesDetected: 'facesDetected',
   facesIndexed: 'facesIndexed',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  sourceVideoId: 'sourceVideoId',
+  videoTimestamp: 'videoTimestamp'
 } as const
 
 export type EventImageStatusScalarFieldEnum = (typeof EventImageStatusScalarFieldEnum)[keyof typeof EventImageStatusScalarFieldEnum]
+
+
+export const EventVideoStatusScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  videoId: 'videoId',
+  eventSlug: 'eventSlug',
+  orgId: 'orgId',
+  status: 'status',
+  isActive: 'isActive',
+  error: 'error',
+  videoUrl: 'videoUrl',
+  durationSec: 'durationSec',
+  framesExtracted: 'framesExtracted',
+  facesFound: 'facesFound',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EventVideoStatusScalarFieldEnum = (typeof EventVideoStatusScalarFieldEnum)[keyof typeof EventVideoStatusScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1045,6 +1142,7 @@ export type GlobalOmitConfig = {
   apiKey?: Prisma.ApiKeyOmit
   user?: Prisma.UserOmit
   eventImageStatus?: Prisma.EventImageStatusOmit
+  eventVideoStatus?: Prisma.EventVideoStatusOmit
 }
 
 /* Types for Logging */

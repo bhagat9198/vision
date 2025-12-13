@@ -8,4 +8,5 @@
 
 export { logger } from './logger.js';
 export * from './image-utils.js';
+export * from './slug.js';
 

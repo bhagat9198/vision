@@ -13,6 +13,7 @@ import { faceDetectionService } from '../services/face-detection.service.js';
 import { qdrantService } from '../services/qdrant.service.js';
 import { fetchImageFromUrl, readImageFromPath } from '../utils/image-utils.js';
 import type { OrgSettings } from '../modules/org/org.types.js'; // Assuming this import path is correct based on other files
+import { prisma } from '../config/database.js';
 
 // Connection config
 const connection = {
@@ -61,8 +62,15 @@ const worker = new Worker<FaceIndexingJobData>(
 
             if (imageUrl) {
                 imageBuffer = await fetchImageFromUrl(imageUrl);
-            } else if (imagePath && orgSettings.sharedStoragePath) {
-                const fullPath = `${orgSettings.sharedStoragePath}/${imagePath}`;
+            } else if (imagePath) {
+                // If shared storage path is set AND path is relative, join them.
+                // Otherwise treat as absolute path.
+                let fullPath = imagePath;
+                if (orgSettings.sharedStoragePath && !imagePath.startsWith('/')) {
+                    fullPath = `${orgSettings.sharedStoragePath}/${imagePath}`;
+                }
+
+                logger.debug(`Reading image from path: ${fullPath}`);
                 imageBuffer = await readImageFromPath(fullPath);
             } else {
                 throw new Error('No valid image source provided in job data');
@@ -87,6 +95,17 @@ const worker = new Worker<FaceIndexingJobData>(
                 `${detectionResult.rejectedCount} rejected in ${duration}ms`
             );
 
+            // UPDATE STATUS IN DB
+            await prisma.eventImageStatus.update({
+                where: { eventId_photoId: { eventId, photoId } },
+                data: {
+                    status: 'COMPLETED',
+                    facesDetected: faces.length,
+                    facesIndexed: pointIds.length,
+                    error: null,
+                }
+            });
+
             return {
                 processed: true,
                 facesFound: faces.length,
@@ -94,7 +113,18 @@ const worker = new Worker<FaceIndexingJobData>(
                 duration,
             };
         } catch (error: any) {
+            console.error(error); // Keep full stack
             logger.error(`Failed to process indexing job for photo ${photoId}:`, error);
+
+            // UPDATE STATUS TO FAILED
+            await prisma.eventImageStatus.update({
+                where: { eventId_photoId: { eventId, photoId } },
+                data: {
+                    status: 'FAILED',
+                    error: error.message || 'Unknown error',
+                }
+            }).catch(e => logger.error('Failed to update error status:', e));
+
             throw error;
         }
     },

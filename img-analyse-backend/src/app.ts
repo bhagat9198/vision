@@ -12,6 +12,8 @@ import helmet from 'helmet';
 import swaggerUi from 'swagger-ui-express';
 import { healthRoutes, indexRoutes, searchRoutes } from './routes/index.js';
 import { errorHandler, notFoundHandler } from './middleware/index.js';
+import { indexController } from './controllers/index.js';
+import { imagesController } from './controllers/images.controller.js';
 import { requireOrgAuth, requireOrgSettings } from './middleware/org-auth.js';
 import { logger } from './utils/logger.js';
 import { orgRoutes } from './modules/org/index.js';
@@ -35,7 +37,9 @@ export function createApp(): Express {
   // ==========================================================================
 
   // Security headers
-  app.use(helmet());
+  app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+  }));
 
   // CORS - allow requests from clients
   app.use(cors({
@@ -86,6 +90,9 @@ export function createApp(): Express {
   app.use('/orgs/:orgId/api-keys', apiKeyRoutes);
 
   // API routes (org auth required)
+  // Public image view route (must be before the protected /api/v1/index route)
+  app.get('/api/v1/index/images/view/:photoId', imagesController.viewImage);
+
   // Index routes require CompreFace to be configured (enforced in specific routes)
   app.use('/api/v1/index', requireOrgAuth, indexRoutes);
   // Search routes require CompreFace to be configured

@@ -68,7 +68,8 @@ export class ImageProcessor {
 
         return await this.processVideoFile({
           sessionId, fileId, eventId, albumId, eventDisplayId: String(eventDisplayId), originalName, mimeType, mergedFilePath,
-          orgId, photographerDisplayId: photographer.displayId, albumDisplayId
+          orgId, photographerDisplayId: photographer.displayId, albumDisplayId,
+          eventSlug: event.slug
         });
       }
 
@@ -205,8 +206,9 @@ export class ImageProcessor {
     orgId: string;
     photographerDisplayId: number;
     albumDisplayId: string;
+    eventSlug: string;
   }) {
-    const { sessionId, fileId, eventId, albumId, eventDisplayId, originalName, mimeType, mergedFilePath, orgId, photographerDisplayId, albumDisplayId } = data;
+    const { sessionId, fileId, eventId, albumId, eventDisplayId, originalName, mimeType, mergedFilePath, orgId, photographerDisplayId, albumDisplayId, eventSlug } = data;
 
     // Check if video needs conversion to MP4 (for browser compatibility)
     const needsConversion = mimeType.toLowerCase() !== 'video/mp4';
@@ -277,6 +279,19 @@ export class ImageProcessor {
     if (needsConversion && finalVideoPath !== mergedFilePath) {
       try { await fs.unlink(finalVideoPath); } catch (e) { /* ignore */ }
     }
+
+    // Index video (extract frames & detect faces)
+    // We pass the videoUrl as videoPath because img-analyse-backend's ffmpeg needs to read it.
+    // Since we are likely in a distributed env (or at least separate processes), local temp path is gone.
+    faceAnalysisClient.indexVideo({
+      videoId: photo.id,
+      eventId,
+      eventSlug,
+      videoUrl: videoUrl,
+      videoPath: videoUrl // Use URL as path for ffmpeg reading
+    }).catch((err: unknown) => {
+      logger.warn(`Video indexing trigger failed for ${photo.id}:`, err);
+    });
 
     logger.info(`Successfully processed video: ${originalName} -> Photo ID: ${photo.id}`);
     return { photoId: photo.id, url: videoUrl, thumbnail: thumbnailUrl };
