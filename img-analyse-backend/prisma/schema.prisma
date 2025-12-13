@@ -116,6 +116,7 @@ model EventImageStatus {
   id        String         @id @default(uuid())
   eventId   String
   photoId   String
+  eventSlug     String?
   orgId         String
   status        IndexingStatus @default(PENDING)
   isActive      Boolean        @default(true)
@@ -130,8 +131,7 @@ model EventImageStatus {
 
   @@unique([eventId, photoId])
   @@index([eventId])
+  @@index([eventSlug])
   @@index([orgId])
   @@map("event_image_statuses")
 }
-
-  

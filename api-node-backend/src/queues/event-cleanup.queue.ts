@@ -13,6 +13,7 @@ export interface EventCleanupJobData {
     photographerId: string;
     eventId: string;
     eventUuid?: string; // Add UUID for services that rely on it (like Qdrant)
+    eventSlug?: string; // Add Slug for services that rely on it (like Qdrant now)
     deletionMode: 'soft' | 'hard';
     trashPath: string;
 }
@@ -22,7 +23,7 @@ export const eventCleanupQueue = new Queue(EVENT_CLEANUP_QUEUE_NAME, {
 });
 
 const processEventCleanup = async (job: Job<EventCleanupJobData>) => {
-    const { orgId, photographerId, eventId, deletionMode, trashPath } = job.data;
+    const { orgId, photographerId, eventId, deletionMode, trashPath, eventSlug } = job.data;
 
     logger.info(`[EventCleanup] Processing cleanup for event ${eventId} in mode ${deletionMode}`);
 
@@ -55,12 +56,12 @@ const processEventCleanup = async (job: Job<EventCleanupJobData>) => {
         if (faceAnalysisClient) {
             // Use UUID if available, otherwise fallback to eventId (which might be displayId)
             const targetId = job.data.eventUuid || eventId;
-            logger.info(`[EventCleanup] Deleting face analysis collection for event ${targetId}`);
+            logger.info(`[EventCleanup] Deleting face analysis collection for event ${targetId} (slug: ${eventSlug || 'N/A'})`);
 
             // Note: configService.getOrgApiKey(orgId) usage might be needed if sidecar requires it
             // But current FaceAnalysisClient uses global key or needs refactoring.
             // We'll use the method we have.
-            await faceAnalysisClient.deleteEvent(targetId);
+            await faceAnalysisClient.deleteEvent(targetId, eventSlug);
         }
 
         logger.info(`[EventCleanup] Cleanup completed for event ${eventId}`);

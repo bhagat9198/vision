@@ -40,6 +40,7 @@ export type EventImageStatusMinAggregateOutputType = {
   id: string | null
   eventId: string | null
   photoId: string | null
+  eventSlug: string | null
   orgId: string | null
   status: $Enums.IndexingStatus | null
   isActive: boolean | null
@@ -55,6 +56,7 @@ export type EventImageStatusMaxAggregateOutputType = {
   id: string | null
   eventId: string | null
   photoId: string | null
+  eventSlug: string | null
   orgId: string | null
   status: $Enums.IndexingStatus | null
   isActive: boolean | null
@@ -70,6 +72,7 @@ export type EventImageStatusCountAggregateOutputType = {
   id: number
   eventId: number
   photoId: number
+  eventSlug: number
   orgId: number
   status: number
   isActive: number
@@ -97,6 +100,7 @@ export type EventImageStatusMinAggregateInputType = {
   id?: true
   eventId?: true
   photoId?: true
+  eventSlug?: true
   orgId?: true
   status?: true
   isActive?: true
@@ -112,6 +116,7 @@ export type EventImageStatusMaxAggregateInputType = {
   id?: true
   eventId?: true
   photoId?: true
+  eventSlug?: true
   orgId?: true
   status?: true
   isActive?: true
@@ -127,6 +132,7 @@ export type EventImageStatusCountAggregateInputType = {
   id?: true
   eventId?: true
   photoId?: true
+  eventSlug?: true
   orgId?: true
   status?: true
   isActive?: true
@@ -229,6 +235,7 @@ export type EventImageStatusGroupByOutputType = {
   id: string
   eventId: string
   photoId: string
+  eventSlug: string | null
   orgId: string
   status: $Enums.IndexingStatus
   isActive: boolean
@@ -267,6 +274,7 @@ export type EventImageStatusWhereInput = {
   id?: Prisma.StringFilter<"EventImageStatus"> | string
   eventId?: Prisma.StringFilter<"EventImageStatus"> | string
   photoId?: Prisma.StringFilter<"EventImageStatus"> | string
+  eventSlug?: Prisma.StringNullableFilter<"EventImageStatus"> | string | null
   orgId?: Prisma.StringFilter<"EventImageStatus"> | string
   status?: Prisma.EnumIndexingStatusFilter<"EventImageStatus"> | $Enums.IndexingStatus
   isActive?: Prisma.BoolFilter<"EventImageStatus"> | boolean
@@ -283,6 +291,7 @@ export type EventImageStatusOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   eventId?: Prisma.SortOrder
   photoId?: Prisma.SortOrder
+  eventSlug?: Prisma.SortOrderInput | Prisma.SortOrder
   orgId?: Prisma.SortOrder
   status?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -303,6 +312,7 @@ export type EventImageStatusWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.EventImageStatusWhereInput | Prisma.EventImageStatusWhereInput[]
   eventId?: Prisma.StringFilter<"EventImageStatus"> | string
   photoId?: Prisma.StringFilter<"EventImageStatus"> | string
+  eventSlug?: Prisma.StringNullableFilter<"EventImageStatus"> | string | null
   orgId?: Prisma.StringFilter<"EventImageStatus"> | string
   status?: Prisma.EnumIndexingStatusFilter<"EventImageStatus"> | $Enums.IndexingStatus
   isActive?: Prisma.BoolFilter<"EventImageStatus"> | boolean
@@ -319,6 +329,7 @@ export type EventImageStatusOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   eventId?: Prisma.SortOrder
   photoId?: Prisma.SortOrder
+  eventSlug?: Prisma.SortOrderInput | Prisma.SortOrder
   orgId?: Prisma.SortOrder
   status?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -342,6 +353,7 @@ export type EventImageStatusScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"EventImageStatus"> | string
   eventId?: Prisma.StringWithAggregatesFilter<"EventImageStatus"> | string
   photoId?: Prisma.StringWithAggregatesFilter<"EventImageStatus"> | string
+  eventSlug?: Prisma.StringNullableWithAggregatesFilter<"EventImageStatus"> | string | null
   orgId?: Prisma.StringWithAggregatesFilter<"EventImageStatus"> | string
   status?: Prisma.EnumIndexingStatusWithAggregatesFilter<"EventImageStatus"> | $Enums.IndexingStatus
   isActive?: Prisma.BoolWithAggregatesFilter<"EventImageStatus"> | boolean
@@ -357,6 +369,7 @@ export type EventImageStatusCreateInput = {
   id?: string
   eventId: string
   photoId: string
+  eventSlug?: string | null
   status?: $Enums.IndexingStatus
   isActive?: boolean
   error?: string | null
@@ -372,6 +385,7 @@ export type EventImageStatusUncheckedCreateInput = {
   id?: string
   eventId: string
   photoId: string
+  eventSlug?: string | null
   orgId: string
   status?: $Enums.IndexingStatus
   isActive?: boolean
@@ -387,6 +401,7 @@ export type EventImageStatusUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   eventId?: Prisma.StringFieldUpdateOperationsInput | string
   photoId?: Prisma.StringFieldUpdateOperationsInput | string
+  eventSlug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumIndexingStatusFieldUpdateOperationsInput | $Enums.IndexingStatus
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -402,6 +417,7 @@ export type EventImageStatusUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   eventId?: Prisma.StringFieldUpdateOperationsInput | string
   photoId?: Prisma.StringFieldUpdateOperationsInput | string
+  eventSlug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumIndexingStatusFieldUpdateOperationsInput | $Enums.IndexingStatus
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -417,6 +433,7 @@ export type EventImageStatusCreateManyInput = {
   id?: string
   eventId: string
   photoId: string
+  eventSlug?: string | null
   orgId: string
   status?: $Enums.IndexingStatus
   isActive?: boolean
@@ -432,6 +449,7 @@ export type EventImageStatusUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   eventId?: Prisma.StringFieldUpdateOperationsInput | string
   photoId?: Prisma.StringFieldUpdateOperationsInput | string
+  eventSlug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumIndexingStatusFieldUpdateOperationsInput | $Enums.IndexingStatus
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -446,6 +464,7 @@ export type EventImageStatusUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   eventId?: Prisma.StringFieldUpdateOperationsInput | string
   photoId?: Prisma.StringFieldUpdateOperationsInput | string
+  eventSlug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   orgId?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumIndexingStatusFieldUpdateOperationsInput | $Enums.IndexingStatus
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -476,6 +495,7 @@ export type EventImageStatusCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   eventId?: Prisma.SortOrder
   photoId?: Prisma.SortOrder
+  eventSlug?: Prisma.SortOrder
   orgId?: Prisma.SortOrder
   status?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -496,6 +516,7 @@ export type EventImageStatusMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   eventId?: Prisma.SortOrder
   photoId?: Prisma.SortOrder
+  eventSlug?: Prisma.SortOrder
   orgId?: Prisma.SortOrder
   status?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -511,6 +532,7 @@ export type EventImageStatusMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   eventId?: Prisma.SortOrder
   photoId?: Prisma.SortOrder
+  eventSlug?: Prisma.SortOrder
   orgId?: Prisma.SortOrder
   status?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -577,6 +599,7 @@ export type EventImageStatusCreateWithoutOrgInput = {
   id?: string
   eventId: string
   photoId: string
+  eventSlug?: string | null
   status?: $Enums.IndexingStatus
   isActive?: boolean
   error?: string | null
@@ -591,6 +614,7 @@ export type EventImageStatusUncheckedCreateWithoutOrgInput = {
   id?: string
   eventId: string
   photoId: string
+  eventSlug?: string | null
   status?: $Enums.IndexingStatus
   isActive?: boolean
   error?: string | null
@@ -634,6 +658,7 @@ export type EventImageStatusScalarWhereInput = {
   id?: Prisma.StringFilter<"EventImageStatus"> | string
   eventId?: Prisma.StringFilter<"EventImageStatus"> | string
   photoId?: Prisma.StringFilter<"EventImageStatus"> | string
+  eventSlug?: Prisma.StringNullableFilter<"EventImageStatus"> | string | null
   orgId?: Prisma.StringFilter<"EventImageStatus"> | string
   status?: Prisma.EnumIndexingStatusFilter<"EventImageStatus"> | $Enums.IndexingStatus
   isActive?: Prisma.BoolFilter<"EventImageStatus"> | boolean
@@ -649,6 +674,7 @@ export type EventImageStatusCreateManyOrgInput = {
   id?: string
   eventId: string
   photoId: string
+  eventSlug?: string | null
   status?: $Enums.IndexingStatus
   isActive?: boolean
   error?: string | null
@@ -663,6 +689,7 @@ export type EventImageStatusUpdateWithoutOrgInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   eventId?: Prisma.StringFieldUpdateOperationsInput | string
   photoId?: Prisma.StringFieldUpdateOperationsInput | string
+  eventSlug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumIndexingStatusFieldUpdateOperationsInput | $Enums.IndexingStatus
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -677,6 +704,7 @@ export type EventImageStatusUncheckedUpdateWithoutOrgInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   eventId?: Prisma.StringFieldUpdateOperationsInput | string
   photoId?: Prisma.StringFieldUpdateOperationsInput | string
+  eventSlug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumIndexingStatusFieldUpdateOperationsInput | $Enums.IndexingStatus
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -691,6 +719,7 @@ export type EventImageStatusUncheckedUpdateManyWithoutOrgInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   eventId?: Prisma.StringFieldUpdateOperationsInput | string
   photoId?: Prisma.StringFieldUpdateOperationsInput | string
+  eventSlug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumIndexingStatusFieldUpdateOperationsInput | $Enums.IndexingStatus
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -707,6 +736,7 @@ export type EventImageStatusSelect<ExtArgs extends runtime.Types.Extensions.Inte
   id?: boolean
   eventId?: boolean
   photoId?: boolean
+  eventSlug?: boolean
   orgId?: boolean
   status?: boolean
   isActive?: boolean
@@ -723,6 +753,7 @@ export type EventImageStatusSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   id?: boolean
   eventId?: boolean
   photoId?: boolean
+  eventSlug?: boolean
   orgId?: boolean
   status?: boolean
   isActive?: boolean
@@ -739,6 +770,7 @@ export type EventImageStatusSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   id?: boolean
   eventId?: boolean
   photoId?: boolean
+  eventSlug?: boolean
   orgId?: boolean
   status?: boolean
   isActive?: boolean
@@ -755,6 +787,7 @@ export type EventImageStatusSelectScalar = {
   id?: boolean
   eventId?: boolean
   photoId?: boolean
+  eventSlug?: boolean
   orgId?: boolean
   status?: boolean
   isActive?: boolean
@@ -766,7 +799,7 @@ export type EventImageStatusSelectScalar = {
   updatedAt?: boolean
 }
 
-export type EventImageStatusOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "eventId" | "photoId" | "orgId" | "status" | "isActive" | "error" | "imageUrl" | "facesDetected" | "facesIndexed" | "createdAt" | "updatedAt", ExtArgs["result"]["eventImageStatus"]>
+export type EventImageStatusOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "eventId" | "photoId" | "eventSlug" | "orgId" | "status" | "isActive" | "error" | "imageUrl" | "facesDetected" | "facesIndexed" | "createdAt" | "updatedAt", ExtArgs["result"]["eventImageStatus"]>
 export type EventImageStatusInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   org?: boolean | Prisma.OrganizationDefaultArgs<ExtArgs>
 }
@@ -786,6 +819,7 @@ export type $EventImageStatusPayload<ExtArgs extends runtime.Types.Extensions.In
     id: string
     eventId: string
     photoId: string
+    eventSlug: string | null
     orgId: string
     status: $Enums.IndexingStatus
     isActive: boolean
@@ -1222,6 +1256,7 @@ export interface EventImageStatusFieldRefs {
   readonly id: Prisma.FieldRef<"EventImageStatus", 'String'>
   readonly eventId: Prisma.FieldRef<"EventImageStatus", 'String'>
   readonly photoId: Prisma.FieldRef<"EventImageStatus", 'String'>
+  readonly eventSlug: Prisma.FieldRef<"EventImageStatus", 'String'>
   readonly orgId: Prisma.FieldRef<"EventImageStatus", 'String'>
   readonly status: Prisma.FieldRef<"EventImageStatus", 'IndexingStatus'>
   readonly isActive: Prisma.FieldRef<"EventImageStatus", 'Boolean'>

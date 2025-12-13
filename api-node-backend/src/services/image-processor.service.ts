@@ -36,7 +36,7 @@ export class ImageProcessor {
       // 1. Get event displayId and watermark settings for folder naming
       const event = await prisma.event.findUnique({
         where: { id: eventId },
-        select: { displayId: true, watermarkEnabled: true, watermarkText: true },
+        select: { displayId: true, slug: true, watermarkEnabled: true, watermarkText: true },
       });
       if (!event) throw new Error(`Event not found: ${eventId}`);
       const eventDisplayId = event.displayId;
@@ -44,7 +44,6 @@ export class ImageProcessor {
       // 2. Merge chunks into single file
       const mergedFilePath = await this.mergeChunks(sessionId, fileId);
 
-      // Check if this is a video file - handle differently
       // Check if this is a video file - handle differently
       if (this.isVideo(mimeType)) {
         // Fetch dependencies for video processing
@@ -106,9 +105,7 @@ export class ImageProcessor {
           // Use default watermark text from config
           const defaultWatermarkText = await configService.get('watermark_default_text', '');
           if (defaultWatermarkText) {
-            if (defaultWatermarkText) {
-              finalImageBuffer = (await this.applyTextWatermark(processedFilePath, defaultWatermarkText, photographer)) as any;
-            }
+            finalImageBuffer = (await this.applyTextWatermark(processedFilePath, defaultWatermarkText, photographer)) as any;
           }
         }
       }
@@ -154,7 +151,7 @@ export class ImageProcessor {
       });
 
       // 9. Index faces in the photo (async, non-blocking)
-      this.indexFacesAsync(photo.id, eventId, photoUrl).catch((err) => {
+      this.indexFacesAsync(photo.id, eventId, photoUrl, event.slug).catch((err) => {
         logger.warn(`Face indexing failed for photo ${photo.id}:`, err);
       });
 
@@ -642,11 +639,12 @@ export class ImageProcessor {
    * This is called after photo creation and runs in the background.
    * Failures are logged but don't affect the main upload flow.
    */
-  private async indexFacesAsync(photoId: string, eventId: string, imageUrl: string): Promise<void> {
+  private async indexFacesAsync(photoId: string, eventId: string, imageUrl: string, eventSlug: string): Promise<void> {
     try {
       const result = await faceAnalysisClient.indexPhoto({
         photoId,
         eventId,
+        eventSlug,
         imageUrl,
       });
 

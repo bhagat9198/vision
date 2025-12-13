@@ -126,6 +126,32 @@ router.delete('/event/:eventId', requireCompreFace, indexController.deleteEvent)
 
 /**
  * @swagger
+ * /api/v1/index/event:
+ *   post:
+ *     summary: Create an event collection explicitly
+ *     tags: [Indexing]
+ *     security:
+ *       - ApiKeyAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [eventId]
+ *             properties:
+ *               eventId:
+ *                 type: string
+ *               eventSlug:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Collection created
+ */
+router.post('/event', requireCompreFace, indexController.createEvent);
+
+/**
+ * @swagger
  * /api/v1/index/event/{eventId}/stats:
  *   get:
  *     summary: Get indexing statistics for an event

@@ -805,6 +805,7 @@ export const EventImageStatusScalarFieldEnum = {
   id: 'id',
   eventId: 'eventId',
   photoId: 'photoId',
+  eventSlug: 'eventSlug',
   orgId: 'orgId',
   status: 'status',
   isActive: 'isActive',

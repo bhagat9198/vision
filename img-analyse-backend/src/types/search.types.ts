@@ -34,6 +34,8 @@ export interface CachedSearchRequest {
   sessionId: string;
   /** Event ID to search within */
   eventId: string;
+  /** Event Slug (optional) */
+  eventSlug?: string;
   /** Maximum number of results */
   topK?: number;
   /** Minimum similarity threshold */

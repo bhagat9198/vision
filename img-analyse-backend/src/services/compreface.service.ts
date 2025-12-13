@@ -103,7 +103,7 @@ class CompreFaceService {
   private createRecognitionClient(settings: OrgSettings): AxiosInstance {
     return axios.create({
       baseURL: settings.comprefaceUrl || '',
-      timeout: 30000,
+      timeout: 60000,
       headers: {
         'x-api-key': settings.comprefaceRecognitionApiKey || '',
       },
@@ -116,7 +116,7 @@ class CompreFaceService {
   private createDetectionClient(settings: OrgSettings): AxiosInstance {
     return axios.create({
       baseURL: settings.comprefaceUrl || '',
-      timeout: 30000,
+      timeout: 60000,
       headers: {
         'x-api-key': settings.comprefaceDetectionApiKey || '',
       },
@@ -220,7 +220,7 @@ class CompreFaceService {
           headers: formData.getHeaders(),
           params: {
             det_prob_threshold: settings.minConfidence,
-            face_plugins: 'landmarks,age,gender',
+            face_plugins: 'landmarks', // Optimization: Only need landmarks for alignment
           },
         }
       );
@@ -239,7 +239,12 @@ class CompreFaceService {
 
       logger.debug(`CompreFace detectOnly: ${faces.length} faces in ${Date.now() - startTime}ms`);
       return faces;
-    } catch (error) {
+    } catch (error: any) {
+      // Handle known "No face found" error gracefully
+      if (error.response?.data?.code === 28 || error.response?.data?.message === 'No face is found in the given image') {
+        logger.debug('CompreFace detectOnly reported no face found (code 28). Returning empty result.');
+        return [];
+      }
       logger.error('CompreFace detectOnly failed:', error);
       throw error;
     }

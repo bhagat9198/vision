@@ -83,8 +83,8 @@ class FaceSearchService {
 
       // Search for matches
       const searchResults = await qdrantService.searchFaces(
-        settings.orgId,
-        eventId,
+        settings.slug, // Use org slug
+        request.eventSlug || eventId, // Fallback
         embedding,
         effectiveTopK,
         effectiveMinSimilarity
@@ -140,8 +140,8 @@ class FaceSearchService {
 
       // Search for matches
       const searchResults = await qdrantService.searchFaces(
-        settings.orgId,
-        eventId,
+        settings.slug, // Use org slug
+        request.eventSlug || eventId, // Use event slug if available, fallback to ID
         cached.embedding,
         effectiveTopK,
         effectiveMinSimilarity

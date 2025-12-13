@@ -122,7 +122,8 @@ export interface ApiKeyListItem {
 
 export interface CollectionInfo {
   collectionName: string;
-  eventId: string;
+  eventId?: string; // Optional because sometimes we only get slug
+  eventSlug?: string;
   vectorCount: number;
   indexedVectorCount: number;
   status: string;

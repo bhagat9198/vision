@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import { RefreshCw, Database, Layers, CheckCircle, Clock } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,10 +19,12 @@ interface OrgCollectionsProps {
 }
 
 export function OrgCollections({ orgId }: OrgCollectionsProps) {
+  const [status, setStatus] = useState<'active' | 'inactive'>('active');
+
   const fetcher = useCallback(async () => {
-    const response = await api.listOrgCollections(orgId);
+    const response = await api.listOrgCollections(orgId, status);
     return response.data;
-  }, [orgId]);
+  }, [orgId, status]);
 
   const { data, loading, error, refetch } = usePollingApi<OrgCollectionsResponse | undefined>(
     fetcher,
@@ -91,12 +93,32 @@ export function OrgCollections({ orgId }: OrgCollectionsProps) {
                 Event Collections
               </CardTitle>
               <CardDescription>
-                Collection naming: org_{"{orgId}"}_event_{"{eventId}"}_faces
+                Collection naming: org_{"{slug}"}_event_{"{slug}"}_faces
               </CardDescription>
             </div>
-            <Button variant="outline" size="icon-sm" onClick={refetch}>
-              <RefreshCw className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center bg-muted rounded-lg p-1">
+                <Button
+                  variant={status === 'active' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setStatus('active')}
+                  className="h-7 text-xs"
+                >
+                  Active
+                </Button>
+                <Button
+                  variant={status === 'inactive' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => setStatus('inactive')}
+                  className="h-7 text-xs"
+                >
+                  Inactive
+                </Button>
+              </div>
+              <Button variant="outline" size="icon-sm" onClick={refetch}>
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -104,7 +126,7 @@ export function OrgCollections({ orgId }: OrgCollectionsProps) {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Event ID</TableHead>
+                  <TableHead>Event</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Vectors</TableHead>
                   <TableHead className="text-right">Indexed</TableHead>
@@ -120,10 +142,10 @@ export function OrgCollections({ orgId }: OrgCollectionsProps) {
                     <TableRow key={collection.collectionName}>
                       <TableCell className="font-mono text-xs">
                         <Link
-                          href={`/dashboard/events/${collection.eventId}`}
+                          href={`/dashboard/events/${collection.eventId || collection.eventSlug}`}
                           className="font-medium text-primary hover:underline"
                         >
-                          {collection.eventId}
+                          {collection.eventSlug || collection.eventId}
                         </Link>
                       </TableCell>
                       <TableCell>

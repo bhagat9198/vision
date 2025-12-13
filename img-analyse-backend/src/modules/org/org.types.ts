@@ -55,6 +55,7 @@ export interface UpdateOrgSettingsRequest {
 export interface OrgSettings {
   orgId: string;
   name: string;
+  slug: string;
   isActive: boolean;
 
   // CompreFace
@@ -92,6 +93,7 @@ export function toOrgSettings(org: Organization): OrgSettings {
   return {
     orgId: org.id,
     name: org.name,
+    slug: org.slug,
     isActive: org.isActive,
     comprefaceUrl: org.comprefaceUrl || env.comprefaceUrl,
     comprefaceRecognitionApiKey: org.comprefaceRecognitionApiKey || env.comprefaceRecognitionApiKey,

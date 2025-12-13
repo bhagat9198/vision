@@ -20,6 +20,7 @@ import { logger } from '../common/utils/logger.js';
 export interface IndexPhotoRequest {
   photoId: string;
   eventId: string;
+  eventSlug?: string;
   imageUrl?: string;
   imagePath?: string;
 }
@@ -33,6 +34,7 @@ export interface IndexPhotoResult {
 
 export interface SearchRequest {
   eventId: string;
+  eventSlug?: string;
   topK?: number;
   minSimilarity?: number;
 }
@@ -151,7 +153,8 @@ class FaceAnalysisClient {
     photoId: string,
     eventId: string,
     imageBuffer: Buffer,
-    filename: string
+    filename: string,
+    eventSlug?: string // Added
   ): Promise<IndexPhotoResult | null> {
     if (!(await this.isEnabled())) {
       logger.debug('Face analysis disabled, skipping indexPhotoWithFile');
@@ -163,6 +166,7 @@ class FaceAnalysisClient {
       const formData = new FormData();
       formData.append('photoId', photoId);
       formData.append('eventId', eventId);
+      if (eventSlug) formData.append('eventSlug', eventSlug);
       formData.append('image', imageBuffer, { filename });
 
       const response = await client.post<{ data: IndexPhotoResult }>(
@@ -184,7 +188,7 @@ class FaceAnalysisClient {
     eventId: string,
     imageBuffer: Buffer,
     filename: string,
-    options?: { topK?: number; minSimilarity?: number }
+    options?: { topK?: number; minSimilarity?: number; eventSlug?: string } // Added eventSlug
   ): Promise<SearchResponse | null> {
     if (!(await this.isEnabled())) {
       logger.debug('Face analysis disabled, skipping searchWithImage');
@@ -195,6 +199,7 @@ class FaceAnalysisClient {
       const client = await this.getClient();
       const formData = new FormData();
       formData.append('eventId', eventId);
+      if (options?.eventSlug) formData.append('eventSlug', options.eventSlug);
       formData.append('image', imageBuffer, { filename });
       if (options?.topK) formData.append('topK', options.topK.toString());
       if (options?.minSimilarity) formData.append('minSimilarity', options.minSimilarity.toString());
@@ -217,7 +222,7 @@ class FaceAnalysisClient {
   async searchWithCached(
     sessionId: string,
     eventId: string,
-    options?: { topK?: number; minSimilarity?: number }
+    options?: { topK?: number; minSimilarity?: number; eventSlug?: string } // Added eventSlug
   ): Promise<SearchResponse | null> {
     if (!(await this.isEnabled())) {
       logger.debug('Face analysis disabled, skipping searchWithCached');
@@ -254,7 +259,7 @@ class FaceAnalysisClient {
   /**
    * Delete faces for a photo.
    */
-  async deletePhoto(photoId: string, eventId: string): Promise<boolean> {
+  async deletePhoto(photoId: string, eventId: string, eventSlug?: string): Promise<boolean> {
     if (!(await this.isEnabled())) {
       return true;
     }
@@ -262,7 +267,7 @@ class FaceAnalysisClient {
     try {
       const client = await this.getClient();
       await client.delete(`/api/v1/index/photo/${photoId}`, {
-        params: { eventId },
+        params: { eventId, eventSlug },
       });
       return true;
     } catch (error) {
@@ -274,14 +279,16 @@ class FaceAnalysisClient {
   /**
    * Delete all faces for an event.
    */
-  async deleteEvent(eventId: string): Promise<boolean> {
+  async deleteEvent(eventId: string, eventSlug?: string): Promise<boolean> {
     if (!(await this.isEnabled())) {
       return true;
     }
 
     try {
       const client = await this.getClient();
-      await client.delete(`/api/v1/index/event/${eventId}`);
+      await client.delete(`/api/v1/index/event/${eventId}`, {
+        params: { eventSlug }, // Pass as query param
+      });
       return true;
     } catch (error) {
       this.handleError('deleteEvent', error);
@@ -290,9 +297,30 @@ class FaceAnalysisClient {
   }
 
   /**
+   * Create an empty collection for an event (eager creation).
+   */
+  async createEventCollection(eventId: string, eventSlug: string): Promise<boolean> {
+    if (!(await this.isEnabled())) {
+      return true;
+    }
+
+    try {
+      const client = await this.getClient();
+      await client.post('/api/v1/index/event', {
+        eventId,
+        eventSlug,
+      });
+      return true;
+    } catch (error) {
+      this.handleError('createEventCollection', error);
+      return false;
+    }
+  }
+
+  /**
    * Get event statistics.
    */
-  async getEventStats(eventId: string): Promise<EventStats | null> {
+  async getEventStats(eventId: string, eventSlug?: string): Promise<EventStats | null> {
     if (!(await this.isEnabled())) {
       return null;
     }
@@ -300,7 +328,8 @@ class FaceAnalysisClient {
     try {
       const client = await this.getClient();
       const response = await client.get<{ data: EventStats }>(
-        `/api/v1/index/event/${eventId}/stats`
+        `/api/v1/index/event/${eventId}/stats`,
+        { params: { eventSlug } }
       );
       return response.data.data;
     } catch (error) {

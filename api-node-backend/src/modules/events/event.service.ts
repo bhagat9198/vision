@@ -4,6 +4,7 @@ import { NotFoundError, ForbiddenError, UnauthorizedError } from '../../common/e
 import { getPagination } from '../../common/utils/pagination.js';
 import { configService } from '../config/config.service.js';
 import { eventCleanupQueue } from '../../queues/event-cleanup.queue.js';
+import { faceAnalysisClient } from '../../services/face-analysis.client.js';
 import type { CreateEventDto, UpdateEventDto, EventQueryDto } from './event.dto.js';
 
 // Helper to parse ID - returns { id, displayId } based on input
@@ -57,6 +58,12 @@ export class EventService {
         },
         _count: { select: { photos: true, albums: true } },
       },
+    });
+
+    // Eagerly create Qdrant collection
+    // We don't await this to prevent blocking, but we log errors
+    faceAnalysisClient.createEventCollection(event.id, event.slug).catch((err) => {
+      console.error(`Failed to eagerly create collection for event ${event.id}:`, err);
     });
 
     return event;
@@ -203,6 +210,7 @@ export class EventService {
       photographerId: photographerDisplayId, // Path uses displayId
       eventId: eventDisplayId,             // Path uses displayId
       eventUuid: event.id,                 // ID for Qdrant/Face Analysis
+      eventSlug: event.slug,
       deletionMode: mode,
       trashPath,
     });
@@ -235,4 +243,3 @@ export class EventService {
 }
 
 export const eventService = new EventService();
-

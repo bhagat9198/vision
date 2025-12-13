@@ -40,6 +40,7 @@ export const faceIndexingQueue = new Queue(QUEUE_NAME, {
 interface FaceIndexingJobData {
     photoId: string;
     eventId: string;
+    eventSlug?: string;
     imageUrl?: string;
     imagePath?: string;
     orgSettings: OrgSettings;
@@ -70,8 +71,14 @@ const worker = new Worker<FaceIndexingJobData>(
             // 2. Detect & Embed
             const { faces, detectionResult } = await faceDetectionService.detectAndEmbed(orgSettings, imageBuffer);
 
-            // 3. Index in Qdrant
-            const pointIds = await qdrantService.indexFaces(orgSettings.orgId, eventId, photoId, faces);
+            // Index faces in Qdrant
+            const pointIds = await qdrantService.indexFaces(
+                job.data.orgSettings.slug,
+                job.data.eventSlug || job.data.eventId, // Use slug if available
+                job.data.photoId,
+                faces,
+                { eventId: job.data.eventId }
+            );
 
             // 4. Reporting
             const duration = Date.now() - startTime;

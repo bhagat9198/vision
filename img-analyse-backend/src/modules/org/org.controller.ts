@@ -305,7 +305,49 @@ export async function listOrgCollections(req: Request, res: Response) {
       });
     }
 
-    const collections = await qdrantService.getOrgCollectionsWithInfo(id);
+    const status = req.query.status as string; // 'active' | 'inactive' | 'all'
+
+    // existing is already defined above
+
+    let collections: any[] = [];
+
+    // 1. Fetch Active (from Qdrant)
+    if (!status || status === 'active' || status === 'all') {
+      const activeCollections = await qdrantService.getOrgCollectionsWithInfo(existing.slug);
+      collections.push(...activeCollections);
+    }
+
+    // 2. Fetch Inactive (from DB)
+    if (status === 'inactive' || status === 'all') {
+      // Find eventSlugs that are inactive in DB
+      const inactiveEvents = await prisma.eventImageStatus.groupBy({
+        by: ['eventSlug', 'eventId'],
+        where: {
+          orgId: id, // Use ID or slug? Schema uses orgId relation.
+          isActive: false,
+          eventSlug: { not: null }
+        },
+        _count: {
+          _all: true
+        }
+      });
+
+      // Filter out those that are already in the active list (just in case)
+      const activeSlugs = new Set(collections.map(c => c.eventSlug));
+
+      const inactiveCollections = inactiveEvents
+        .filter(e => e.eventSlug && !activeSlugs.has(e.eventSlug))
+        .map(e => ({
+          collectionName: `org_${existing.slug}_event_${e.eventSlug}_faces`, // Synthetic name
+          eventSlug: e.eventSlug!,
+          vectorCount: 0, // Inactive/Deleted usually means cleared from Qdrant
+          indexedVectorCount: 0,
+          status: 'inactive', // Explicit status
+          imageCount: e._count._all
+        }));
+
+      collections.push(...inactiveCollections);
+    }
 
     const totalVectors = collections.reduce((sum, c) => sum + c.vectorCount, 0);
     const totalIndexed = collections.reduce((sum, c) => sum + c.indexedVectorCount, 0);

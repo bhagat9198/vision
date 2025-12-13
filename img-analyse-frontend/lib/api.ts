@@ -172,8 +172,9 @@ class ApiClient {
     return this.request("/orgs/collections", {}, false);
   }
 
-  async listOrgCollections(orgId: string): Promise<ApiResponse<OrgCollectionsResponse>> {
-    return this.request(`/orgs/${orgId}/collections`);
+  async listOrgCollections(orgId: string, status?: string): Promise<ApiResponse<OrgCollectionsResponse>> {
+    const query = status ? `?status=${status}` : '';
+    return this.request(`/orgs/${orgId}/collections${query}`);
   }
 
   // ===========================================================================

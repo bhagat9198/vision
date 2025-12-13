@@ -23,12 +23,19 @@ import {
 import { logger } from '../utils/logger.js';
 import type { QdrantFacePayload, QdrantFacePoint, FaceWithEmbedding } from '../types/index.js';
 
+// ... (imports remain the same)
+
 /**
  * Get collection name for an org and event.
- * Format: org_{orgId}_event_{eventId}_faces
+ * Format: org_{orgSlug}_event_{eventSlug}_faces
+ * Fallback to UUIDs if slugs not provided (for backward compatibility if needed, though plan implies requirement)
+ * Current Plan: REQUIRE slugs.
  */
-function getOrgCollectionName(orgId: string, eventId: string): string {
-  return `org_${orgId}_event_${eventId}_faces`;
+function getOrgCollectionName(orgSlug: string, eventSlug: string): string {
+  // sanitize slugs just in case
+  const safeOrgSlug = orgSlug.replace(/[^a-zA-Z0-9-_]/g, '_');
+  const safeEventSlug = eventSlug.replace(/[^a-zA-Z0-9-_]/g, '_');
+  return `org_${safeOrgSlug}_event_${safeEventSlug}_faces`;
 }
 
 // =============================================================================
@@ -44,11 +51,11 @@ class QdrantService {
    * Ensure a collection exists for an org and event.
    * Creates the collection if it doesn't exist.
    *
-   * @param orgId - Organization UUID
-   * @param eventId - Event UUID
+   * @param orgSlug - Organization Slug
+   * @param eventSlug - Event Slug
    */
-  async ensureCollection(orgId: string, eventId: string): Promise<void> {
-    const collectionName = getOrgCollectionName(orgId, eventId);
+  async ensureCollection(orgSlug: string, eventSlug: string): Promise<void> {
+    const collectionName = getOrgCollectionName(orgSlug, eventSlug);
 
     try {
       // Check if collection exists
@@ -82,31 +89,33 @@ class QdrantService {
   /**
    * Index faces from a photo into the org's event collection.
    *
-   * @param orgId - Organization UUID
-   * @param eventId - Event UUID
+   * @param orgSlug - Organization Slug
+   * @param eventSlug - Event Slug
    * @param photoId - Photo UUID
    * @param faces - Array of faces with embeddings
    * @returns Array of indexed point IDs
    */
   async indexFaces(
-    orgId: string,
-    eventId: string,
+    orgSlug: string,
+    eventSlug: string,
     photoId: string,
-    faces: FaceWithEmbedding[]
+    faces: FaceWithEmbedding[],
+    // Metadata for payload (optional but useful)
+    meta: { eventId: string }
   ): Promise<string[]> {
     if (faces.length === 0) {
       return [];
     }
 
-    const collectionName = getOrgCollectionName(orgId, eventId);
-    await this.ensureCollection(orgId, eventId);
+    const collectionName = getOrgCollectionName(orgSlug, eventSlug);
+    await this.ensureCollection(orgSlug, eventSlug);
 
     const points: QdrantFacePoint[] = faces.map((face, index) => ({
       id: uuidv4(),
       vector: face.embedding,
       payload: {
         photoId,
-        eventId,
+        eventId: meta.eventId, // Store actual UUID in payload still
         faceIndex: index,
         bbox: face.bbox,
         confidence: face.confidence,
@@ -138,21 +147,21 @@ class QdrantService {
   /**
    * Search for similar faces in an org's event collection.
    *
-   * @param orgId - Organization UUID
-   * @param eventId - Event UUID
+   * @param orgSlug - Organization Slug
+   * @param eventSlug - Event Slug
    * @param embedding - Query embedding vector
    * @param topK - Number of results to return
    * @param minScore - Minimum similarity score (0-1)
    * @returns Array of matching faces with scores
    */
   async searchFaces(
-    orgId: string,
-    eventId: string,
+    orgSlug: string,
+    eventSlug: string,
     embedding: number[],
     topK: number,
     minScore: number
   ): Promise<Array<{ payload: QdrantFacePayload; score: number }>> {
-    const collectionName = getOrgCollectionName(orgId, eventId);
+    const collectionName = getOrgCollectionName(orgSlug, eventSlug);
 
     try {
       // Check if collection exists
@@ -184,13 +193,13 @@ class QdrantService {
   /**
    * Delete all faces for a specific photo.
    *
-   * @param orgId - Organization UUID
-   * @param eventId - Event UUID
+   * @param orgSlug - Organization Slug
+   * @param eventSlug - Event Slug
    * @param photoId - Photo UUID
    */
-  async deleteFacesForPhoto(orgId: string, eventId: string, photoId: string): Promise<void> {
-    const collectionName = getOrgCollectionName(orgId, eventId);
-    logger.info(`[DELETE_PHOTO] Request to delete faces for photo ${photoId} in collection ${collectionName} (Org: ${orgId}, Event: ${eventId})`);
+  async deleteFacesForPhoto(orgSlug: string, eventSlug: string, photoId: string): Promise<void> {
+    const collectionName = getOrgCollectionName(orgSlug, eventSlug);
+    logger.info(`[DELETE_PHOTO] Request to delete faces for photo ${photoId} in collection ${collectionName}`);
 
     try {
       await qdrantClient.delete(collectionName, {
@@ -220,12 +229,12 @@ class QdrantService {
   /**
    * Delete an entire org's event collection.
    *
-   * @param orgId - Organization UUID
-   * @param eventId - Event UUID
+   * @param orgSlug - Organization Slug
+   * @param eventSlug - Event Slug
    */
-  async deleteCollection(orgId: string, eventId: string): Promise<void> {
-    const collectionName = getOrgCollectionName(orgId, eventId);
-    logger.info(`[DELETE_COLLECTION] Request to delete collection ${collectionName} (Org: ${orgId}, Event: ${eventId})`);
+  async deleteCollection(orgSlug: string, eventSlug: string): Promise<void> {
+    const collectionName = getOrgCollectionName(orgSlug, eventSlug);
+    logger.info(`[DELETE_COLLECTION] Request to delete collection ${collectionName}`);
 
     try {
       await qdrantClient.deleteCollection(collectionName);
@@ -244,16 +253,16 @@ class QdrantService {
   /**
    * Get collection statistics.
    *
-   * @param orgId - Organization UUID
-   * @param eventId - Event UUID
+   * @param orgSlug - Organization Slug
+   * @param eventSlug - Event Slug
    * @returns Collection info or null if not exists
    */
-  async getCollectionInfo(orgId: string, eventId: string): Promise<{
+  async getCollectionInfo(orgSlug: string, eventSlug: string): Promise<{
     vectorCount: number;
     indexedVectorCount: number;
     status: string;
   } | null> {
-    const collectionName = getOrgCollectionName(orgId, eventId);
+    const collectionName = getOrgCollectionName(orgSlug, eventSlug);
 
     try {
       const info = await qdrantClient.getCollection(collectionName);
@@ -271,23 +280,27 @@ class QdrantService {
 
   /**
    * List all event collections for an org.
+   * NOTE: This logic needs to be updated to parse slugs instead of IDs if we want to return IDs/Slugs back.
+   * However, since slugs can be arbitrary, we might just return the raw slugs found in collection names.
    *
-   * @param orgId - Organization UUID
-   * @returns Array of event IDs with collections
+   * @param orgSlug - Organization Slug
+   * @returns Array of event slugs found in collections
    */
-  async listEventCollections(orgId: string): Promise<string[]> {
-    const prefix = `org_${orgId}_event_`;
+  async listEventCollections(orgSlug: string): Promise<string[]> {
+    const safeOrgSlug = orgSlug.replace(/[^a-zA-Z0-9-_]/g, '_');
+    const prefix = `org_${safeOrgSlug}_event_`;
     try {
       const collections = await qdrantClient.getCollections();
 
       return collections.collections
         .filter((c) => c.name.startsWith(prefix) && c.name.endsWith('_faces'))
         .map((c) => {
-          // Extract eventId from collection name: org_{orgId}_event_{eventId}_faces
-          const match = c.name.match(new RegExp(`^org_${orgId}_event_(.+)_faces$`));
+          // Extract eventSlug from collection name: org_{orgSlug}_event_{eventSlug}_faces
+          // Regex needs to match the dynamic slug part
+          const match = c.name.match(new RegExp(`^org_${safeOrgSlug}_event_(.+)_faces$`));
           return match?.[1];
         })
-        .filter((id): id is string => Boolean(id));
+        .filter((slug): slug is string => Boolean(slug));
     } catch (error) {
       logger.error('Failed to list event collections:', error);
       throw error;
@@ -300,8 +313,8 @@ class QdrantService {
    */
   async listAllCollections(): Promise<Array<{
     collectionName: string;
-    orgId: string;
-    eventId: string;
+    orgSlug: string;
+    eventSlug: string;
     vectorCount: number;
     indexedVectorCount: number;
     status: string;
@@ -314,19 +327,19 @@ class QdrantService {
 
       const results = await Promise.all(
         faceCollections.map(async (c) => {
-          // Parse collection name: org_{orgId}_event_{eventId}_faces
+          // Parse collection name: org_{orgSlug}_event_{eventSlug}_faces
           const match = c.name.match(/^org_(.+)_event_(.+)_faces$/);
           if (!match || !match[1] || !match[2]) return null;
 
-          const orgId = match[1];
-          const eventId = match[2];
+          const orgSlug = match[1];
+          const eventSlug = match[2];
 
           try {
             const info = await qdrantClient.getCollection(c.name);
             return {
               collectionName: c.name,
-              orgId,
-              eventId,
+              orgSlug,
+              eventSlug,
               vectorCount: info.points_count ?? 0,
               indexedVectorCount: info.indexed_vectors_count ?? 0,
               status: info.status as string,
@@ -339,8 +352,8 @@ class QdrantService {
 
       return results.filter((r) => r !== null) as Array<{
         collectionName: string;
-        orgId: string;
-        eventId: string;
+        orgSlug: string;
+        eventSlug: string;
         vectorCount: number;
         indexedVectorCount: number;
         status: string;
@@ -354,24 +367,24 @@ class QdrantService {
   /**
    * Get detailed info for collections of a specific org.
    */
-  async getOrgCollectionsWithInfo(orgId: string): Promise<Array<{
+  async getOrgCollectionsWithInfo(orgSlug: string): Promise<Array<{
     collectionName: string;
-    eventId: string;
+    eventSlug: string;
     vectorCount: number;
     indexedVectorCount: number;
     status: string;
   }>> {
     try {
-      const eventIds = await this.listEventCollections(orgId);
+      const eventSlugs = await this.listEventCollections(orgSlug);
 
       const results = await Promise.all(
-        eventIds.map(async (eventId) => {
-          const info = await this.getCollectionInfo(orgId, eventId);
+        eventSlugs.map(async (eventSlug) => {
+          const info = await this.getCollectionInfo(orgSlug, eventSlug);
           if (!info) return null;
 
           return {
-            collectionName: getOrgCollectionName(orgId, eventId),
-            eventId,
+            collectionName: getOrgCollectionName(orgSlug, eventSlug),
+            eventSlug,
             vectorCount: info.vectorCount,
             indexedVectorCount: info.indexedVectorCount,
             status: info.status,
@@ -381,7 +394,7 @@ class QdrantService {
 
       return results.filter((r): r is NonNullable<typeof r> => r !== null);
     } catch (error) {
-      logger.error(`Failed to get collections for org ${orgId}:`, error);
+      logger.error(`Failed to get collections for org ${orgSlug}:`, error);
       throw error;
     }
   }

@@ -39,7 +39,7 @@ export const indexController = {
 
     try {
       const settings = req.orgSettings!;
-      const { photoId, eventId, imageUrl, imagePath } = req.body as IndexPhotoRequest;
+      const { photoId, eventId, eventSlug, imageUrl, imagePath } = req.body as IndexPhotoRequest;
 
       logger.info(`Starting indexing for photo ${photoId} (Event: ${eventId})`, {
         mode: settings.imageSourceMode,
@@ -60,10 +60,12 @@ export const indexController = {
           error: null,
           orgId: settings.orgId,
           imageUrl: imageUrl || null,
+          eventSlug: eventSlug || null,
         },
         create: {
           eventId,
           photoId,
+          eventSlug: eventSlug || null,
           orgId: settings.orgId,
           status: 'PROCESSING',
           imageUrl: imageUrl || null,
@@ -118,7 +120,13 @@ export const indexController = {
       const { faces, detectionResult } = await faceDetectionService.detectAndEmbed(settings, imageBuffer);
 
       // Index faces in Qdrant
-      const pointIds = await qdrantService.indexFaces(settings.orgId, eventId, photoId, faces);
+      const pointIds = await qdrantService.indexFaces(
+        settings.slug,
+        eventSlug || eventId,
+        photoId,
+        faces,
+        { eventId }
+      );
 
       const result: IndexPhotoResult = {
         photoId,
@@ -198,7 +206,7 @@ export const indexController = {
     try {
       const settings = req.orgSettings!;
       const { photoId } = req.params;
-      const { eventId } = req.query as { eventId?: string };
+      const { eventId, eventSlug } = req.query as { eventId?: string, eventSlug?: string };
 
       if (!photoId || !eventId) {
         res.status(400).json({
@@ -209,7 +217,7 @@ export const indexController = {
       }
 
       // 1. Delete faces from Qdrant (Hard delete of vectors)
-      await qdrantService.deleteFacesForPhoto(settings.orgId, eventId, photoId);
+      await qdrantService.deleteFacesForPhoto(settings.slug, eventSlug || eventId, photoId);
 
       // 2. Soft delete in Postgres (Mark as inactive)
       await prisma.eventImageStatus.updateMany({
@@ -244,6 +252,7 @@ export const indexController = {
     try {
       const settings = req.orgSettings!;
       const { eventId } = req.params;
+      const { eventSlug } = req.query as { eventSlug?: string };
 
       if (!eventId) {
         res.status(400).json({
@@ -254,7 +263,7 @@ export const indexController = {
       }
 
       // 1. Delete Qdrant collection (Hard delete of vectors)
-      await qdrantService.deleteCollection(settings.orgId, eventId);
+      await qdrantService.deleteCollection(settings.slug, eventSlug || eventId);
 
       // 2. Soft delete in Postgres (Mark all images as inactive)
       await prisma.eventImageStatus.updateMany({
@@ -281,12 +290,13 @@ export const indexController = {
   },
 
   /**
-   * Get indexing statistics for an event.
+   * Create an event collection explicitly.
+   * Useful for eager creation when an event is created in the main app.
    */
-  async getEventStats(req: Request, res: Response): Promise<void> {
+  async createEvent(req: Request, res: Response): Promise<void> {
     try {
       const settings = req.orgSettings!;
-      const { eventId } = req.params;
+      const { eventId, eventSlug } = req.body;
 
       if (!eventId) {
         res.status(400).json({
@@ -296,7 +306,40 @@ export const indexController = {
         return;
       }
 
-      const info = await qdrantService.getCollectionInfo(settings.orgId, eventId);
+      // Ensure collection exists in Qdrant
+      await qdrantService.ensureCollection(settings.slug, eventSlug || eventId);
+
+      res.json({
+        success: true,
+        message: `Created collection for event ${eventId}`,
+      } as ApiResponse);
+    } catch (error) {
+      logger.error('Failed to create event collection:', error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create event collection',
+      } as ApiResponse);
+    }
+  },
+
+  /**
+   * Get indexing statistics for an event.
+   */
+  async getEventStats(req: Request, res: Response): Promise<void> {
+    try {
+      const settings = req.orgSettings!;
+      const { eventId } = req.params;
+      const { eventSlug } = req.query as { eventSlug?: string };
+
+      if (!eventId) {
+        res.status(400).json({
+          success: false,
+          error: 'eventId is required',
+        } as ApiResponse);
+        return;
+      }
+
+      const info = await qdrantService.getCollectionInfo(settings.slug, eventSlug || eventId);
 
       if (!info) {
         res.json({
@@ -345,7 +388,14 @@ export const indexController = {
         return;
       }
 
-      const where: any = { eventId };
+      const where: any = {};
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(eventId);
+
+      if (isUuid) {
+        where.eventId = eventId;
+      } else {
+        where.eventSlug = eventId;
+      }
 
       if (status === 'DELETED') {
         where.isActive = false;
@@ -363,10 +413,14 @@ export const indexController = {
       });
 
       // Calculate stats based on active/inactive
-      const total = await prisma.eventImageStatus.count({ where: { eventId, isActive: true } });
-      const completed = await prisma.eventImageStatus.count({ where: { eventId, status: 'COMPLETED', isActive: true } });
-      const failed = await prisma.eventImageStatus.count({ where: { eventId, status: 'FAILED', isActive: true } });
-      const processing = await prisma.eventImageStatus.count({ where: { eventId, status: 'PROCESSING', isActive: true } });
+      // Re-use logic for identifying event (UUID vs Slug)
+      const countWhere = isUuid ? { eventId } : { eventSlug: eventId };
+      const baseWhere = { ...countWhere, isActive: true };
+
+      const total = await prisma.eventImageStatus.count({ where: baseWhere });
+      const completed = await prisma.eventImageStatus.count({ where: { ...baseWhere, status: 'COMPLETED' } });
+      const failed = await prisma.eventImageStatus.count({ where: { ...baseWhere, status: 'FAILED' } });
+      const processing = await prisma.eventImageStatus.count({ where: { ...baseWhere, status: 'PROCESSING' } });
 
       res.json({
         success: true,
