@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useApi, usePollingApi } from "@/lib/hooks/use-api";
+import { useQueryTabs } from "@/lib/hooks/use-query-tabs";
 import { api, API_BASE_URL } from "@/lib/api";
 import { AppLayout } from "@/components/layout/app-layout";
 import { formatDistanceToNow } from "date-fns";
@@ -22,13 +23,15 @@ import { EventStats, ImageStatus, VideoWithFrames, FaceDetail } from "@/lib/type
 export default function EventDetailPage() {
     const params = useParams();
     const eventId = params.id as string;
-    const [activeTab, setActiveTab] = useState("images");
-    const [viewStatus, setViewStatus] = useState<'active' | 'inactive'>('active');
+    const [activeTab, setActiveTab] = useQueryTabs("images", "tab");
+    // Cast to any to bypass type check for now, or we can improve the hook to be generic. 
+    // But simplest is treating as string and casting on usage if needed, or just casting the hook return.
+    const [viewStatus, setViewStatus] = useQueryTabs("active", "status") as ['active' | 'inactive', (v: string) => void];
 
     // New States (Moved up to avoid conditional hook call error)
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [selectedPhotoId, setSelectedPhotoId] = useState<string | null>(null);
-    const [imageFilter, setImageFilter] = useState("all");
+    const [imageFilter, setImageFilter] = useQueryTabs("all", "filter");
     const [facesForPhoto, setFacesForPhoto] = useState<FaceDetail[]>([]);
     const [facesLoading, setFacesLoading] = useState(false);
     const [reindexingPhotoId, setReindexingPhotoId] = useState<string | null>(null);

@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useApi } from "@/lib/hooks/use-api";
+import { useQueryTabs } from "@/lib/hooks/use-query-tabs";
 import { api } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
 import type { Organization, ApiKeyListItem, CollectionInfo } from "@/lib/types";
@@ -21,7 +22,7 @@ import { OrgCollections } from "./org-collections";
 export default function OrganizationDetailPage() {
   const params = useParams();
   const orgId = params.id as string;
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useQueryTabs("overview", "tab");
 
   const fetcher = useCallback(async () => {
     const response = await api.getOrganization(orgId);
