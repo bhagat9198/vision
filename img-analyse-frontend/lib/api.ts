@@ -10,6 +10,7 @@ import type {
   OrgCollectionsResponse,
   AllCollectionsResponse,
   VideoWithFrames,
+  PhotoFacesResponse,
 } from "./types";
 
 // =============================================================================
@@ -214,6 +215,27 @@ class ApiClient {
     return this.request('/api/v1/index/video', {
       method: 'POST',
       body: JSON.stringify(data),
+    });
+  }
+
+  // =============================================================================
+  // Photo Face Details
+  // =============================================================================
+
+  async getPhotoFaces(photoId: string, eventId: string, eventSlug?: string): Promise<ApiResponse<PhotoFacesResponse>> {
+    const params = new URLSearchParams({ eventId });
+    if (eventSlug) params.append('eventSlug', eventSlug);
+    return this.request<ApiResponse<PhotoFacesResponse>>(`/api/v1/index/photo/${photoId}/faces?${params.toString()}`);
+  }
+
+  async reindexPhoto(photoId: string, eventId: string, options?: { highAccuracy?: boolean; eventSlug?: string }): Promise<ApiResponse> {
+    return this.request(`/api/v1/index/photo/${photoId}/reindex`, {
+      method: 'POST',
+      body: JSON.stringify({
+        eventId,
+        eventSlug: options?.eventSlug,
+        highAccuracy: options?.highAccuracy,
+      }),
     });
   }
 }

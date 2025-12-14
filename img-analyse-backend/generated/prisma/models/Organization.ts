@@ -64,6 +64,8 @@ export type OrganizationMinAggregateOutputType = {
   pythonSidecarUrl: string | null
   enableFallbackDetection: boolean | null
   enableAlignment: boolean | null
+  faceRecognitionProvider: $Enums.FaceRecognitionProvider | null
+  insightfaceModel: string | null
 }
 
 export type OrganizationMaxAggregateOutputType = {
@@ -88,6 +90,8 @@ export type OrganizationMaxAggregateOutputType = {
   pythonSidecarUrl: string | null
   enableFallbackDetection: boolean | null
   enableAlignment: boolean | null
+  faceRecognitionProvider: $Enums.FaceRecognitionProvider | null
+  insightfaceModel: string | null
 }
 
 export type OrganizationCountAggregateOutputType = {
@@ -112,6 +116,8 @@ export type OrganizationCountAggregateOutputType = {
   pythonSidecarUrl: number
   enableFallbackDetection: number
   enableAlignment: number
+  faceRecognitionProvider: number
+  insightfaceModel: number
   _all: number
 }
 
@@ -154,6 +160,8 @@ export type OrganizationMinAggregateInputType = {
   pythonSidecarUrl?: true
   enableFallbackDetection?: true
   enableAlignment?: true
+  faceRecognitionProvider?: true
+  insightfaceModel?: true
 }
 
 export type OrganizationMaxAggregateInputType = {
@@ -178,6 +186,8 @@ export type OrganizationMaxAggregateInputType = {
   pythonSidecarUrl?: true
   enableFallbackDetection?: true
   enableAlignment?: true
+  faceRecognitionProvider?: true
+  insightfaceModel?: true
 }
 
 export type OrganizationCountAggregateInputType = {
@@ -202,6 +212,8 @@ export type OrganizationCountAggregateInputType = {
   pythonSidecarUrl?: true
   enableFallbackDetection?: true
   enableAlignment?: true
+  faceRecognitionProvider?: true
+  insightfaceModel?: true
   _all?: true
 }
 
@@ -313,6 +325,8 @@ export type OrganizationGroupByOutputType = {
   pythonSidecarUrl: string | null
   enableFallbackDetection: boolean
   enableAlignment: boolean
+  faceRecognitionProvider: $Enums.FaceRecognitionProvider
+  insightfaceModel: string | null
   _count: OrganizationCountAggregateOutputType | null
   _avg: OrganizationAvgAggregateOutputType | null
   _sum: OrganizationSumAggregateOutputType | null
@@ -360,6 +374,8 @@ export type OrganizationWhereInput = {
   pythonSidecarUrl?: Prisma.StringNullableFilter<"Organization"> | string | null
   enableFallbackDetection?: Prisma.BoolFilter<"Organization"> | boolean
   enableAlignment?: Prisma.BoolFilter<"Organization"> | boolean
+  faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFilter<"Organization"> | $Enums.FaceRecognitionProvider
+  insightfaceModel?: Prisma.StringNullableFilter<"Organization"> | string | null
   apiKeys?: Prisma.ApiKeyListRelationFilter
   eventImageStatuses?: Prisma.EventImageStatusListRelationFilter
   eventVideoStatuses?: Prisma.EventVideoStatusListRelationFilter
@@ -387,6 +403,8 @@ export type OrganizationOrderByWithRelationInput = {
   pythonSidecarUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   enableFallbackDetection?: Prisma.SortOrder
   enableAlignment?: Prisma.SortOrder
+  faceRecognitionProvider?: Prisma.SortOrder
+  insightfaceModel?: Prisma.SortOrderInput | Prisma.SortOrder
   apiKeys?: Prisma.ApiKeyOrderByRelationAggregateInput
   eventImageStatuses?: Prisma.EventImageStatusOrderByRelationAggregateInput
   eventVideoStatuses?: Prisma.EventVideoStatusOrderByRelationAggregateInput
@@ -417,6 +435,8 @@ export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
   pythonSidecarUrl?: Prisma.StringNullableFilter<"Organization"> | string | null
   enableFallbackDetection?: Prisma.BoolFilter<"Organization"> | boolean
   enableAlignment?: Prisma.BoolFilter<"Organization"> | boolean
+  faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFilter<"Organization"> | $Enums.FaceRecognitionProvider
+  insightfaceModel?: Prisma.StringNullableFilter<"Organization"> | string | null
   apiKeys?: Prisma.ApiKeyListRelationFilter
   eventImageStatuses?: Prisma.EventImageStatusListRelationFilter
   eventVideoStatuses?: Prisma.EventVideoStatusListRelationFilter
@@ -444,6 +464,8 @@ export type OrganizationOrderByWithAggregationInput = {
   pythonSidecarUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   enableFallbackDetection?: Prisma.SortOrder
   enableAlignment?: Prisma.SortOrder
+  faceRecognitionProvider?: Prisma.SortOrder
+  insightfaceModel?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.OrganizationCountOrderByAggregateInput
   _avg?: Prisma.OrganizationAvgOrderByAggregateInput
   _max?: Prisma.OrganizationMaxOrderByAggregateInput
@@ -476,6 +498,8 @@ export type OrganizationScalarWhereWithAggregatesInput = {
   pythonSidecarUrl?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
   enableFallbackDetection?: Prisma.BoolWithAggregatesFilter<"Organization"> | boolean
   enableAlignment?: Prisma.BoolWithAggregatesFilter<"Organization"> | boolean
+  faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderWithAggregatesFilter<"Organization"> | $Enums.FaceRecognitionProvider
+  insightfaceModel?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
 }
 
 export type OrganizationCreateInput = {
@@ -500,6 +524,8 @@ export type OrganizationCreateInput = {
   pythonSidecarUrl?: string | null
   enableFallbackDetection?: boolean
   enableAlignment?: boolean
+  faceRecognitionProvider?: $Enums.FaceRecognitionProvider
+  insightfaceModel?: string | null
   apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutOrgInput
   eventImageStatuses?: Prisma.EventImageStatusCreateNestedManyWithoutOrgInput
   eventVideoStatuses?: Prisma.EventVideoStatusCreateNestedManyWithoutOrgInput
@@ -527,6 +553,8 @@ export type OrganizationUncheckedCreateInput = {
   pythonSidecarUrl?: string | null
   enableFallbackDetection?: boolean
   enableAlignment?: boolean
+  faceRecognitionProvider?: $Enums.FaceRecognitionProvider
+  insightfaceModel?: string | null
   apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutOrgInput
   eventImageStatuses?: Prisma.EventImageStatusUncheckedCreateNestedManyWithoutOrgInput
   eventVideoStatuses?: Prisma.EventVideoStatusUncheckedCreateNestedManyWithoutOrgInput
@@ -554,6 +582,8 @@ export type OrganizationUpdateInput = {
   pythonSidecarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enableFallbackDetection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
+  insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   apiKeys?: Prisma.ApiKeyUpdateManyWithoutOrgNestedInput
   eventImageStatuses?: Prisma.EventImageStatusUpdateManyWithoutOrgNestedInput
   eventVideoStatuses?: Prisma.EventVideoStatusUpdateManyWithoutOrgNestedInput
@@ -581,6 +611,8 @@ export type OrganizationUncheckedUpdateInput = {
   pythonSidecarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enableFallbackDetection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
+  insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutOrgNestedInput
   eventImageStatuses?: Prisma.EventImageStatusUncheckedUpdateManyWithoutOrgNestedInput
   eventVideoStatuses?: Prisma.EventVideoStatusUncheckedUpdateManyWithoutOrgNestedInput
@@ -608,6 +640,8 @@ export type OrganizationCreateManyInput = {
   pythonSidecarUrl?: string | null
   enableFallbackDetection?: boolean
   enableAlignment?: boolean
+  faceRecognitionProvider?: $Enums.FaceRecognitionProvider
+  insightfaceModel?: string | null
 }
 
 export type OrganizationUpdateManyMutationInput = {
@@ -632,6 +666,8 @@ export type OrganizationUpdateManyMutationInput = {
   pythonSidecarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enableFallbackDetection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
+  insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type OrganizationUncheckedUpdateManyInput = {
@@ -656,6 +692,8 @@ export type OrganizationUncheckedUpdateManyInput = {
   pythonSidecarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enableFallbackDetection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
+  insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type OrganizationCountOrderByAggregateInput = {
@@ -680,6 +718,8 @@ export type OrganizationCountOrderByAggregateInput = {
   pythonSidecarUrl?: Prisma.SortOrder
   enableFallbackDetection?: Prisma.SortOrder
   enableAlignment?: Prisma.SortOrder
+  faceRecognitionProvider?: Prisma.SortOrder
+  insightfaceModel?: Prisma.SortOrder
 }
 
 export type OrganizationAvgOrderByAggregateInput = {
@@ -712,6 +752,8 @@ export type OrganizationMaxOrderByAggregateInput = {
   pythonSidecarUrl?: Prisma.SortOrder
   enableFallbackDetection?: Prisma.SortOrder
   enableAlignment?: Prisma.SortOrder
+  faceRecognitionProvider?: Prisma.SortOrder
+  insightfaceModel?: Prisma.SortOrder
 }
 
 export type OrganizationMinOrderByAggregateInput = {
@@ -736,6 +778,8 @@ export type OrganizationMinOrderByAggregateInput = {
   pythonSidecarUrl?: Prisma.SortOrder
   enableFallbackDetection?: Prisma.SortOrder
   enableAlignment?: Prisma.SortOrder
+  faceRecognitionProvider?: Prisma.SortOrder
+  insightfaceModel?: Prisma.SortOrder
 }
 
 export type OrganizationSumOrderByAggregateInput = {
@@ -789,6 +833,10 @@ export type IntFieldUpdateOperationsInput = {
   decrement?: number
   multiply?: number
   divide?: number
+}
+
+export type EnumFaceRecognitionProviderFieldUpdateOperationsInput = {
+  set?: $Enums.FaceRecognitionProvider
 }
 
 export type OrganizationCreateNestedOneWithoutApiKeysInput = {
@@ -855,6 +903,8 @@ export type OrganizationCreateWithoutApiKeysInput = {
   pythonSidecarUrl?: string | null
   enableFallbackDetection?: boolean
   enableAlignment?: boolean
+  faceRecognitionProvider?: $Enums.FaceRecognitionProvider
+  insightfaceModel?: string | null
   eventImageStatuses?: Prisma.EventImageStatusCreateNestedManyWithoutOrgInput
   eventVideoStatuses?: Prisma.EventVideoStatusCreateNestedManyWithoutOrgInput
 }
@@ -881,6 +931,8 @@ export type OrganizationUncheckedCreateWithoutApiKeysInput = {
   pythonSidecarUrl?: string | null
   enableFallbackDetection?: boolean
   enableAlignment?: boolean
+  faceRecognitionProvider?: $Enums.FaceRecognitionProvider
+  insightfaceModel?: string | null
   eventImageStatuses?: Prisma.EventImageStatusUncheckedCreateNestedManyWithoutOrgInput
   eventVideoStatuses?: Prisma.EventVideoStatusUncheckedCreateNestedManyWithoutOrgInput
 }
@@ -923,6 +975,8 @@ export type OrganizationUpdateWithoutApiKeysInput = {
   pythonSidecarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enableFallbackDetection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
+  insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   eventImageStatuses?: Prisma.EventImageStatusUpdateManyWithoutOrgNestedInput
   eventVideoStatuses?: Prisma.EventVideoStatusUpdateManyWithoutOrgNestedInput
 }
@@ -949,6 +1003,8 @@ export type OrganizationUncheckedUpdateWithoutApiKeysInput = {
   pythonSidecarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enableFallbackDetection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
+  insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   eventImageStatuses?: Prisma.EventImageStatusUncheckedUpdateManyWithoutOrgNestedInput
   eventVideoStatuses?: Prisma.EventVideoStatusUncheckedUpdateManyWithoutOrgNestedInput
 }
@@ -975,6 +1031,8 @@ export type OrganizationCreateWithoutEventImageStatusesInput = {
   pythonSidecarUrl?: string | null
   enableFallbackDetection?: boolean
   enableAlignment?: boolean
+  faceRecognitionProvider?: $Enums.FaceRecognitionProvider
+  insightfaceModel?: string | null
   apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutOrgInput
   eventVideoStatuses?: Prisma.EventVideoStatusCreateNestedManyWithoutOrgInput
 }
@@ -1001,6 +1059,8 @@ export type OrganizationUncheckedCreateWithoutEventImageStatusesInput = {
   pythonSidecarUrl?: string | null
   enableFallbackDetection?: boolean
   enableAlignment?: boolean
+  faceRecognitionProvider?: $Enums.FaceRecognitionProvider
+  insightfaceModel?: string | null
   apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutOrgInput
   eventVideoStatuses?: Prisma.EventVideoStatusUncheckedCreateNestedManyWithoutOrgInput
 }
@@ -1043,6 +1103,8 @@ export type OrganizationUpdateWithoutEventImageStatusesInput = {
   pythonSidecarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enableFallbackDetection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
+  insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   apiKeys?: Prisma.ApiKeyUpdateManyWithoutOrgNestedInput
   eventVideoStatuses?: Prisma.EventVideoStatusUpdateManyWithoutOrgNestedInput
 }
@@ -1069,6 +1131,8 @@ export type OrganizationUncheckedUpdateWithoutEventImageStatusesInput = {
   pythonSidecarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enableFallbackDetection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
+  insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutOrgNestedInput
   eventVideoStatuses?: Prisma.EventVideoStatusUncheckedUpdateManyWithoutOrgNestedInput
 }
@@ -1095,6 +1159,8 @@ export type OrganizationCreateWithoutEventVideoStatusesInput = {
   pythonSidecarUrl?: string | null
   enableFallbackDetection?: boolean
   enableAlignment?: boolean
+  faceRecognitionProvider?: $Enums.FaceRecognitionProvider
+  insightfaceModel?: string | null
   apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutOrgInput
   eventImageStatuses?: Prisma.EventImageStatusCreateNestedManyWithoutOrgInput
 }
@@ -1121,6 +1187,8 @@ export type OrganizationUncheckedCreateWithoutEventVideoStatusesInput = {
   pythonSidecarUrl?: string | null
   enableFallbackDetection?: boolean
   enableAlignment?: boolean
+  faceRecognitionProvider?: $Enums.FaceRecognitionProvider
+  insightfaceModel?: string | null
   apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutOrgInput
   eventImageStatuses?: Prisma.EventImageStatusUncheckedCreateNestedManyWithoutOrgInput
 }
@@ -1163,6 +1231,8 @@ export type OrganizationUpdateWithoutEventVideoStatusesInput = {
   pythonSidecarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enableFallbackDetection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
+  insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   apiKeys?: Prisma.ApiKeyUpdateManyWithoutOrgNestedInput
   eventImageStatuses?: Prisma.EventImageStatusUpdateManyWithoutOrgNestedInput
 }
@@ -1189,6 +1259,8 @@ export type OrganizationUncheckedUpdateWithoutEventVideoStatusesInput = {
   pythonSidecarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   enableFallbackDetection?: Prisma.BoolFieldUpdateOperationsInput | boolean
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
+  insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutOrgNestedInput
   eventImageStatuses?: Prisma.EventImageStatusUncheckedUpdateManyWithoutOrgNestedInput
 }
@@ -1264,6 +1336,8 @@ export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   pythonSidecarUrl?: boolean
   enableFallbackDetection?: boolean
   enableAlignment?: boolean
+  faceRecognitionProvider?: boolean
+  insightfaceModel?: boolean
   apiKeys?: boolean | Prisma.Organization$apiKeysArgs<ExtArgs>
   eventImageStatuses?: boolean | Prisma.Organization$eventImageStatusesArgs<ExtArgs>
   eventVideoStatuses?: boolean | Prisma.Organization$eventVideoStatusesArgs<ExtArgs>
@@ -1292,6 +1366,8 @@ export type OrganizationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   pythonSidecarUrl?: boolean
   enableFallbackDetection?: boolean
   enableAlignment?: boolean
+  faceRecognitionProvider?: boolean
+  insightfaceModel?: boolean
 }, ExtArgs["result"]["organization"]>
 
 export type OrganizationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1316,6 +1392,8 @@ export type OrganizationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   pythonSidecarUrl?: boolean
   enableFallbackDetection?: boolean
   enableAlignment?: boolean
+  faceRecognitionProvider?: boolean
+  insightfaceModel?: boolean
 }, ExtArgs["result"]["organization"]>
 
 export type OrganizationSelectScalar = {
@@ -1340,9 +1418,11 @@ export type OrganizationSelectScalar = {
   pythonSidecarUrl?: boolean
   enableFallbackDetection?: boolean
   enableAlignment?: boolean
+  faceRecognitionProvider?: boolean
+  insightfaceModel?: boolean
 }
 
-export type OrganizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "isActive" | "createdAt" | "updatedAt" | "comprefaceUrl" | "comprefaceRecognitionApiKey" | "comprefaceDetectionApiKey" | "faceDetectionMode" | "imageSourceMode" | "sharedStoragePath" | "minConfidence" | "minSizePx" | "skipExtremeAngles" | "searchDefaultTopK" | "searchMinSimilarity" | "embeddingCacheTtlSeconds" | "pythonSidecarUrl" | "enableFallbackDetection" | "enableAlignment", ExtArgs["result"]["organization"]>
+export type OrganizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "isActive" | "createdAt" | "updatedAt" | "comprefaceUrl" | "comprefaceRecognitionApiKey" | "comprefaceDetectionApiKey" | "faceDetectionMode" | "imageSourceMode" | "sharedStoragePath" | "minConfidence" | "minSizePx" | "skipExtremeAngles" | "searchDefaultTopK" | "searchMinSimilarity" | "embeddingCacheTtlSeconds" | "pythonSidecarUrl" | "enableFallbackDetection" | "enableAlignment" | "faceRecognitionProvider" | "insightfaceModel", ExtArgs["result"]["organization"]>
 export type OrganizationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   apiKeys?: boolean | Prisma.Organization$apiKeysArgs<ExtArgs>
   eventImageStatuses?: boolean | Prisma.Organization$eventImageStatusesArgs<ExtArgs>
@@ -1381,6 +1461,8 @@ export type $OrganizationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     pythonSidecarUrl: string | null
     enableFallbackDetection: boolean
     enableAlignment: boolean
+    faceRecognitionProvider: $Enums.FaceRecognitionProvider
+    insightfaceModel: string | null
   }, ExtArgs["result"]["organization"]>
   composites: {}
 }
@@ -1828,6 +1910,8 @@ export interface OrganizationFieldRefs {
   readonly pythonSidecarUrl: Prisma.FieldRef<"Organization", 'String'>
   readonly enableFallbackDetection: Prisma.FieldRef<"Organization", 'Boolean'>
   readonly enableAlignment: Prisma.FieldRef<"Organization", 'Boolean'>
+  readonly faceRecognitionProvider: Prisma.FieldRef<"Organization", 'FaceRecognitionProvider'>
+  readonly insightfaceModel: Prisma.FieldRef<"Organization", 'String'>
 }
     
 

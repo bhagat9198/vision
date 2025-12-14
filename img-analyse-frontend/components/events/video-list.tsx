@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { FileVideo, Plus, Video as VideoIcon, RefreshCw, AlertCircle, CheckCircle, Clock, ChevronDown, ChevronRight, Image as ImageIcon, User } from "lucide-react";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { FileVideo, Plus, Video as VideoIcon, RefreshCw, AlertCircle, CheckCircle, Clock, ChevronDown, ChevronRight, Image as ImageIcon, User, RotateCcw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,7 +27,7 @@ import { toast } from "sonner";
 import { v4 as uuidv4 } from 'uuid';
 import { usePollingApi } from "@/lib/hooks/use-api";
 import { formatDistanceToNow } from "date-fns";
-import type { VideoWithFrames, VideoFrame } from "@/lib/types";
+import type { VideoWithFrames, VideoFrame, FaceDetail } from "@/lib/types";
 
 interface VideoListProps {
     eventId: string;
@@ -42,7 +42,107 @@ export function VideoList({ eventId, videos, loading, onRefresh }: VideoListProp
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [expandedVideoId, setExpandedVideoId] = useState<string | null>(null);
 
-    // Removed internal usePollingApi logic
+    // Frame preview state
+    const [selectedFrame, setSelectedFrame] = useState<{ imageUrl: string; photoId: string } | null>(null);
+    const [facesForFrame, setFacesForFrame] = useState<FaceDetail[]>([]);
+    const [facesLoading, setFacesLoading] = useState(false);
+    const [reindexingPhotoId, setReindexingPhotoId] = useState<string | null>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const imageRef = useRef<HTMLImageElement>(null);
+
+    // Fetch faces for a frame
+    const fetchFacesForFrame = useCallback(async (photoId: string) => {
+        setFacesLoading(true);
+        try {
+            const response = await api.getPhotoFaces(photoId, eventId, eventId);
+            if (response.data?.faces) {
+                setFacesForFrame(response.data.faces);
+            }
+        } catch (error) {
+            console.error('Failed to fetch faces:', error);
+            setFacesForFrame([]);
+        } finally {
+            setFacesLoading(false);
+        }
+    }, [eventId]);
+
+    // Handle frame preview click
+    const handleFrameSelect = useCallback((imageUrl: string, photoId: string) => {
+        setSelectedFrame({ imageUrl, photoId });
+        fetchFacesForFrame(photoId);
+    }, [fetchFacesForFrame]);
+
+    // Handle re-detect button click
+    const handleReindexFrame = useCallback(async (photoId: string) => {
+        setReindexingPhotoId(photoId);
+        try {
+            await api.reindexPhoto(photoId, eventId, { highAccuracy: true, eventSlug: eventId });
+            toast.success('Frame queued for re-detection with high accuracy');
+            setTimeout(() => {
+                onRefresh();
+            }, 1000);
+        } catch (error) {
+            console.error('Failed to reindex frame:', error);
+            toast.error('Failed to queue frame for re-detection');
+        } finally {
+            setReindexingPhotoId(null);
+        }
+    }, [eventId, onRefresh]);
+
+    // Draw bounding boxes on canvas
+    const drawBoundingBoxes = useCallback(() => {
+        const canvas = canvasRef.current;
+        const image = imageRef.current;
+        if (!canvas || !image || facesForFrame.length === 0) return;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        canvas.width = image.clientWidth;
+        canvas.height = image.clientHeight;
+
+        const containerWidth = image.clientWidth;
+        const containerHeight = image.clientHeight;
+        const naturalWidth = image.naturalWidth;
+        const naturalHeight = image.naturalHeight;
+
+        const scale = Math.min(containerWidth / naturalWidth, containerHeight / naturalHeight);
+        const renderedWidth = naturalWidth * scale;
+        const renderedHeight = naturalHeight * scale;
+        const offsetX = (containerWidth - renderedWidth) / 2;
+        const offsetY = (containerHeight - renderedHeight) / 2;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        facesForFrame.forEach((face, index) => {
+            const { x, y, width, height } = face.bbox;
+            const scaledX = offsetX + x * scale;
+            const scaledY = offsetY + y * scale;
+            const scaledWidth = width * scale;
+            const scaledHeight = height * scale;
+
+            ctx.strokeStyle = '#22c55e';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight);
+
+            const label = `#${index + 1} ${face.detectorSource} (${(face.confidence * 100).toFixed(0)}%)`;
+            ctx.font = '12px sans-serif';
+            const textWidth = ctx.measureText(label).width;
+            ctx.fillStyle = 'rgba(34, 197, 94, 0.8)';
+            ctx.fillRect(scaledX, scaledY - 18, textWidth + 8, 18);
+
+            ctx.fillStyle = 'white';
+            ctx.fillText(label, scaledX + 4, scaledY - 5);
+        });
+    }, [facesForFrame]);
+
+    // Redraw boxes when faces change
+    useEffect(() => {
+        if (selectedFrame && facesForFrame.length > 0) {
+            const timer = setTimeout(drawBoundingBoxes, 100);
+            return () => clearTimeout(timer);
+        }
+    }, [selectedFrame, facesForFrame, drawBoundingBoxes]);
 
     const toggleExpand = (videoId: string) => {
         setExpandedVideoId(expandedVideoId === videoId ? null : videoId);
@@ -227,12 +327,13 @@ export function VideoList({ eventId, videos, loading, onRefresh }: VideoListProp
                                         <div className="border-t">
                                             <div className="grid grid-cols-12 border-b bg-muted/50 p-3 text-xs font-medium text-muted-foreground">
                                                 <div className="col-span-1">Preview</div>
-                                                <div className="col-span-2">Timestamp</div>
+                                                <div className="col-span-1">Timestamp</div>
                                                 <div className="col-span-1">Faces</div>
                                                 <div className="col-span-1">Indexed</div>
                                                 <div className="col-span-2">Status</div>
                                                 <div className="col-span-3">Photo ID</div>
-                                                <div className="col-span-2 text-right">Updated</div>
+                                                <div className="col-span-2">Updated</div>
+                                                <div className="col-span-1 text-right">Actions</div>
                                             </div>
 
                                             <div className="max-h-[400px] overflow-auto">
@@ -242,7 +343,10 @@ export function VideoList({ eventId, videos, loading, onRefresh }: VideoListProp
                                                             {frame.imageUrl ? (
                                                                 <div
                                                                     className="h-10 w-16 overflow-hidden rounded-md border bg-muted cursor-pointer hover:ring-2 hover:ring-primary transition-all group relative"
-                                                                    onClick={() => window.open(`${(frame.imageUrl as string).startsWith('http') ? '' : API_BASE_URL}${frame.imageUrl}`, '_blank')}
+                                                                    onClick={() => handleFrameSelect(
+                                                                        `${(frame.imageUrl as string).startsWith('http') ? '' : API_BASE_URL}${frame.imageUrl}`,
+                                                                        frame.photoId
+                                                                    )}
                                                                 >
                                                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                                                     <img
@@ -257,7 +361,7 @@ export function VideoList({ eventId, videos, loading, onRefresh }: VideoListProp
                                                                 </div>
                                                             )}
                                                         </div>
-                                                        <div className="col-span-2 font-mono text-xs">
+                                                        <div className="col-span-1 font-mono text-xs">
                                                             +{frame.videoTimestamp.toFixed(2)}s
                                                         </div>
                                                         <div className="col-span-1">
@@ -289,8 +393,24 @@ export function VideoList({ eventId, videos, loading, onRefresh }: VideoListProp
                                                         <div className="col-span-3 font-mono text-[10px] text-muted-foreground truncate pr-2" title={frame.photoId}>
                                                             {frame.photoId}
                                                         </div>
-                                                        <div className="col-span-2 text-right text-xs text-muted-foreground">
+                                                        <div className="col-span-2 text-xs text-muted-foreground">
                                                             {formatVideoTime(frame.updatedAt)}
+                                                        </div>
+                                                        <div className="col-span-1 text-right">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-7 w-7"
+                                                                onClick={() => handleReindexFrame(frame.photoId)}
+                                                                disabled={reindexingPhotoId === frame.photoId}
+                                                                title="Re-detect faces with high accuracy"
+                                                            >
+                                                                {reindexingPhotoId === frame.photoId ? (
+                                                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                                                ) : (
+                                                                    <RotateCcw className="h-3.5 w-3.5" />
+                                                                )}
+                                                            </Button>
                                                         </div>
                                                     </div>
                                                 ))}
@@ -303,6 +423,58 @@ export function VideoList({ eventId, videos, loading, onRefresh }: VideoListProp
                     </div>
                 )}
             </CardContent>
+
+            {/* Frame Preview Dialog with Bounding Boxes */}
+            <Dialog open={!!selectedFrame} onOpenChange={(open) => {
+                if (!open) {
+                    setSelectedFrame(null);
+                    setFacesForFrame([]);
+                }
+            }}>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            Frame Preview
+                            {facesLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+                            {!facesLoading && facesForFrame.length > 0 && (
+                                <Badge variant="secondary" className="ml-2">
+                                    {facesForFrame.length} face{facesForFrame.length !== 1 ? 's' : ''} detected
+                                </Badge>
+                            )}
+                        </DialogTitle>
+                    </DialogHeader>
+                    {selectedFrame && (
+                        <div className="relative">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                ref={imageRef}
+                                src={selectedFrame.imageUrl}
+                                alt="Frame preview"
+                                className="w-full h-auto object-contain max-h-[60vh]"
+                                onLoad={drawBoundingBoxes}
+                            />
+                            <canvas
+                                ref={canvasRef}
+                                className="absolute top-0 left-0 pointer-events-none"
+                            />
+                            {facesForFrame.length > 0 && (
+                                <div className="mt-4 p-3 bg-muted rounded-lg">
+                                    <p className="text-sm font-medium mb-2">Detected Faces:</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {facesForFrame.map((face, idx) => (
+                                            <Badge key={idx} variant="outline" className="text-xs">
+                                                #{idx + 1}: {face.detectorSource} ({(face.confidence * 100).toFixed(0)}%)
+                                                {face.age && ` · Age ${face.age.low}-${face.age.high}`}
+                                                {face.gender && ` · ${face.gender}`}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
         </Card>
     );
 }

@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { api } from "@/lib/api";
-import type { Organization, FaceDetectionMode, ImageSourceMode } from "@/lib/types";
+import type { Organization, FaceDetectionMode, ImageSourceMode, FaceRecognitionProvider } from "@/lib/types";
 
 interface OrgSettingsFormProps {
   org: Organization;
@@ -34,6 +34,9 @@ export function OrgSettingsForm({ org, onUpdate }: OrgSettingsFormProps) {
     pythonSidecarUrl: org.pythonSidecarUrl || "",
     enableFallbackDetection: org.enableFallbackDetection,
     enableAlignment: org.enableAlignment,
+    // Face Recognition Provider
+    faceRecognitionProvider: org.faceRecognitionProvider || "COMPREFACE",
+    insightfaceModel: org.insightfaceModel || "buffalo_l",
   });
 
   const handleSave = async () => {
@@ -55,6 +58,8 @@ export function OrgSettingsForm({ org, onUpdate }: OrgSettingsFormProps) {
       updateData.embeddingCacheTtlSeconds = settings.embeddingCacheTtlSeconds;
       updateData.enableFallbackDetection = settings.enableFallbackDetection;
       updateData.enableAlignment = settings.enableAlignment;
+      updateData.faceRecognitionProvider = settings.faceRecognitionProvider;
+      if (settings.insightfaceModel) updateData.insightfaceModel = settings.insightfaceModel;
 
       const response = await api.updateOrgSettings(org.id, updateData as Partial<Organization>);
       if (response.success) {
@@ -80,20 +85,75 @@ export function OrgSettingsForm({ org, onUpdate }: OrgSettingsFormProps) {
         <CardDescription>Configure face detection and search settings</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* CompreFace Settings */}
+        {/* Face Recognition Provider */}
         <div className="space-y-4">
-          <h3 className="font-medium">CompreFace Configuration</h3>
+          <h3 className="font-medium">Face Recognition Provider</h3>
+          <p className="text-sm text-muted-foreground">
+            Choose between CompreFace (external service) or InsightFace (built-in Python sidecar)
+          </p>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
-              <Label htmlFor="comprefaceUrl">CompreFace URL</Label>
-              <Input id="comprefaceUrl" placeholder="http://localhost:8000" value={settings.comprefaceUrl} onChange={(e) => setSettings({ ...settings, comprefaceUrl: e.target.value })} />
+              <Label htmlFor="faceRecognitionProvider">Provider</Label>
+              <select
+                id="faceRecognitionProvider"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={settings.faceRecognitionProvider}
+                onChange={(e) => setSettings({ ...settings, faceRecognitionProvider: e.target.value as FaceRecognitionProvider })}
+              >
+                <option value="COMPREFACE">CompreFace (External)</option>
+                <option value="INSIGHTFACE">InsightFace (Built-in)</option>
+              </select>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="recognitionKey">Recognition API Key</Label>
-              <Input id="recognitionKey" type="password" placeholder="Leave blank to keep current" value={settings.comprefaceRecognitionApiKey} onChange={(e) => setSettings({ ...settings, comprefaceRecognitionApiKey: e.target.value })} />
-            </div>
+            {settings.faceRecognitionProvider === "INSIGHTFACE" && (
+              <div className="grid gap-2">
+                <Label htmlFor="insightfaceModel">InsightFace Model</Label>
+                <select
+                  id="insightfaceModel"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  value={settings.insightfaceModel}
+                  onChange={(e) => setSettings({ ...settings, insightfaceModel: e.target.value })}
+                >
+                  <option value="buffalo_l">buffalo_l (Best Quality, ~326MB)</option>
+                  <option value="buffalo_m">buffalo_m (Medium, ~200MB)</option>
+                  <option value="buffalo_s">buffalo_s (Small, ~100MB)</option>
+                  <option value="antelopev2">antelopev2 (Alternative)</option>
+                </select>
+              </div>
+            )}
           </div>
         </div>
+
+        <Separator />
+
+        {/* CompreFace Settings - Only show when CompreFace is selected */}
+        {settings.faceRecognitionProvider === "COMPREFACE" && (
+          <div className="space-y-4">
+            <h3 className="font-medium">CompreFace Configuration</h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-2">
+                <Label htmlFor="comprefaceUrl">CompreFace URL</Label>
+                <Input id="comprefaceUrl" placeholder="http://localhost:8000" value={settings.comprefaceUrl} onChange={(e) => setSettings({ ...settings, comprefaceUrl: e.target.value })} />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="recognitionKey">Recognition API Key</Label>
+                <Input id="recognitionKey" type="password" placeholder="Leave blank to keep current" value={settings.comprefaceRecognitionApiKey} onChange={(e) => setSettings({ ...settings, comprefaceRecognitionApiKey: e.target.value })} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Python Sidecar Settings - Only show when InsightFace is selected */}
+        {settings.faceRecognitionProvider === "INSIGHTFACE" && (
+          <div className="space-y-4">
+            <h3 className="font-medium">Python Sidecar Configuration</h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-2">
+                <Label htmlFor="pythonSidecarUrl">Python Sidecar URL</Label>
+                <Input id="pythonSidecarUrl" placeholder="http://localhost:4002" value={settings.pythonSidecarUrl} onChange={(e) => setSettings({ ...settings, pythonSidecarUrl: e.target.value })} />
+              </div>
+            </div>
+          </div>
+        )}
 
         <Separator />
 

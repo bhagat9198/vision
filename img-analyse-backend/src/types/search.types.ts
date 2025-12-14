@@ -116,7 +116,7 @@ export interface QdrantFacePayload {
   /** Detection confidence */
   confidence: number;
   /** Which detector found this face */
-  detectorSource: 'compreface' | 'yunet' | 'scrfd';
+  detectorSource: 'compreface' | 'yunet' | 'scrfd' | 'insightface';
   /** Whether face was aligned */
   wasAligned?: boolean;
   /** Estimated age range */

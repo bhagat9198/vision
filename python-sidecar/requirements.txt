@@ -1,7 +1,11 @@
 # =============================================================================
 # Python Sidecar Dependencies
 # =============================================================================
-# Face detection and alignment service using YuNet and SCRFD
+# Complete Face Analysis Service:
+# - Face Detection (YuNet, SCRFD, InsightFace)
+# - Face Alignment (5-point landmarks)
+# - Face Recognition/Embedding (InsightFace ArcFace - 512-dim)
+# - Age & Gender Estimation (InsightFace)
 # =============================================================================
 
 # Web framework
@@ -22,4 +26,15 @@ httpx==0.27.2
 
 # Utilities
 pydantic==2.9.2
+
+# =============================================================================
+# InsightFace - Complete Face Analysis
+# =============================================================================
+# Provides: detection, recognition (embeddings), age/gender estimation
+# Models auto-download on first use (~326MB for buffalo_l)
+# =============================================================================
+insightface>=0.7.3
+
+# Optional: GPU support (uncomment if CUDA is available)
+# onnxruntime-gpu==1.19.2
 

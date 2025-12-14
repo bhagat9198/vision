@@ -103,14 +103,35 @@ class QdrantService {
     // Metadata for payload (optional but useful)
     meta: { eventId: string }
   ): Promise<string[]> {
+    logger.info(`[Qdrant] indexFaces called: orgSlug=${orgSlug}, eventSlug=${eventSlug}, photoId=${photoId}, faces=${faces.length}`);
+
     if (faces.length === 0) {
+      logger.warn(`[Qdrant] No faces to index for photo ${photoId}`);
       return [];
     }
 
     const collectionName = getOrgCollectionName(orgSlug, eventSlug);
+    logger.info(`[Qdrant] Collection name: ${collectionName}`);
     await this.ensureCollection(orgSlug, eventSlug);
 
-    const points: QdrantFacePoint[] = faces.map((face, index) => ({
+    // Validate embeddings before creating points
+    const validFaces = faces.filter((face, index) => {
+      if (!face.embedding || face.embedding.length === 0) {
+        logger.warn(`[Qdrant] Face ${index} has no embedding, skipping`);
+        return false;
+      }
+      if (face.embedding.length !== 512) {
+        logger.warn(`[Qdrant] Face ${index} has unexpected embedding dimension: ${face.embedding.length}`);
+      }
+      return true;
+    });
+
+    if (validFaces.length === 0) {
+      logger.warn(`[Qdrant] No valid faces with embeddings for photo ${photoId}`);
+      return [];
+    }
+
+    const points: QdrantFacePoint[] = validFaces.map((face, index) => ({
       id: uuidv4(),
       vector: face.embedding,
       payload: {
@@ -128,6 +149,8 @@ class QdrantService {
       },
     }));
 
+    logger.info(`[Qdrant] Prepared ${points.length} points for upsert`);
+
     try {
       await qdrantClient.upsert(collectionName, {
         wait: true,
@@ -135,11 +158,11 @@ class QdrantService {
       });
 
       const pointIds = points.map((p) => p.id as string);
-      logger.info(`Indexed ${faces.length} faces for photo ${photoId} in ${collectionName}`);
+      logger.info(`[Qdrant] Successfully indexed ${validFaces.length} faces for photo ${photoId} in ${collectionName}`);
 
       return pointIds;
     } catch (error) {
-      logger.error(`Failed to index faces for photo ${photoId}:`, error);
+      logger.error(`[Qdrant] Failed to index faces for photo ${photoId}:`, error);
       throw error;
     }
   }
@@ -186,6 +209,61 @@ class QdrantService {
       }));
     } catch (error) {
       logger.error(`Failed to search faces in ${collectionName}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all faces for a specific photo.
+   * Used to display face bounding boxes and detector info on the frontend.
+   *
+   * @param orgSlug - Organization Slug
+   * @param eventSlug - Event Slug
+   * @param photoId - Photo UUID
+   * @returns Array of face payloads with bbox, confidence, detectorSource
+   */
+  async getFacesForPhoto(
+    orgSlug: string,
+    eventSlug: string,
+    photoId: string
+  ): Promise<QdrantFacePayload[]> {
+    const collectionName = getOrgCollectionName(orgSlug, eventSlug);
+    logger.info(`[GET_FACES] Getting faces for photo ${photoId} in collection ${collectionName}`);
+
+    try {
+      // Check if collection exists
+      const collections = await qdrantClient.getCollections();
+      const exists = collections.collections.some((c) => c.name === collectionName);
+
+      if (!exists) {
+        logger.warn(`[GET_FACES] Collection ${collectionName} does not exist`);
+        return [];
+      }
+
+      // Use scroll to get all faces for this photoId (no limit)
+      const result = await qdrantClient.scroll(collectionName, {
+        filter: {
+          must: [
+            {
+              key: 'photoId',
+              match: { value: photoId },
+            },
+          ],
+        },
+        with_payload: true,
+        with_vector: false, // Don't need embeddings
+        limit: 100, // Max faces per photo (should be more than enough)
+      });
+
+      const faces = result.points.map((point) => point.payload as QdrantFacePayload);
+      logger.info(`[GET_FACES] Found ${faces.length} faces for photo ${photoId}`);
+      return faces;
+    } catch (error: any) {
+      if (error?.status === 404 || error?.response?.status === 404) {
+        logger.warn(`[GET_FACES] Collection ${collectionName} does not exist`);
+        return [];
+      }
+      logger.error(`[GET_FACES] Failed to get faces for photo ${photoId}:`, error);
       throw error;
     }
   }

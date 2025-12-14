@@ -844,7 +844,9 @@ export const OrganizationScalarFieldEnum = {
   embeddingCacheTtlSeconds: 'embeddingCacheTtlSeconds',
   pythonSidecarUrl: 'pythonSidecarUrl',
   enableFallbackDetection: 'enableFallbackDetection',
-  enableAlignment: 'enableAlignment'
+  enableAlignment: 'enableAlignment',
+  faceRecognitionProvider: 'faceRecognitionProvider',
+  insightfaceModel: 'insightfaceModel'
 } as const
 
 export type OrganizationScalarFieldEnum = (typeof OrganizationScalarFieldEnum)[keyof typeof OrganizationScalarFieldEnum]
@@ -1035,6 +1037,20 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'FaceRecognitionProvider'
+ */
+export type EnumFaceRecognitionProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FaceRecognitionProvider'>
+    
+
+
+/**
+ * Reference to a field of type 'FaceRecognitionProvider[]'
+ */
+export type ListEnumFaceRecognitionProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FaceRecognitionProvider[]'>
     
 
 

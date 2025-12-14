@@ -265,6 +265,168 @@ export const indexController = {
       } as ApiResponse);
     }
   },
+
+  /**
+   * Get faces for a specific photo from Qdrant.
+   * Returns bounding boxes, confidence, and detector source for each face.
+   */
+  async getPhotoFaces(req: Request, res: Response): Promise<void> {
+    try {
+      const { photoId } = req.params;
+      const { eventId, eventSlug } = req.query as { eventId?: string; eventSlug?: string };
+
+      if (!photoId || !eventId) {
+        res.status(400).json({
+          success: false,
+          error: 'photoId and eventId are required',
+        } as ApiResponse);
+        return;
+      }
+
+      const settings = await resolveOrgSettings(req, eventId);
+      if (!settings) {
+        res.status(401).json({
+          success: false,
+          error: 'Not authenticated or organization not found',
+        } as ApiResponse);
+        return;
+      }
+
+      // Get faces from Qdrant
+      const faces = await qdrantService.getFacesForPhoto(
+        settings.slug,
+        eventSlug || eventId,
+        photoId
+      );
+
+      res.json({
+        success: true,
+        data: {
+          photoId,
+          faces: faces.map((face) => ({
+            faceIndex: face.faceIndex,
+            bbox: face.bbox,
+            confidence: face.confidence,
+            detectorSource: face.detectorSource,
+            age: face.age,
+            gender: face.gender,
+            pose: face.pose,
+          })),
+        },
+      } as ApiResponse);
+    } catch (error) {
+      logger.error('Failed to get photo faces:', error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to get photo faces',
+      } as ApiResponse);
+    }
+  },
+
+  /**
+   * Re-index a photo with optional high accuracy mode (larger det_size).
+   * This is useful when initial detection missed faces in the image.
+   */
+  async reindexPhoto(req: Request, res: Response): Promise<void> {
+    try {
+      const { photoId } = req.params;
+      const { eventId, eventSlug, highAccuracy } = req.body as {
+        eventId?: string;
+        eventSlug?: string;
+        highAccuracy?: boolean;
+      };
+
+      // eventId can be either UUID or slug
+      const eventIdOrSlug = eventId || eventSlug;
+
+      if (!photoId || !eventIdOrSlug) {
+        res.status(400).json({
+          success: false,
+          error: 'photoId and eventId are required',
+        } as ApiResponse);
+        return;
+      }
+
+      const settings = await resolveOrgSettings(req, eventIdOrSlug);
+      if (!settings) {
+        res.status(401).json({
+          success: false,
+          error: 'Not authenticated or organization not found',
+        } as ApiResponse);
+        return;
+      }
+
+      // Get image info from DB - search by photoId and either eventId or eventSlug
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(eventIdOrSlug);
+      const image = await prisma.eventImageStatus.findFirst({
+        where: {
+          photoId,
+          ...(isUuid ? { eventId: eventIdOrSlug } : { eventSlug: eventIdOrSlug }),
+        },
+        select: { id: true, imageUrl: true, status: true, eventId: true, eventSlug: true },
+      });
+
+      if (!image) {
+        res.status(404).json({
+          success: false,
+          error: 'Image not found',
+        } as ApiResponse);
+        return;
+      }
+
+      if (!image.imageUrl) {
+        res.status(400).json({
+          success: false,
+          error: 'Image file not available for re-indexing',
+        } as ApiResponse);
+        return;
+      }
+
+      // Use the actual eventId and eventSlug from the found image
+      const actualEventId = image.eventId;
+      const actualEventSlug = image.eventSlug || eventSlug || eventIdOrSlug;
+
+      // Delete existing faces from Qdrant first
+      await qdrantService.deleteFacesForPhoto(settings.slug, actualEventSlug, photoId);
+
+      // Reset the image status
+      await prisma.eventImageStatus.update({
+        where: { id: image.id },
+        data: {
+          status: 'PENDING',
+          facesDetected: 0,
+          facesIndexed: 0,
+          error: null,
+        },
+      });
+
+      // Add to indexing queue with high accuracy flag
+      await addToIndexingQueue({
+        photoId,
+        eventId: actualEventId,
+        eventSlug: actualEventSlug,
+        imagePath: image.imageUrl,
+        orgSettings: settings,
+        highAccuracy: highAccuracy || false, // Pass flag to use larger det_size
+      });
+
+      res.json({
+        success: true,
+        message: `Photo ${photoId} queued for re-indexing${highAccuracy ? ' with high accuracy mode' : ''}`,
+        data: {
+          photoId,
+          highAccuracy: highAccuracy || false,
+        },
+      } as ApiResponse);
+    } catch (error) {
+      logger.error('Failed to reindex photo:', error);
+      res.status(500).json({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to reindex photo',
+      } as ApiResponse);
+    }
+  },
+
   /**
    * Delete a video and its frames.
    */

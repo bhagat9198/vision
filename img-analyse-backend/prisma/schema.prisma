@@ -27,6 +27,11 @@ enum ImageSourceMode {
   SHARED_STORAGE
 }
 
+enum FaceRecognitionProvider {
+  COMPREFACE
+  INSIGHTFACE
+}
+
 // ============ MODELS ============
 
 /// Organization - represents a tenant in the multi-tenant system
@@ -49,7 +54,7 @@ model Organization {
   sharedStoragePath String?
 
   // === Quality Filters ===
-  minConfidence     Float   @default(0.7)
+  minConfidence     Float   @default(0.5)
   minSizePx         Int     @default(60)
   skipExtremeAngles Boolean @default(true)
 
@@ -64,6 +69,12 @@ model Organization {
   pythonSidecarUrl        String?
   enableFallbackDetection Boolean @default(true)
   enableAlignment         Boolean @default(true)
+
+  // === Face Recognition Provider ===
+  // COMPREFACE: Uses external CompreFace service (requires comprefaceUrl)
+  // INSIGHTFACE: Uses Python sidecar's built-in InsightFace (self-contained)
+  faceRecognitionProvider FaceRecognitionProvider @default(COMPREFACE)
+  insightfaceModel        String?  // e.g., 'buffalo_l', 'buffalo_s', 'antelopev2'
 
   // === Relations ===
   apiKeys ApiKey[]

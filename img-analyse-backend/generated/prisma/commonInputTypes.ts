@@ -96,6 +96,13 @@ export type IntFilter<$PrismaModel = never> = {
   not?: Prisma.NestedIntFilter<$PrismaModel> | number
 }
 
+export type EnumFaceRecognitionProviderFilter<$PrismaModel = never> = {
+  equals?: $Enums.FaceRecognitionProvider | Prisma.EnumFaceRecognitionProviderFieldRefInput<$PrismaModel>
+  in?: $Enums.FaceRecognitionProvider[] | Prisma.ListEnumFaceRecognitionProviderFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FaceRecognitionProvider[] | Prisma.ListEnumFaceRecognitionProviderFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFaceRecognitionProviderFilter<$PrismaModel> | $Enums.FaceRecognitionProvider
+}
+
 export type SortOrderInput = {
   sort: Prisma.SortOrder
   nulls?: Prisma.NullsOrder
@@ -209,6 +216,16 @@ export type IntWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedIntFilter<$PrismaModel>
   _max?: Prisma.NestedIntFilter<$PrismaModel>
+}
+
+export type EnumFaceRecognitionProviderWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FaceRecognitionProvider | Prisma.EnumFaceRecognitionProviderFieldRefInput<$PrismaModel>
+  in?: $Enums.FaceRecognitionProvider[] | Prisma.ListEnumFaceRecognitionProviderFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FaceRecognitionProvider[] | Prisma.ListEnumFaceRecognitionProviderFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFaceRecognitionProviderWithAggregatesFilter<$PrismaModel> | $Enums.FaceRecognitionProvider
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFaceRecognitionProviderFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFaceRecognitionProviderFilter<$PrismaModel>
 }
 
 export type DateTimeNullableFilter<$PrismaModel = never> = {
@@ -360,6 +377,13 @@ export type NestedIntFilter<$PrismaModel = never> = {
   not?: Prisma.NestedIntFilter<$PrismaModel> | number
 }
 
+export type NestedEnumFaceRecognitionProviderFilter<$PrismaModel = never> = {
+  equals?: $Enums.FaceRecognitionProvider | Prisma.EnumFaceRecognitionProviderFieldRefInput<$PrismaModel>
+  in?: $Enums.FaceRecognitionProvider[] | Prisma.ListEnumFaceRecognitionProviderFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FaceRecognitionProvider[] | Prisma.ListEnumFaceRecognitionProviderFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFaceRecognitionProviderFilter<$PrismaModel> | $Enums.FaceRecognitionProvider
+}
+
 export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -477,6 +501,16 @@ export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedIntFilter<$PrismaModel>
   _max?: Prisma.NestedIntFilter<$PrismaModel>
+}
+
+export type NestedEnumFaceRecognitionProviderWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FaceRecognitionProvider | Prisma.EnumFaceRecognitionProviderFieldRefInput<$PrismaModel>
+  in?: $Enums.FaceRecognitionProvider[] | Prisma.ListEnumFaceRecognitionProviderFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FaceRecognitionProvider[] | Prisma.ListEnumFaceRecognitionProviderFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFaceRecognitionProviderWithAggregatesFilter<$PrismaModel> | $Enums.FaceRecognitionProvider
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFaceRecognitionProviderFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFaceRecognitionProviderFilter<$PrismaModel>
 }
 
 export type NestedDateTimeNullableFilter<$PrismaModel = never> = {

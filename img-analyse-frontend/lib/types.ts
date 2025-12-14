@@ -39,6 +39,7 @@ export interface HealthCheckResponse {
 
 export type FaceDetectionMode = "RECOGNITION_ONLY" | "DETECTION_THEN_RECOGNITION";
 export type ImageSourceMode = "URL" | "MULTIPART" | "SHARED_STORAGE";
+export type FaceRecognitionProvider = "COMPREFACE" | "INSIGHTFACE";
 
 export interface Organization {
   id: string;
@@ -74,6 +75,10 @@ export interface Organization {
   pythonSidecarUrl?: string | null;
   enableFallbackDetection: boolean;
   enableAlignment: boolean;
+
+  // Face Recognition Provider
+  faceRecognitionProvider: FaceRecognitionProvider;
+  insightfaceModel?: string | null;
 }
 
 export interface OrganizationListItem {
@@ -187,6 +192,32 @@ export interface ImageStatus {
   error?: string | null;
   updatedAt: string;
   isActive: boolean;
+}
+
+// =============================================================================
+// Face Detail Types (from Qdrant)
+// =============================================================================
+
+export interface BoundingBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface FaceDetail {
+  faceIndex: number;
+  bbox: BoundingBox;
+  confidence: number;
+  detectorSource: 'compreface' | 'yunet' | 'scrfd' | 'insightface';
+  age?: { low: number; high: number };
+  gender?: string;
+  pose?: { pitch: number; roll: number; yaw: number };
+}
+
+export interface PhotoFacesResponse {
+  photoId: string;
+  faces: FaceDetail[];
 }
 
 // =============================================================================

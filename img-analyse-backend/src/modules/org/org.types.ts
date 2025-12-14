@@ -25,6 +25,8 @@ export interface RegisterOrgResponse {
   };
 }
 
+export type FaceRecognitionProvider = 'COMPREFACE' | 'INSIGHTFACE';
+
 export interface UpdateOrgSettingsRequest {
   name?: string;
   comprefaceUrl?: string;
@@ -42,6 +44,9 @@ export interface UpdateOrgSettingsRequest {
   pythonSidecarUrl?: string;
   enableFallbackDetection?: boolean;
   enableAlignment?: boolean;
+  // Face Recognition Provider
+  faceRecognitionProvider?: FaceRecognitionProvider;
+  insightfaceModel?: string;  // e.g., 'buffalo_l', 'buffalo_s', 'antelopev2'
 }
 
 // =============================================================================
@@ -84,6 +89,10 @@ export interface OrgSettings {
   pythonSidecarUrl: string | null;
   enableFallbackDetection: boolean;
   enableAlignment: boolean;
+
+  // Face Recognition Provider
+  faceRecognitionProvider: FaceRecognitionProvider;
+  insightfaceModel: string | null;
 }
 
 /**
@@ -110,6 +119,8 @@ export function toOrgSettings(org: Organization): OrgSettings {
     pythonSidecarUrl: org.pythonSidecarUrl || env.pythonSidecarUrl,
     enableFallbackDetection: org.enableFallbackDetection,
     enableAlignment: org.enableAlignment,
+    faceRecognitionProvider: org.faceRecognitionProvider,
+    insightfaceModel: org.insightfaceModel,
   };
 }
 

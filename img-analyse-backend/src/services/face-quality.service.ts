@@ -110,6 +110,12 @@ class FaceQualityService {
         accepted.push(face);
       } else if (result.rejectionReason) {
         rejected.push({ face, reason: result.rejectionReason });
+        // Log detailed rejection info
+        logger.info(
+          `[Quality] Face ${face.id} REJECTED: reason=${result.rejectionReason}, ` +
+          `bbox=${face.bbox.width}x${face.bbox.height}, confidence=${face.confidence.toFixed(3)}, ` +
+          `thresholds: minSize=${settings.minSizePx}, minConf=${settings.minConfidence}`
+        );
       }
     }
 

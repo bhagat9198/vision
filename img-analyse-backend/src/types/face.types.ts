@@ -74,7 +74,7 @@ export interface DetectedFace {
   /** 106-point 2D facial landmarks */
   landmarks2d106?: Array<[number, number]>;
   /** Which detector found this face */
-  detectorSource: 'compreface' | 'yunet' | 'scrfd';
+  detectorSource: 'compreface' | 'yunet' | 'scrfd' | 'insightface';
 }
 
 /**
@@ -85,6 +85,8 @@ export interface FaceWithEmbedding extends DetectedFace {
   embedding: number[];
   /** Whether face was aligned before embedding extraction */
   wasAligned: boolean;
+  /** Which provider generated the embedding (compreface, insightface, insightface-fallback) */
+  embeddingProvider?: string;
 }
 
 // =============================================================================
@@ -137,7 +139,7 @@ export interface DetectionResult {
   /** Processing time in milliseconds */
   processingTimeMs: number;
   /** Which detector(s) were used */
-  detectorsUsed: Array<'compreface' | 'yunet' | 'scrfd'>;
+  detectorsUsed: Array<'compreface' | 'yunet' | 'scrfd' | 'insightface'>;
 }
 
 // =============================================================================
@@ -177,6 +179,6 @@ export interface IndexPhotoResult {
   /** Processing time in milliseconds */
   processingTimeMs: number;
   /** Which detectors were used */
-  detectorsUsed: Array<'compreface' | 'yunet' | 'scrfd'>;
+  detectorsUsed: Array<'compreface' | 'yunet' | 'scrfd' | 'insightface'>;
 }
 

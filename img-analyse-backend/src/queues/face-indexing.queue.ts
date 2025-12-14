@@ -45,6 +45,8 @@ export interface FaceIndexingJobData {
     imageUrl?: string;
     imagePath?: string;
     orgSettings: OrgSettings;
+    /** If true, use larger det_size (800x800) for better small face detection */
+    highAccuracy?: boolean;
 }
 
 // Create Worker
@@ -83,9 +85,20 @@ const worker = new Worker<FaceIndexingJobData>(
             }
 
             // 2. Detect & Embed
-            const { faces, detectionResult } = await faceDetectionService.detectAndEmbed(orgSettings, imageBuffer);
+            const highAccuracy = job.data.highAccuracy || false;
+            logger.info(`[Queue] Starting detectAndEmbed for photo ${photoId}. Provider: ${orgSettings.faceRecognitionProvider}, Mode: ${orgSettings.faceDetectionMode}, HighAccuracy: ${highAccuracy}`);
+            const { faces, detectionResult } = await faceDetectionService.detectAndEmbed(orgSettings, imageBuffer, { highAccuracy });
+
+            logger.info(`[Queue] detectAndEmbed returned ${faces.length} faces for photo ${photoId}. Detectors used: ${detectionResult.detectorsUsed.join(', ')}`);
+
+            // Log embedding info for debugging
+            if (faces.length > 0) {
+                const embeddingLengths = faces.map(f => f.embedding?.length || 0);
+                logger.info(`[Queue] Face embedding dimensions: [${embeddingLengths.join(', ')}]`);
+            }
 
             // Index faces in Qdrant
+            logger.info(`[Queue] Indexing ${faces.length} faces to Qdrant for photo ${photoId}...`);
             const pointIds = await qdrantService.indexFaces(
                 job.data.orgSettings.slug,
                 job.data.eventSlug || job.data.eventId, // Use slug if available
@@ -93,6 +106,7 @@ const worker = new Worker<FaceIndexingJobData>(
                 faces,
                 { eventId: job.data.eventId }
             );
+            logger.info(`[Queue] Qdrant indexing complete. Indexed ${pointIds.length} points for photo ${photoId}`);
 
             // 4. Reporting
             const duration = Date.now() - startTime;

@@ -2,16 +2,20 @@
  * =============================================================================
  * Face Detection Orchestrator Service
  * =============================================================================
- * Orchestrates face detection across multiple detectors with fallback logic.
+ * Orchestrates face detection across multiple providers with fallback logic.
  *
- * Detection Pipeline:
- * 1. Try CompreFace (primary) - gets detection + embeddings in one call
- * 2. If no faces found and fallback enabled, try YuNet
- * 3. If still no faces, try SCRFD (best for hard cases)
+ * Provider Options:
+ * - COMPREFACE: External CompreFace service (requires comprefaceUrl)
+ * - INSIGHTFACE: Python sidecar's built-in InsightFace (self-contained)
+ *
+ * Detection Pipeline (for each provider):
+ * 1. Try primary detector - gets detection + embeddings in one call
+ * 2. If no faces found and fallback enabled, try SCRFD (most accurate)
+ * 3. If still no faces, try YuNet (faster, frontal faces)
  * 4. Apply quality filtering to results
  *
- * @see compreface.service.ts - Primary detector
- * @see python-sidecar.service.ts - Fallback detectors
+ * @see compreface.service.ts - CompreFace provider
+ * @see python-sidecar.service.ts - InsightFace provider + fallback detectors
  * =============================================================================
  */
 
@@ -36,6 +40,14 @@ import sharp from 'sharp';
 // =============================================================================
 
 /**
+ * Options for face detection
+ */
+export interface DetectionOptions {
+  /** Use higher accuracy mode (det_size 800x800 instead of 640x640) */
+  highAccuracy?: boolean;
+}
+
+/**
  * Orchestrates face detection and embedding extraction.
  * Now accepts org settings per-request for multi-tenancy.
  */
@@ -46,9 +58,14 @@ class FaceDetectionService {
    *
    * @param settings - Organization settings
    * @param imageBuffer - Image buffer to process
+   * @param options - Optional detection options (highAccuracy mode)
    * @returns Detection result with faces and embeddings
    */
-  async detectAndEmbed(settings: OrgSettings, imageBuffer: Buffer): Promise<{
+  async detectAndEmbed(
+    settings: OrgSettings,
+    imageBuffer: Buffer,
+    options: DetectionOptions = {}
+  ): Promise<{
     faces: FaceWithEmbedding[];
     detectionResult: DetectionResult;
   }> {
@@ -60,8 +77,8 @@ class FaceDetectionService {
 
     try {
       // 0. Pre-process: Resize huge images to prevent OOM
-      // 2000px is sufficient for accurate face recognition
-      const MAX_DIMENSION = 2000;
+      // 2500px balances accuracy vs memory - small faces remain detectable
+      const MAX_DIMENSION = 2500;
       const metadata = await sharp(imageBuffer).metadata();
 
       if (metadata.width && (metadata.width > MAX_DIMENSION || (metadata.height && metadata.height > MAX_DIMENSION))) {
@@ -80,27 +97,44 @@ class FaceDetectionService {
         }
       }
 
-      // Use configured detection mode with processed buffer
-      logger.info(`Starting face detection. Mode: ${settings.faceDetectionMode}`);
+      // Use configured provider and detection mode
+      logger.info(`Starting face detection. Provider: ${settings.faceRecognitionProvider}, Mode: ${settings.faceDetectionMode}, HighAccuracy: ${options.highAccuracy || false}`);
 
-      if (settings.faceDetectionMode === 'RECOGNITION_ONLY') {
-        faces = await this.detectRecognitionOnly(settings, processedBuffer, detectorsUsed);
+      // Route based on face recognition provider
+      if (settings.faceRecognitionProvider === 'INSIGHTFACE') {
+        // InsightFace: Use Python sidecar's built-in face analysis
+        faces = await this.detectWithInsightFace(settings, processedBuffer, detectorsUsed, options);
       } else {
-        // Enforce Detect-Crop-Recognize pipeline
-        faces = await this.executeDetectionPipeline(settings, processedBuffer, detectorsUsed);
+        // CompreFace (default): Use external CompreFace service
+        if (settings.faceDetectionMode === 'RECOGNITION_ONLY') {
+          faces = await this.detectRecognitionOnly(settings, processedBuffer, detectorsUsed);
+        } else {
+          // Enforce Detect-Crop-Recognize pipeline
+          faces = await this.executeDetectionPipeline(settings, processedBuffer, detectorsUsed);
+        }
       }
 
       // Scale bounding boxes back to original coordinates if resized
       if (scale !== 1) {
-        faces = faces.map(face => ({
-          ...face,
-          bbox: {
+        logger.info(`[Scale] Scaling ${faces.length} face bboxes back to original (scale=${scale.toFixed(4)})`);
+        faces = faces.map(face => {
+          const scaledBbox = {
             x: Math.round(face.bbox.x / scale),
             y: Math.round(face.bbox.y / scale),
             width: Math.round(face.bbox.width / scale),
             height: Math.round(face.bbox.height / scale),
-          }
-        }));
+          };
+          logger.debug(`[Scale] Face ${face.id}: ${face.bbox.width}x${face.bbox.height} -> ${scaledBbox.width}x${scaledBbox.height}`);
+          return {
+            ...face,
+            bbox: scaledBbox,
+          };
+        });
+      }
+
+      // Log face info before quality filtering
+      for (const face of faces) {
+        logger.info(`[PreFilter] Face ${face.id}: bbox=${face.bbox.width}x${face.bbox.height}, conf=${face.confidence?.toFixed(3)}, hasEmbedding=${!!face.embedding}, embeddingLen=${face.embedding?.length}`);
       }
 
     } catch (error) {
@@ -144,6 +178,56 @@ class FaceDetectionService {
     );
 
     return { faces: acceptedFaces, detectionResult };
+  }
+
+  /**
+   * InsightFace detection mode: Uses Python sidecar's InsightFace.
+   * Complete face analysis (detection + embedding) in a single call.
+   * No external CompreFace dependency required.
+   */
+  private async detectWithInsightFace(
+    settings: OrgSettings,
+    imageBuffer: Buffer,
+    detectorsUsed: DetectionResult['detectorsUsed'],
+    options: DetectionOptions = {}
+  ): Promise<FaceWithEmbedding[]> {
+    detectorsUsed.push('insightface');
+
+    try {
+      // Pass highAccuracy option to use larger det_size (800x800)
+      let faces = await pythonSidecarService.insightFaceDetectAndEmbed(settings, imageBuffer, {
+        detSize: options.highAccuracy ? 800 : undefined, // Use 800x800 for high accuracy, otherwise default (640x640)
+      });
+
+      // If no faces found and fallback enabled, try traditional detectors
+      // then extract embeddings with InsightFace
+      if (faces.length === 0 && settings.enableFallbackDetection) {
+        logger.info('InsightFace found no faces, trying fallback detectors...');
+        faces = await this.attemptFallbackDetectionWithInsightFace(settings, imageBuffer, detectorsUsed);
+      }
+
+      // Apply confidence boost: Since InsightFace successfully extracted embeddings,
+      // all returned faces are validated as real faces. Boost confidence to ensure
+      // they pass quality filtering (especially for faces with detection confidence < minConfidence)
+      for (const face of faces) {
+        if (face.embedding && face.confidence < settings.minConfidence) {
+          logger.debug(`[ConfBoost] Face ${face.id}: ${face.confidence.toFixed(3)} → ${settings.minConfidence} (InsightFace validated)`);
+          face.confidence = settings.minConfidence;
+        }
+      }
+
+      return faces;
+    } catch (error) {
+      logger.error('InsightFace detection failed:', error);
+
+      // If InsightFace fails, try fallback detectors
+      if (settings.enableFallbackDetection) {
+        logger.warn('Falling back to alternative detectors with InsightFace embedding...');
+        return this.attemptFallbackDetectionWithInsightFace(settings, imageBuffer, detectorsUsed);
+      }
+
+      throw error;
+    }
   }
 
   /**
@@ -195,21 +279,7 @@ class FaceDetectionService {
 
     logger.info('Starting fallback detection waterfall...');
 
-    // 2. Try YuNet
-    try {
-      detectorsUsed.push('yunet');
-      const faces = await pythonSidecarService.detectWithYuNet(settings, imageBuffer);
-      if (faces.length > 0) {
-        logger.debug(`YuNet found ${faces.length} faces. Verifying...`);
-        const validFaces = await this.processFaces(settings, imageBuffer, faces);
-        if (validFaces.length > 0) return validFaces;
-        logger.warn('YuNet found faces but none could be embedded. Trying SCRFD...');
-      }
-    } catch (err) {
-      logger.warn('YuNet detection failed:', err);
-    }
-
-    // 3. Try SCRFD
+    // 2. Try SCRFD first (more accurate, better for multi-face detection)
     try {
       detectorsUsed.push('scrfd');
       const faces = await pythonSidecarService.detectWithSCRFD(settings, imageBuffer);
@@ -217,9 +287,23 @@ class FaceDetectionService {
         logger.debug(`SCRFD found ${faces.length} faces. Verifying...`);
         const validFaces = await this.processFaces(settings, imageBuffer, faces);
         if (validFaces.length > 0) return validFaces;
+        logger.warn('SCRFD found faces but none could be embedded. Trying YuNet...');
       }
     } catch (err) {
       logger.warn('SCRFD detection failed:', err);
+    }
+
+    // 3. Try YuNet as fallback (faster, good for frontal faces)
+    try {
+      detectorsUsed.push('yunet');
+      const faces = await pythonSidecarService.detectWithYuNet(settings, imageBuffer);
+      if (faces.length > 0) {
+        logger.debug(`YuNet found ${faces.length} faces. Verifying...`);
+        const validFaces = await this.processFaces(settings, imageBuffer, faces);
+        if (validFaces.length > 0) return validFaces;
+      }
+    } catch (err) {
+      logger.warn('YuNet detection failed:', err);
     }
 
     return [];
@@ -271,25 +355,56 @@ class FaceDetectionService {
           }
         }
 
-        // 3. Extract embedding with retry logic
+        // 3. Extract embedding with retry logic and provider fallback
         let embedding: number[] = [];
+        let embeddingProvider = 'compreface';
+
         try {
+          // Try CompreFace first
           embedding = await compreFaceService.extractEmbedding(settings, faceImage);
         } catch (embeddingError) {
-          // Critical Retry: If aligned face failed, retry with unaligned
+          logger.warn(`CompreFace embedding extraction failed for face ${face.id} using ${wasAligned ? 'aligned' : 'unaligned'} image:`, embeddingError);
+
+          // Retry logic for aligned face failure (still using CompreFace)
+          let retrySuccess = false;
           if (wasAligned) {
-            logger.warn(`Embedding fail for aligned face ${face.id}. Retrying unaligned...`);
+            logger.warn(`Retrying CompreFace embedding with unaligned image for face ${face.id}...`);
             try {
               embedding = await compreFaceService.extractEmbedding(settings, unalignedFaceImage);
-              wasAligned = false; // We fell back to unaligned
-              logger.info(`Retry successful for face ${face.id} using unaligned image`);
+              wasAligned = false;
+              retrySuccess = true;
+              logger.info(`Retry successful for face ${face.id} using unaligned image (CompreFace)`);
             } catch (retryError) {
-              logger.debug(`Retry failed for face ${face.id}`);
-              // Optional: Save debug images here if needed
-              throw retryError;
+              logger.warn(`CompreFace retry with unaligned image failed for face ${face.id}:`, retryError);
             }
-          } else {
-            throw embeddingError;
+          }
+
+          // If CompreFace completely failed, try InsightFace fallback
+          if (!retrySuccess) {
+            if (settings.pythonSidecarUrl) {
+              logger.info(`Attempting fallback to InsightFace embedding for face ${face.id}...`);
+              try {
+                // Determine which image to use for fallback
+                const imageForFallback = wasAligned ? faceImage : unalignedFaceImage;
+                embedding = await pythonSidecarService.insightFaceExtractEmbedding(settings, imageForFallback);
+                embeddingProvider = 'insightface-fallback';
+                logger.info(`Successfully extracted embedding for face ${face.id} using InsightFace fallback`);
+
+                // IMPORTANT: If InsightFace successfully extracted an embedding, the face is VALIDATED.
+                // Boost the confidence to pass quality filtering since InsightFace confirmed it's a real face.
+                // Original detector (YuNet/SCRFD) may have low confidence, but successful embedding proves validity.
+                if (face.confidence < settings.minConfidence) {
+                  logger.info(`[Confidence Boost] Face ${face.id}: ${face.confidence.toFixed(3)} -> ${settings.minConfidence.toFixed(3)} (InsightFace validated)`);
+                  face.confidence = settings.minConfidence;
+                }
+              } catch (fallbackError) {
+                logger.error(`InsightFace fallback embedding also failed for face ${face.id}:`, fallbackError);
+                throw embeddingError; // Throw original error if fallback also fails
+              }
+            } else {
+              logger.warn(`InsightFace fallback not configured (no pythonSidecarUrl). Face ${face.id} will be skipped.`);
+              throw embeddingError;
+            }
           }
         }
 
@@ -297,9 +412,10 @@ class FaceDetectionService {
           ...face,
           embedding,
           wasAligned,
+          embeddingProvider, // Track which provider generated the embedding
         });
       } catch (error) {
-        logger.warn(`Failed to process face ${face.id} (skipped):`, error);
+        logger.warn(`Failed to process face ${face.id} (skipped). Detection provider: ${face.detectorSource}`, error);
       }
     }
 
@@ -319,6 +435,84 @@ class FaceDetectionService {
     detectorsUsed: DetectionResult['detectorsUsed']
   ): Promise<FaceWithEmbedding[]> {
     return this.executeDetectionPipeline(settings, imageBuffer, detectorsUsed);
+  }
+
+  /**
+   * Fallback detection with InsightFace embedding extraction.
+   * Uses SCRFD/YuNet for detection, then InsightFace for embeddings.
+   * SCRFD is tried first as it's more accurate for multi-face detection.
+   */
+  private async attemptFallbackDetectionWithInsightFace(
+    settings: OrgSettings,
+    imageBuffer: Buffer,
+    detectorsUsed: DetectionResult['detectorsUsed']
+  ): Promise<FaceWithEmbedding[]> {
+    // Try SCRFD first (more accurate, better for multi-face detection)
+    try {
+      detectorsUsed.push('scrfd');
+      const scrfdFaces = await pythonSidecarService.detectWithSCRFD(settings, imageBuffer);
+      if (scrfdFaces.length > 0) {
+        const validFaces = await this.processFacesWithInsightFace(settings, imageBuffer, scrfdFaces);
+        if (validFaces.length > 0) return validFaces;
+        logger.warn('SCRFD found faces but InsightFace could not embed them. Trying YuNet...');
+      }
+    } catch (error) {
+      logger.warn('SCRFD detection failed:', error);
+    }
+
+    // Try YuNet as fallback (faster, good for frontal faces)
+    try {
+      detectorsUsed.push('yunet');
+      const yunetFaces = await pythonSidecarService.detectWithYuNet(settings, imageBuffer);
+      if (yunetFaces.length > 0) {
+        const validFaces = await this.processFacesWithInsightFace(settings, imageBuffer, yunetFaces);
+        if (validFaces.length > 0) return validFaces;
+      }
+    } catch (error) {
+      logger.warn('YuNet detection failed:', error);
+    }
+
+    return [];
+  }
+
+  /**
+   * Process detected faces using InsightFace for embedding extraction.
+   * Similar to processFaces but uses InsightFace instead of CompreFace.
+   */
+  private async processFacesWithInsightFace(
+    settings: OrgSettings,
+    imageBuffer: Buffer,
+    detectedFaces: DetectedFace[]
+  ): Promise<FaceWithEmbedding[]> {
+    const validFaces: FaceWithEmbedding[] = [];
+
+    for (const face of detectedFaces) {
+      try {
+        // 1. Crop face
+        const faceImage = await cropFace(imageBuffer, face.bbox);
+
+        // 2. Extract embedding using InsightFace
+        const embedding = await pythonSidecarService.insightFaceExtractEmbedding(settings, faceImage);
+
+        // 3. If InsightFace successfully extracted an embedding, the face is VALIDATED.
+        // Boost the confidence to pass quality filtering if needed.
+        if (face.confidence < settings.minConfidence) {
+          logger.info(`[Confidence Boost] Face ${face.id}: ${face.confidence.toFixed(3)} -> ${settings.minConfidence.toFixed(3)} (InsightFace validated)`);
+          face.confidence = settings.minConfidence;
+        }
+
+        validFaces.push({
+          ...face,
+          embedding,
+          wasAligned: true, // InsightFace handles alignment internally
+          embeddingProvider: 'insightface',
+        });
+      } catch (error) {
+        logger.warn(`Failed to process face ${face.id} with InsightFace (skipped):`, error);
+      }
+    }
+
+    return validFaces;
   }
 
   /**

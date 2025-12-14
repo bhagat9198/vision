@@ -107,6 +107,70 @@ router.delete('/photo/:photoId', requireCompreFace, indexController.deletePhoto)
 
 /**
  * @swagger
+ * /api/v1/index/photo/{photoId}/faces:
+ *   get:
+ *     summary: Get all faces for a photo
+ *     description: Returns bounding boxes, confidence, and detector source for each face
+ *     tags: [Indexing]
+ *     parameters:
+ *       - in: path
+ *         name: photoId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: eventId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: eventSlug
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Face details for the photo
+ */
+router.get('/photo/:photoId/faces', indexController.getPhotoFaces);
+
+/**
+ * @swagger
+ * /api/v1/index/photo/{photoId}/reindex:
+ *   post:
+ *     summary: Re-index a photo with optional high accuracy mode
+ *     description: Deletes existing faces and re-detects with optional larger det_size (800x800)
+ *     tags: [Indexing]
+ *     security:
+ *       - ApiKeyAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: photoId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [eventId]
+ *             properties:
+ *               eventId:
+ *                 type: string
+ *               eventSlug:
+ *                 type: string
+ *               highAccuracy:
+ *                 type: boolean
+ *                 description: If true, uses det_size 800x800 for better small face detection
+ *     responses:
+ *       200:
+ *         description: Photo queued for re-indexing
+ */
+router.post('/photo/:photoId/reindex', indexController.reindexPhoto);
+
+/**
+ * @swagger
  * /api/v1/index/event/{eventId}:
  *   delete:
  *     summary: Delete all indexed faces for an event

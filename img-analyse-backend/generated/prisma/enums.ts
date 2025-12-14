@@ -26,6 +26,14 @@ export const ImageSourceMode = {
 export type ImageSourceMode = (typeof ImageSourceMode)[keyof typeof ImageSourceMode]
 
 
+export const FaceRecognitionProvider = {
+  COMPREFACE: 'COMPREFACE',
+  INSIGHTFACE: 'INSIGHTFACE'
+} as const
+
+export type FaceRecognitionProvider = (typeof FaceRecognitionProvider)[keyof typeof FaceRecognitionProvider]
+
+
 export const IndexingStatus = {
   PENDING: 'PENDING',
   PROCESSING: 'PROCESSING',

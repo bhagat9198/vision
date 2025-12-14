@@ -93,7 +93,9 @@ export const OrganizationScalarFieldEnum = {
   embeddingCacheTtlSeconds: 'embeddingCacheTtlSeconds',
   pythonSidecarUrl: 'pythonSidecarUrl',
   enableFallbackDetection: 'enableFallbackDetection',
-  enableAlignment: 'enableAlignment'
+  enableAlignment: 'enableAlignment',
+  faceRecognitionProvider: 'faceRecognitionProvider',
+  insightfaceModel: 'insightfaceModel'
 } as const
 
 export type OrganizationScalarFieldEnum = (typeof OrganizationScalarFieldEnum)[keyof typeof OrganizationScalarFieldEnum]

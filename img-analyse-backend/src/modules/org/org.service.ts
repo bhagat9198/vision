@@ -135,6 +135,11 @@ export const orgService = {
           enableFallbackDetection: data.enableFallbackDetection,
         }),
         ...(data.enableAlignment !== undefined && { enableAlignment: data.enableAlignment }),
+        // Face Recognition Provider
+        ...(data.faceRecognitionProvider !== undefined && {
+          faceRecognitionProvider: data.faceRecognitionProvider,
+        }),
+        ...(data.insightfaceModel !== undefined && { insightfaceModel: data.insightfaceModel }),
       },
     });
   },
