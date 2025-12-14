@@ -1,12 +1,16 @@
-let activeRefreshRequests = 0;
 /**
  * =============================================================================
  * Index Controller
  * =============================================================================
  * Handles photo indexing - detecting faces and storing embeddings.
  *
+ * ARCHITECTURE:
+ * - All incoming requests are QUEUED, never rejected
+ * - Queue processes images based on available capacity
+ * - This ensures NO DATA LOSS even with 1000+ images
+ *
  * Endpoints:
- * - POST /api/v1/index/photo - Index a single photo
+ * - POST /api/v1/index/photo - Index a single photo (queued)
  * - DELETE /api/v1/index/photo/:photoId - Remove indexed faces for a photo
  * - DELETE /api/v1/index/event/:eventId - Remove all faces for an event
  * =============================================================================
@@ -14,13 +18,13 @@ let activeRefreshRequests = 0;
 
 import { type Request, type Response } from 'express';
 import { prisma } from '../config/database.js';
-import { faceDetectionService, qdrantService } from '../services/index.js';
-import { compreFaceService } from '../services/compreface.service.js';
+import { qdrantService } from '../services/index.js';
 
-import { fetchImageFromUrl, readImageFromPath, sanitizeSlug } from '../utils/index.js';
+import { sanitizeSlug } from '../utils/index.js';
 import { logger } from '../utils/logger.js';
-import { type ApiResponse, type IndexPhotoRequest, type IndexPhotoResult } from '../types/index.js';
+import { type ApiResponse, type IndexPhotoRequest } from '../types/index.js';
 import { toOrgSettings, type OrgSettings } from '../modules/org/org.types.js';
+import { addToIndexingQueue } from '../queues/face-indexing.queue.js';
 
 /**
  * Helper to resolve org settings from request or by looking up event owner.
@@ -84,40 +88,54 @@ export const indexController = {
   /**
    * Index a single photo - detect faces and store embeddings.
    *
-   * Supports three image source modes (configured via admin settings):
-   * - 'url': Fetch image from provided URL
-   * - 'multipart': Image uploaded as form data
-   * - 'shared_storage': Read from shared filesystem path
+   * QUEUE-BASED APPROACH:
+   * - Accept ALL requests immediately (never reject with 429)
+   * - Store in DB as PENDING
+   * - Add to BullMQ queue for background processing
+   * - Worker processes based on available capacity
+   * - This ensures ZERO DATA LOSS even with 1000+ images
    */
   async indexPhoto(req: Request, res: Response): Promise<void> {
-    const startTime = Date.now();
-
-    // Simple global concurrency limit to prevent OOM
-    // If we have > 3 active indexing requests, reject new ones
-    if (activeRefreshRequests >= 3) {
-      res.status(429).json({
-        success: false,
-        error: 'Too many concurrent indexing requests. Please try again later.',
-      } as ApiResponse);
-      return;
-    }
-
-    activeRefreshRequests++;
-
     try {
       const settings = req.orgSettings!;
       const { photoId, eventId, eventSlug, imageUrl, imagePath } = req.body as IndexPhotoRequest;
 
+      // Validate required fields FIRST
+      if (!photoId || !eventId) {
+        res.status(400).json({
+          success: false,
+          error: 'photoId and eventId are required',
+        } as ApiResponse);
+        return;
+      }
+
+      // Validate image source based on mode
+      if (settings.imageSourceMode === 'URL' && !imageUrl) {
+        res.status(400).json({
+          success: false,
+          error: 'imageUrl is required when image source mode is "URL"',
+        } as ApiResponse);
+        return;
+      }
+
+      if (settings.imageSourceMode === 'SHARED_STORAGE' && !imagePath) {
+        res.status(400).json({
+          success: false,
+          error: 'imagePath is required when image source mode is "SHARED_STORAGE"',
+        } as ApiResponse);
+        return;
+      }
+
       // Sanitize eventSlug to match Qdrant collection naming
       const safeEventSlug = sanitizeSlug(eventSlug);
 
-      logger.info(`Starting indexing for photo ${photoId} (Event: ${eventId})`, {
+      logger.info(`Queueing photo ${photoId} for indexing (Event: ${eventId})`, {
         mode: settings.imageSourceMode,
         hasUrl: !!imageUrl,
         hasPath: !!imagePath
       });
 
-      // Track indexing status
+      // Create/Update status record as PENDING (queued, not yet processing)
       await prisma.eventImageStatus.upsert({
         where: {
           eventId_photoId: {
@@ -126,7 +144,7 @@ export const indexController = {
           },
         },
         update: {
-          status: 'PROCESSING',
+          status: 'PENDING',
           error: null,
           orgId: settings.orgId,
           imageUrl: imageUrl || null,
@@ -137,104 +155,38 @@ export const indexController = {
           photoId,
           eventSlug: safeEventSlug,
           orgId: settings.orgId,
-          status: 'PROCESSING',
+          status: 'PENDING',
           imageUrl: imageUrl || null,
         },
       });
 
-      if (!photoId || !eventId) {
-        res.status(400).json({
-          success: false,
-          error: 'photoId and eventId are required',
-        } as ApiResponse);
-        return;
-      }
-
-      // Get image buffer based on configured source mode
-      let imageBuffer: Buffer;
-
-      switch (settings.imageSourceMode) {
-        case 'URL':
-          if (!imageUrl) {
-            res.status(400).json({
-              success: false,
-              error: 'imageUrl is required when image source mode is "URL"',
-            } as ApiResponse);
-            return;
-          }
-          imageBuffer = await fetchImageFromUrl(imageUrl);
-          break;
-
-        case 'SHARED_STORAGE':
-          if (!imagePath) {
-            res.status(400).json({
-              success: false,
-              error: 'imagePath is required when image source mode is "SHARED_STORAGE"',
-            } as ApiResponse);
-            return;
-          }
-          const fullPath = `${settings.sharedStoragePath}/${imagePath}`; // Removing path.join to ensure strictly string concatenation if issues arise, but template literal handles it.
-          logger.debug(`Reading image from shared storage: ${fullPath}`);
-          imageBuffer = await readImageFromPath(fullPath);
-          break;
-
-        default:
-          res.status(500).json({
-            success: false,
-            error: `Unknown image source mode: ${settings.imageSourceMode}`,
-          } as ApiResponse);
-          return;
-      }
-
-      // Detect faces and extract embeddings
-      const { faces, detectionResult } = await faceDetectionService.detectAndEmbed(settings, imageBuffer);
-
-      // Index faces in Qdrant
-      const pointIds = await qdrantService.indexFaces(
-        settings.slug,
-        eventSlug || eventId,
-        photoId,
-        faces,
-        { eventId }
-      );
-
-      const result: IndexPhotoResult = {
+      // Add to processing queue - this is non-blocking and fast
+      await addToIndexingQueue({
         photoId,
         eventId,
-        facesDetected: detectionResult.faces.length,
-        facesIndexed: pointIds.length,
-        facesRejected: detectionResult.rejectedCount,
-        processingTimeMs: Date.now() - startTime,
-        detectorsUsed: detectionResult.detectorsUsed,
-      };
-
-      logger.info(`Indexed photo ${photoId}: ${result.facesIndexed} faces in ${result.processingTimeMs}ms`, { result });
-
-      // Update status to COMPLETED
-      await prisma.eventImageStatus.update({
-        where: {
-          eventId_photoId: {
-            eventId,
-            photoId,
-          },
-        },
-        data: {
-          status: 'COMPLETED',
-          error: null,
-          facesDetected: result.facesDetected,
-          facesIndexed: result.facesIndexed,
-        },
+        eventSlug: safeEventSlug,
+        imageUrl,
+        imagePath,
+        orgSettings: settings,
       });
 
-      res.json({
+      // Return immediately with QUEUED status
+      // The actual processing happens in the background worker
+      res.status(202).json({
         success: true,
-        data: result,
-      } as ApiResponse<IndexPhotoResult>);
-    } catch (error) {
-      logger.error('Failed to index photo:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to index photo';
+        message: 'Photo queued for indexing',
+        data: {
+          photoId,
+          eventId,
+          status: 'PENDING',
+        },
+      } as ApiResponse);
 
-      // Update status to FAILED if we have required IDs (we might not if validation failed early)
+    } catch (error) {
+      logger.error('Failed to queue photo for indexing:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to queue photo';
+
+      // Try to record the failure in DB
       const { photoId, eventId } = req.body as IndexPhotoRequest;
       if (photoId && eventId) {
         try {
@@ -266,8 +218,6 @@ export const indexController = {
         success: false,
         error: errorMessage,
       } as ApiResponse);
-    } finally {
-      activeRefreshRequests--;
     }
   },
 

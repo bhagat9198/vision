@@ -134,24 +134,76 @@ class FaceAnalysisClient {
 
   /**
    * Index faces in a photo.
+   * Includes retry logic with exponential backoff for transient failures.
    */
-  async indexPhoto(request: IndexPhotoRequest): Promise<IndexPhotoResult | null> {
+  async indexPhoto(request: IndexPhotoRequest, maxRetries = 3): Promise<IndexPhotoResult | null> {
     if (!(await this.isEnabled())) {
       logger.debug('Face analysis disabled, skipping indexPhoto');
       return null;
     }
 
-    try {
-      const client = await this.getClient();
-      const response = await client.post<{ data: IndexPhotoResult }>(
-        '/api/v1/index/photo',
-        request
-      );
-      return response.data.data;
-    } catch (error) {
-      this.handleError('indexPhoto', error);
-      return null;
+    let lastError: unknown;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const client = await this.getClient();
+        const response = await client.post<{ data: IndexPhotoResult; message?: string }>(
+          '/api/v1/index/photo',
+          request
+        );
+
+        // Handle 202 Accepted (queued) - this is success, not an error
+        if (response.status === 202) {
+          logger.debug(`Photo ${request.photoId} queued for indexing`);
+          return response.data.data || {
+            photoId: request.photoId,
+            facesIndexed: 0,
+            facesSkipped: 0,
+            processingTimeMs: 0
+          };
+        }
+
+        return response.data.data;
+      } catch (error) {
+        lastError = error;
+
+        if (error instanceof AxiosError) {
+          const status = error.response?.status;
+
+          // Don't retry on client errors (except 429)
+          if (status && status >= 400 && status < 500 && status !== 429) {
+            this.handleError('indexPhoto', error);
+            return null;
+          }
+
+          // Retry on 429 (rate limit) or 5xx (server errors)
+          if (status === 429 || (status && status >= 500)) {
+            const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000); // Max 10s
+            logger.warn(`indexPhoto attempt ${attempt}/${maxRetries} failed with ${status}, retrying in ${delay}ms...`);
+            await this.sleep(delay);
+            continue;
+          }
+        }
+
+        // For network errors, retry with backoff
+        if (error instanceof AxiosError && !error.response) {
+          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
+          logger.warn(`indexPhoto attempt ${attempt}/${maxRetries} failed (network error), retrying in ${delay}ms...`);
+          await this.sleep(delay);
+          continue;
+        }
+
+        // Unknown error, don't retry
+        break;
+      }
     }
+
+    this.handleError('indexPhoto', lastError);
+    return null;
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   /**

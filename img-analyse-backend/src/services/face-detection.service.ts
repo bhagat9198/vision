@@ -54,22 +54,72 @@ class FaceDetectionService {
   }> {
     const startTime = Date.now();
     const detectorsUsed: DetectionResult['detectorsUsed'] = [];
-
     let faces: FaceWithEmbedding[] = [];
+    let scale = 1;
+    let processedBuffer = imageBuffer;
 
     try {
-      // Use configured detection mode
+      // 0. Pre-process: Resize huge images to prevent OOM
+      // 2000px is sufficient for accurate face recognition
+      const MAX_DIMENSION = 2000;
+      const metadata = await sharp(imageBuffer).metadata();
+
+      if (metadata.width && (metadata.width > MAX_DIMENSION || (metadata.height && metadata.height > MAX_DIMENSION))) {
+        const width = metadata.width;
+        logger.info(`Resizing huge image (${width}x${metadata.height}) to max ${MAX_DIMENSION}px to prevent OOM`);
+
+        processedBuffer = await sharp(imageBuffer)
+          .resize(MAX_DIMENSION, MAX_DIMENSION, { fit: 'inside' })
+          .toBuffer();
+
+        // Recalculate scale to map coordinates back later
+        // Sharp maintains aspect ratio with 'inside', so scale is based on the dominant dimension
+        const newMetadata = await sharp(processedBuffer).metadata();
+        if (newMetadata.width) {
+          scale = newMetadata.width / width;
+        }
+      }
+
+      // Use configured detection mode with processed buffer
       logger.info(`Starting face detection. Mode: ${settings.faceDetectionMode}`);
 
       if (settings.faceDetectionMode === 'RECOGNITION_ONLY') {
-        faces = await this.detectRecognitionOnly(settings, imageBuffer, detectorsUsed);
+        faces = await this.detectRecognitionOnly(settings, processedBuffer, detectorsUsed);
       } else {
         // Enforce Detect-Crop-Recognize pipeline
-        faces = await this.executeDetectionPipeline(settings, imageBuffer, detectorsUsed);
+        faces = await this.executeDetectionPipeline(settings, processedBuffer, detectorsUsed);
       }
+
+      // Scale bounding boxes back to original coordinates if resized
+      if (scale !== 1) {
+        faces = faces.map(face => ({
+          ...face,
+          bbox: {
+            x: Math.round(face.bbox.x / scale),
+            y: Math.round(face.bbox.y / scale),
+            width: Math.round(face.bbox.width / scale),
+            height: Math.round(face.bbox.height / scale),
+          }
+        }));
+      }
+
     } catch (error) {
       logger.error('Primary detection pipeline failed, attempting fallback rescue:', error);
-      faces = await this.attemptFallbackDetection(settings, imageBuffer, detectorsUsed);
+      // Try fallback with the processed buffer to be safe
+      faces = await this.attemptFallbackDetection(settings, processedBuffer, detectorsUsed);
+
+      // Also scale fallback results
+      if (scale !== 1) {
+        faces = faces.map(face => ({
+          ...face,
+          bbox: {
+            x: Math.round(face.bbox.x / scale),
+            y: Math.round(face.bbox.y / scale),
+            width: Math.round(face.bbox.width / scale),
+            height: Math.round(face.bbox.height / scale),
+          }
+        }));
+      }
     }
 
     // Apply quality filtering

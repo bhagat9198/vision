@@ -38,7 +38,7 @@ export const faceIndexingQueue = new Queue(QUEUE_NAME, {
     },
 });
 
-interface FaceIndexingJobData {
+export interface FaceIndexingJobData {
     photoId: string;
     eventId: string;
     eventSlug?: string;
@@ -54,9 +54,15 @@ const worker = new Worker<FaceIndexingJobData>(
         const startTime = Date.now();
         const { photoId, eventId, imageUrl, imagePath, orgSettings } = job.data;
 
-        logger.debug(`Processing indexing job for photo ${photoId} (Event: ${eventId})`);
+        logger.info(`Processing indexing job for photo ${photoId} (Event: ${eventId})`);
 
         try {
+            // Update status to PROCESSING (from PENDING)
+            await prisma.eventImageStatus.update({
+                where: { eventId_photoId: { eventId, photoId } },
+                data: { status: 'PROCESSING' }
+            }).catch(e => logger.warn(`Could not update status to PROCESSING: ${e.message}`));
+
             // 1. Get image buffer
             let imageBuffer: Buffer;
 
