@@ -26,6 +26,7 @@ export interface RegisterOrgResponse {
 }
 
 export type FaceRecognitionProvider = 'COMPREFACE' | 'INSIGHTFACE';
+export type ClusteringProvider = 'QDRANT' | 'HDBSCAN';
 
 export interface UpdateOrgSettingsRequest {
   name?: string;
@@ -47,6 +48,12 @@ export interface UpdateOrgSettingsRequest {
   // Face Recognition Provider
   faceRecognitionProvider?: FaceRecognitionProvider;
   insightfaceModel?: string;  // e.g., 'buffalo_l', 'buffalo_s', 'antelopev2'
+
+  // Clustering Settings
+  clusteringProvider?: ClusteringProvider;
+  clusteringMinSamples?: number;
+  clusteringMinClusterSize?: number;
+  clusteringSimilarityThreshold?: number;
 }
 
 // =============================================================================
@@ -93,6 +100,12 @@ export interface OrgSettings {
   // Face Recognition Provider
   faceRecognitionProvider: FaceRecognitionProvider;
   insightfaceModel: string | null;
+
+  // Clustering Settings
+  clusteringProvider: ClusteringProvider;
+  clusteringMinSamples: number;
+  clusteringMinClusterSize: number;
+  clusteringSimilarityThreshold: number;
 }
 
 /**
@@ -121,6 +134,11 @@ export function toOrgSettings(org: Organization): OrgSettings {
     enableAlignment: org.enableAlignment,
     faceRecognitionProvider: org.faceRecognitionProvider,
     insightfaceModel: org.insightfaceModel,
+    // Clustering settings
+    clusteringProvider: org.clusteringProvider,
+    clusteringMinSamples: org.clusteringMinSamples,
+    clusteringMinClusterSize: org.clusteringMinClusterSize,
+    clusteringSimilarityThreshold: org.clusteringSimilarityThreshold,
   };
 }
 

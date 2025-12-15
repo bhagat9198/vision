@@ -34,6 +34,14 @@ export const FaceRecognitionProvider = {
 export type FaceRecognitionProvider = (typeof FaceRecognitionProvider)[keyof typeof FaceRecognitionProvider]
 
 
+export const ClusteringProvider = {
+  QDRANT: 'QDRANT',
+  HDBSCAN: 'HDBSCAN'
+} as const
+
+export type ClusteringProvider = (typeof ClusteringProvider)[keyof typeof ClusteringProvider]
+
+
 export const IndexingStatus = {
   PENDING: 'PENDING',
   PROCESSING: 'PROCESSING',
@@ -42,3 +50,13 @@ export const IndexingStatus = {
 } as const
 
 export type IndexingStatus = (typeof IndexingStatus)[keyof typeof IndexingStatus]
+
+
+export const ClusteringJobStatus = {
+  PENDING: 'PENDING',
+  RUNNING: 'RUNNING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED'
+} as const
+
+export type ClusteringJobStatus = (typeof ClusteringJobStatus)[keyof typeof ClusteringJobStatus]

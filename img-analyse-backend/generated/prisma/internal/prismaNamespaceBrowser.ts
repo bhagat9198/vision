@@ -53,7 +53,11 @@ export const ModelName = {
   ApiKey: 'ApiKey',
   User: 'User',
   EventImageStatus: 'EventImageStatus',
-  EventVideoStatus: 'EventVideoStatus'
+  EventVideoStatus: 'EventVideoStatus',
+  ClusteringJob: 'ClusteringJob',
+  PersonCluster: 'PersonCluster',
+  FaceClusterAssignment: 'FaceClusterAssignment',
+  GlobalSettings: 'GlobalSettings'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -95,7 +99,11 @@ export const OrganizationScalarFieldEnum = {
   enableFallbackDetection: 'enableFallbackDetection',
   enableAlignment: 'enableAlignment',
   faceRecognitionProvider: 'faceRecognitionProvider',
-  insightfaceModel: 'insightfaceModel'
+  insightfaceModel: 'insightfaceModel',
+  clusteringProvider: 'clusteringProvider',
+  clusteringMinSamples: 'clusteringMinSamples',
+  clusteringMinClusterSize: 'clusteringMinClusterSize',
+  clusteringSimilarityThreshold: 'clusteringSimilarityThreshold'
 } as const
 
 export type OrganizationScalarFieldEnum = (typeof OrganizationScalarFieldEnum)[keyof typeof OrganizationScalarFieldEnum]
@@ -166,6 +174,90 @@ export const EventVideoStatusScalarFieldEnum = {
 } as const
 
 export type EventVideoStatusScalarFieldEnum = (typeof EventVideoStatusScalarFieldEnum)[keyof typeof EventVideoStatusScalarFieldEnum]
+
+
+export const ClusteringJobScalarFieldEnum = {
+  id: 'id',
+  orgId: 'orgId',
+  eventId: 'eventId',
+  eventSlug: 'eventSlug',
+  status: 'status',
+  provider: 'provider',
+  totalFaces: 'totalFaces',
+  clustersFound: 'clustersFound',
+  noiseFaces: 'noiseFaces',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  error: 'error',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ClusteringJobScalarFieldEnum = (typeof ClusteringJobScalarFieldEnum)[keyof typeof ClusteringJobScalarFieldEnum]
+
+
+export const PersonClusterScalarFieldEnum = {
+  id: 'id',
+  orgId: 'orgId',
+  eventId: 'eventId',
+  eventSlug: 'eventSlug',
+  name: 'name',
+  displayOrder: 'displayOrder',
+  representativeFaceId: 'representativeFaceId',
+  thumbnailUrl: 'thumbnailUrl',
+  faceCount: 'faceCount',
+  photoCount: 'photoCount',
+  isNoise: 'isNoise',
+  isMerged: 'isMerged',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PersonClusterScalarFieldEnum = (typeof PersonClusterScalarFieldEnum)[keyof typeof PersonClusterScalarFieldEnum]
+
+
+export const FaceClusterAssignmentScalarFieldEnum = {
+  id: 'id',
+  orgId: 'orgId',
+  eventId: 'eventId',
+  qdrantPointId: 'qdrantPointId',
+  photoId: 'photoId',
+  clusterId: 'clusterId',
+  confidence: 'confidence',
+  isManual: 'isManual',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FaceClusterAssignmentScalarFieldEnum = (typeof FaceClusterAssignmentScalarFieldEnum)[keyof typeof FaceClusterAssignmentScalarFieldEnum]
+
+
+export const GlobalSettingsScalarFieldEnum = {
+  id: 'id',
+  faceRecognitionProvider: 'faceRecognitionProvider',
+  insightfaceModel: 'insightfaceModel',
+  comprefaceUrl: 'comprefaceUrl',
+  pythonSidecarUrl: 'pythonSidecarUrl',
+  faceDetectionMode: 'faceDetectionMode',
+  minConfidence: 'minConfidence',
+  minSizePx: 'minSizePx',
+  skipExtremeAngles: 'skipExtremeAngles',
+  imageSourceMode: 'imageSourceMode',
+  sharedStoragePath: 'sharedStoragePath',
+  enableFallbackDetection: 'enableFallbackDetection',
+  enableAlignment: 'enableAlignment',
+  searchDefaultTopK: 'searchDefaultTopK',
+  searchMinSimilarity: 'searchMinSimilarity',
+  embeddingCacheTtlSeconds: 'embeddingCacheTtlSeconds',
+  clusteringProvider: 'clusteringProvider',
+  clusteringMinClusterSize: 'clusteringMinClusterSize',
+  clusteringMinSamples: 'clusteringMinSamples',
+  clusteringSimilarityThreshold: 'clusteringSimilarityThreshold',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GlobalSettingsScalarFieldEnum = (typeof GlobalSettingsScalarFieldEnum)[keyof typeof GlobalSettingsScalarFieldEnum]
 
 
 export const SortOrder = {

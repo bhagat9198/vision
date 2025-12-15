@@ -103,6 +103,13 @@ export type EnumFaceRecognitionProviderFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumFaceRecognitionProviderFilter<$PrismaModel> | $Enums.FaceRecognitionProvider
 }
 
+export type EnumClusteringProviderFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClusteringProvider | Prisma.EnumClusteringProviderFieldRefInput<$PrismaModel>
+  in?: $Enums.ClusteringProvider[] | Prisma.ListEnumClusteringProviderFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClusteringProvider[] | Prisma.ListEnumClusteringProviderFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClusteringProviderFilter<$PrismaModel> | $Enums.ClusteringProvider
+}
+
 export type SortOrderInput = {
   sort: Prisma.SortOrder
   nulls?: Prisma.NullsOrder
@@ -228,6 +235,16 @@ export type EnumFaceRecognitionProviderWithAggregatesFilter<$PrismaModel = never
   _max?: Prisma.NestedEnumFaceRecognitionProviderFilter<$PrismaModel>
 }
 
+export type EnumClusteringProviderWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClusteringProvider | Prisma.EnumClusteringProviderFieldRefInput<$PrismaModel>
+  in?: $Enums.ClusteringProvider[] | Prisma.ListEnumClusteringProviderFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClusteringProvider[] | Prisma.ListEnumClusteringProviderFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClusteringProviderWithAggregatesFilter<$PrismaModel> | $Enums.ClusteringProvider
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumClusteringProviderFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumClusteringProviderFilter<$PrismaModel>
+}
+
 export type DateTimeNullableFilter<$PrismaModel = never> = {
   equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel> | null
   in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -295,6 +312,23 @@ export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedFloatNullableFilter<$PrismaModel>
   _min?: Prisma.NestedFloatNullableFilter<$PrismaModel>
   _max?: Prisma.NestedFloatNullableFilter<$PrismaModel>
+}
+
+export type EnumClusteringJobStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClusteringJobStatus | Prisma.EnumClusteringJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ClusteringJobStatus[] | Prisma.ListEnumClusteringJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClusteringJobStatus[] | Prisma.ListEnumClusteringJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClusteringJobStatusFilter<$PrismaModel> | $Enums.ClusteringJobStatus
+}
+
+export type EnumClusteringJobStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClusteringJobStatus | Prisma.EnumClusteringJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ClusteringJobStatus[] | Prisma.ListEnumClusteringJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClusteringJobStatus[] | Prisma.ListEnumClusteringJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClusteringJobStatusWithAggregatesFilter<$PrismaModel> | $Enums.ClusteringJobStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumClusteringJobStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumClusteringJobStatusFilter<$PrismaModel>
 }
 
 export type NestedStringFilter<$PrismaModel = never> = {
@@ -382,6 +416,13 @@ export type NestedEnumFaceRecognitionProviderFilter<$PrismaModel = never> = {
   in?: $Enums.FaceRecognitionProvider[] | Prisma.ListEnumFaceRecognitionProviderFieldRefInput<$PrismaModel>
   notIn?: $Enums.FaceRecognitionProvider[] | Prisma.ListEnumFaceRecognitionProviderFieldRefInput<$PrismaModel>
   not?: Prisma.NestedEnumFaceRecognitionProviderFilter<$PrismaModel> | $Enums.FaceRecognitionProvider
+}
+
+export type NestedEnumClusteringProviderFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClusteringProvider | Prisma.EnumClusteringProviderFieldRefInput<$PrismaModel>
+  in?: $Enums.ClusteringProvider[] | Prisma.ListEnumClusteringProviderFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClusteringProvider[] | Prisma.ListEnumClusteringProviderFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClusteringProviderFilter<$PrismaModel> | $Enums.ClusteringProvider
 }
 
 export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
@@ -513,6 +554,16 @@ export type NestedEnumFaceRecognitionProviderWithAggregatesFilter<$PrismaModel =
   _max?: Prisma.NestedEnumFaceRecognitionProviderFilter<$PrismaModel>
 }
 
+export type NestedEnumClusteringProviderWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClusteringProvider | Prisma.EnumClusteringProviderFieldRefInput<$PrismaModel>
+  in?: $Enums.ClusteringProvider[] | Prisma.ListEnumClusteringProviderFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClusteringProvider[] | Prisma.ListEnumClusteringProviderFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClusteringProviderWithAggregatesFilter<$PrismaModel> | $Enums.ClusteringProvider
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumClusteringProviderFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumClusteringProviderFilter<$PrismaModel>
+}
+
 export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
   equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel> | null
   in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -580,6 +631,23 @@ export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedFloatNullableFilter<$PrismaModel>
   _min?: Prisma.NestedFloatNullableFilter<$PrismaModel>
   _max?: Prisma.NestedFloatNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumClusteringJobStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClusteringJobStatus | Prisma.EnumClusteringJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ClusteringJobStatus[] | Prisma.ListEnumClusteringJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClusteringJobStatus[] | Prisma.ListEnumClusteringJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClusteringJobStatusFilter<$PrismaModel> | $Enums.ClusteringJobStatus
+}
+
+export type NestedEnumClusteringJobStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ClusteringJobStatus | Prisma.EnumClusteringJobStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.ClusteringJobStatus[] | Prisma.ListEnumClusteringJobStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ClusteringJobStatus[] | Prisma.ListEnumClusteringJobStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumClusteringJobStatusWithAggregatesFilter<$PrismaModel> | $Enums.ClusteringJobStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumClusteringJobStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumClusteringJobStatusFilter<$PrismaModel>
 }
 
 

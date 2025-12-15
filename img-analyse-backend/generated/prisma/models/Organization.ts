@@ -32,6 +32,9 @@ export type OrganizationAvgAggregateOutputType = {
   searchDefaultTopK: number | null
   searchMinSimilarity: number | null
   embeddingCacheTtlSeconds: number | null
+  clusteringMinSamples: number | null
+  clusteringMinClusterSize: number | null
+  clusteringSimilarityThreshold: number | null
 }
 
 export type OrganizationSumAggregateOutputType = {
@@ -40,6 +43,9 @@ export type OrganizationSumAggregateOutputType = {
   searchDefaultTopK: number | null
   searchMinSimilarity: number | null
   embeddingCacheTtlSeconds: number | null
+  clusteringMinSamples: number | null
+  clusteringMinClusterSize: number | null
+  clusteringSimilarityThreshold: number | null
 }
 
 export type OrganizationMinAggregateOutputType = {
@@ -66,6 +72,10 @@ export type OrganizationMinAggregateOutputType = {
   enableAlignment: boolean | null
   faceRecognitionProvider: $Enums.FaceRecognitionProvider | null
   insightfaceModel: string | null
+  clusteringProvider: $Enums.ClusteringProvider | null
+  clusteringMinSamples: number | null
+  clusteringMinClusterSize: number | null
+  clusteringSimilarityThreshold: number | null
 }
 
 export type OrganizationMaxAggregateOutputType = {
@@ -92,6 +102,10 @@ export type OrganizationMaxAggregateOutputType = {
   enableAlignment: boolean | null
   faceRecognitionProvider: $Enums.FaceRecognitionProvider | null
   insightfaceModel: string | null
+  clusteringProvider: $Enums.ClusteringProvider | null
+  clusteringMinSamples: number | null
+  clusteringMinClusterSize: number | null
+  clusteringSimilarityThreshold: number | null
 }
 
 export type OrganizationCountAggregateOutputType = {
@@ -118,6 +132,10 @@ export type OrganizationCountAggregateOutputType = {
   enableAlignment: number
   faceRecognitionProvider: number
   insightfaceModel: number
+  clusteringProvider: number
+  clusteringMinSamples: number
+  clusteringMinClusterSize: number
+  clusteringSimilarityThreshold: number
   _all: number
 }
 
@@ -128,6 +146,9 @@ export type OrganizationAvgAggregateInputType = {
   searchDefaultTopK?: true
   searchMinSimilarity?: true
   embeddingCacheTtlSeconds?: true
+  clusteringMinSamples?: true
+  clusteringMinClusterSize?: true
+  clusteringSimilarityThreshold?: true
 }
 
 export type OrganizationSumAggregateInputType = {
@@ -136,6 +157,9 @@ export type OrganizationSumAggregateInputType = {
   searchDefaultTopK?: true
   searchMinSimilarity?: true
   embeddingCacheTtlSeconds?: true
+  clusteringMinSamples?: true
+  clusteringMinClusterSize?: true
+  clusteringSimilarityThreshold?: true
 }
 
 export type OrganizationMinAggregateInputType = {
@@ -162,6 +186,10 @@ export type OrganizationMinAggregateInputType = {
   enableAlignment?: true
   faceRecognitionProvider?: true
   insightfaceModel?: true
+  clusteringProvider?: true
+  clusteringMinSamples?: true
+  clusteringMinClusterSize?: true
+  clusteringSimilarityThreshold?: true
 }
 
 export type OrganizationMaxAggregateInputType = {
@@ -188,6 +216,10 @@ export type OrganizationMaxAggregateInputType = {
   enableAlignment?: true
   faceRecognitionProvider?: true
   insightfaceModel?: true
+  clusteringProvider?: true
+  clusteringMinSamples?: true
+  clusteringMinClusterSize?: true
+  clusteringSimilarityThreshold?: true
 }
 
 export type OrganizationCountAggregateInputType = {
@@ -214,6 +246,10 @@ export type OrganizationCountAggregateInputType = {
   enableAlignment?: true
   faceRecognitionProvider?: true
   insightfaceModel?: true
+  clusteringProvider?: true
+  clusteringMinSamples?: true
+  clusteringMinClusterSize?: true
+  clusteringSimilarityThreshold?: true
   _all?: true
 }
 
@@ -327,6 +363,10 @@ export type OrganizationGroupByOutputType = {
   enableAlignment: boolean
   faceRecognitionProvider: $Enums.FaceRecognitionProvider
   insightfaceModel: string | null
+  clusteringProvider: $Enums.ClusteringProvider
+  clusteringMinSamples: number
+  clusteringMinClusterSize: number
+  clusteringSimilarityThreshold: number
   _count: OrganizationCountAggregateOutputType | null
   _avg: OrganizationAvgAggregateOutputType | null
   _sum: OrganizationSumAggregateOutputType | null
@@ -376,9 +416,16 @@ export type OrganizationWhereInput = {
   enableAlignment?: Prisma.BoolFilter<"Organization"> | boolean
   faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFilter<"Organization"> | $Enums.FaceRecognitionProvider
   insightfaceModel?: Prisma.StringNullableFilter<"Organization"> | string | null
+  clusteringProvider?: Prisma.EnumClusteringProviderFilter<"Organization"> | $Enums.ClusteringProvider
+  clusteringMinSamples?: Prisma.IntFilter<"Organization"> | number
+  clusteringMinClusterSize?: Prisma.IntFilter<"Organization"> | number
+  clusteringSimilarityThreshold?: Prisma.FloatFilter<"Organization"> | number
   apiKeys?: Prisma.ApiKeyListRelationFilter
   eventImageStatuses?: Prisma.EventImageStatusListRelationFilter
   eventVideoStatuses?: Prisma.EventVideoStatusListRelationFilter
+  clusteringJobs?: Prisma.ClusteringJobListRelationFilter
+  personClusters?: Prisma.PersonClusterListRelationFilter
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentListRelationFilter
 }
 
 export type OrganizationOrderByWithRelationInput = {
@@ -405,9 +452,16 @@ export type OrganizationOrderByWithRelationInput = {
   enableAlignment?: Prisma.SortOrder
   faceRecognitionProvider?: Prisma.SortOrder
   insightfaceModel?: Prisma.SortOrderInput | Prisma.SortOrder
+  clusteringProvider?: Prisma.SortOrder
+  clusteringMinSamples?: Prisma.SortOrder
+  clusteringMinClusterSize?: Prisma.SortOrder
+  clusteringSimilarityThreshold?: Prisma.SortOrder
   apiKeys?: Prisma.ApiKeyOrderByRelationAggregateInput
   eventImageStatuses?: Prisma.EventImageStatusOrderByRelationAggregateInput
   eventVideoStatuses?: Prisma.EventVideoStatusOrderByRelationAggregateInput
+  clusteringJobs?: Prisma.ClusteringJobOrderByRelationAggregateInput
+  personClusters?: Prisma.PersonClusterOrderByRelationAggregateInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentOrderByRelationAggregateInput
 }
 
 export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
@@ -437,9 +491,16 @@ export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
   enableAlignment?: Prisma.BoolFilter<"Organization"> | boolean
   faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFilter<"Organization"> | $Enums.FaceRecognitionProvider
   insightfaceModel?: Prisma.StringNullableFilter<"Organization"> | string | null
+  clusteringProvider?: Prisma.EnumClusteringProviderFilter<"Organization"> | $Enums.ClusteringProvider
+  clusteringMinSamples?: Prisma.IntFilter<"Organization"> | number
+  clusteringMinClusterSize?: Prisma.IntFilter<"Organization"> | number
+  clusteringSimilarityThreshold?: Prisma.FloatFilter<"Organization"> | number
   apiKeys?: Prisma.ApiKeyListRelationFilter
   eventImageStatuses?: Prisma.EventImageStatusListRelationFilter
   eventVideoStatuses?: Prisma.EventVideoStatusListRelationFilter
+  clusteringJobs?: Prisma.ClusteringJobListRelationFilter
+  personClusters?: Prisma.PersonClusterListRelationFilter
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentListRelationFilter
 }, "id" | "slug">
 
 export type OrganizationOrderByWithAggregationInput = {
@@ -466,6 +527,10 @@ export type OrganizationOrderByWithAggregationInput = {
   enableAlignment?: Prisma.SortOrder
   faceRecognitionProvider?: Prisma.SortOrder
   insightfaceModel?: Prisma.SortOrderInput | Prisma.SortOrder
+  clusteringProvider?: Prisma.SortOrder
+  clusteringMinSamples?: Prisma.SortOrder
+  clusteringMinClusterSize?: Prisma.SortOrder
+  clusteringSimilarityThreshold?: Prisma.SortOrder
   _count?: Prisma.OrganizationCountOrderByAggregateInput
   _avg?: Prisma.OrganizationAvgOrderByAggregateInput
   _max?: Prisma.OrganizationMaxOrderByAggregateInput
@@ -500,6 +565,10 @@ export type OrganizationScalarWhereWithAggregatesInput = {
   enableAlignment?: Prisma.BoolWithAggregatesFilter<"Organization"> | boolean
   faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderWithAggregatesFilter<"Organization"> | $Enums.FaceRecognitionProvider
   insightfaceModel?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
+  clusteringProvider?: Prisma.EnumClusteringProviderWithAggregatesFilter<"Organization"> | $Enums.ClusteringProvider
+  clusteringMinSamples?: Prisma.IntWithAggregatesFilter<"Organization"> | number
+  clusteringMinClusterSize?: Prisma.IntWithAggregatesFilter<"Organization"> | number
+  clusteringSimilarityThreshold?: Prisma.FloatWithAggregatesFilter<"Organization"> | number
 }
 
 export type OrganizationCreateInput = {
@@ -526,9 +595,16 @@ export type OrganizationCreateInput = {
   enableAlignment?: boolean
   faceRecognitionProvider?: $Enums.FaceRecognitionProvider
   insightfaceModel?: string | null
+  clusteringProvider?: $Enums.ClusteringProvider
+  clusteringMinSamples?: number
+  clusteringMinClusterSize?: number
+  clusteringSimilarityThreshold?: number
   apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutOrgInput
   eventImageStatuses?: Prisma.EventImageStatusCreateNestedManyWithoutOrgInput
   eventVideoStatuses?: Prisma.EventVideoStatusCreateNestedManyWithoutOrgInput
+  clusteringJobs?: Prisma.ClusteringJobCreateNestedManyWithoutOrgInput
+  personClusters?: Prisma.PersonClusterCreateNestedManyWithoutOrgInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentCreateNestedManyWithoutOrgInput
 }
 
 export type OrganizationUncheckedCreateInput = {
@@ -555,9 +631,16 @@ export type OrganizationUncheckedCreateInput = {
   enableAlignment?: boolean
   faceRecognitionProvider?: $Enums.FaceRecognitionProvider
   insightfaceModel?: string | null
+  clusteringProvider?: $Enums.ClusteringProvider
+  clusteringMinSamples?: number
+  clusteringMinClusterSize?: number
+  clusteringSimilarityThreshold?: number
   apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutOrgInput
   eventImageStatuses?: Prisma.EventImageStatusUncheckedCreateNestedManyWithoutOrgInput
   eventVideoStatuses?: Prisma.EventVideoStatusUncheckedCreateNestedManyWithoutOrgInput
+  clusteringJobs?: Prisma.ClusteringJobUncheckedCreateNestedManyWithoutOrgInput
+  personClusters?: Prisma.PersonClusterUncheckedCreateNestedManyWithoutOrgInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentUncheckedCreateNestedManyWithoutOrgInput
 }
 
 export type OrganizationUpdateInput = {
@@ -584,9 +667,16 @@ export type OrganizationUpdateInput = {
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
   insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clusteringProvider?: Prisma.EnumClusteringProviderFieldUpdateOperationsInput | $Enums.ClusteringProvider
+  clusteringMinSamples?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringMinClusterSize?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringSimilarityThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   apiKeys?: Prisma.ApiKeyUpdateManyWithoutOrgNestedInput
   eventImageStatuses?: Prisma.EventImageStatusUpdateManyWithoutOrgNestedInput
   eventVideoStatuses?: Prisma.EventVideoStatusUpdateManyWithoutOrgNestedInput
+  clusteringJobs?: Prisma.ClusteringJobUpdateManyWithoutOrgNestedInput
+  personClusters?: Prisma.PersonClusterUpdateManyWithoutOrgNestedInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentUpdateManyWithoutOrgNestedInput
 }
 
 export type OrganizationUncheckedUpdateInput = {
@@ -613,9 +703,16 @@ export type OrganizationUncheckedUpdateInput = {
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
   insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clusteringProvider?: Prisma.EnumClusteringProviderFieldUpdateOperationsInput | $Enums.ClusteringProvider
+  clusteringMinSamples?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringMinClusterSize?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringSimilarityThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutOrgNestedInput
   eventImageStatuses?: Prisma.EventImageStatusUncheckedUpdateManyWithoutOrgNestedInput
   eventVideoStatuses?: Prisma.EventVideoStatusUncheckedUpdateManyWithoutOrgNestedInput
+  clusteringJobs?: Prisma.ClusteringJobUncheckedUpdateManyWithoutOrgNestedInput
+  personClusters?: Prisma.PersonClusterUncheckedUpdateManyWithoutOrgNestedInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentUncheckedUpdateManyWithoutOrgNestedInput
 }
 
 export type OrganizationCreateManyInput = {
@@ -642,6 +739,10 @@ export type OrganizationCreateManyInput = {
   enableAlignment?: boolean
   faceRecognitionProvider?: $Enums.FaceRecognitionProvider
   insightfaceModel?: string | null
+  clusteringProvider?: $Enums.ClusteringProvider
+  clusteringMinSamples?: number
+  clusteringMinClusterSize?: number
+  clusteringSimilarityThreshold?: number
 }
 
 export type OrganizationUpdateManyMutationInput = {
@@ -668,6 +769,10 @@ export type OrganizationUpdateManyMutationInput = {
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
   insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clusteringProvider?: Prisma.EnumClusteringProviderFieldUpdateOperationsInput | $Enums.ClusteringProvider
+  clusteringMinSamples?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringMinClusterSize?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringSimilarityThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
 }
 
 export type OrganizationUncheckedUpdateManyInput = {
@@ -694,6 +799,10 @@ export type OrganizationUncheckedUpdateManyInput = {
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
   insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clusteringProvider?: Prisma.EnumClusteringProviderFieldUpdateOperationsInput | $Enums.ClusteringProvider
+  clusteringMinSamples?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringMinClusterSize?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringSimilarityThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
 }
 
 export type OrganizationCountOrderByAggregateInput = {
@@ -720,6 +829,10 @@ export type OrganizationCountOrderByAggregateInput = {
   enableAlignment?: Prisma.SortOrder
   faceRecognitionProvider?: Prisma.SortOrder
   insightfaceModel?: Prisma.SortOrder
+  clusteringProvider?: Prisma.SortOrder
+  clusteringMinSamples?: Prisma.SortOrder
+  clusteringMinClusterSize?: Prisma.SortOrder
+  clusteringSimilarityThreshold?: Prisma.SortOrder
 }
 
 export type OrganizationAvgOrderByAggregateInput = {
@@ -728,6 +841,9 @@ export type OrganizationAvgOrderByAggregateInput = {
   searchDefaultTopK?: Prisma.SortOrder
   searchMinSimilarity?: Prisma.SortOrder
   embeddingCacheTtlSeconds?: Prisma.SortOrder
+  clusteringMinSamples?: Prisma.SortOrder
+  clusteringMinClusterSize?: Prisma.SortOrder
+  clusteringSimilarityThreshold?: Prisma.SortOrder
 }
 
 export type OrganizationMaxOrderByAggregateInput = {
@@ -754,6 +870,10 @@ export type OrganizationMaxOrderByAggregateInput = {
   enableAlignment?: Prisma.SortOrder
   faceRecognitionProvider?: Prisma.SortOrder
   insightfaceModel?: Prisma.SortOrder
+  clusteringProvider?: Prisma.SortOrder
+  clusteringMinSamples?: Prisma.SortOrder
+  clusteringMinClusterSize?: Prisma.SortOrder
+  clusteringSimilarityThreshold?: Prisma.SortOrder
 }
 
 export type OrganizationMinOrderByAggregateInput = {
@@ -780,6 +900,10 @@ export type OrganizationMinOrderByAggregateInput = {
   enableAlignment?: Prisma.SortOrder
   faceRecognitionProvider?: Prisma.SortOrder
   insightfaceModel?: Prisma.SortOrder
+  clusteringProvider?: Prisma.SortOrder
+  clusteringMinSamples?: Prisma.SortOrder
+  clusteringMinClusterSize?: Prisma.SortOrder
+  clusteringSimilarityThreshold?: Prisma.SortOrder
 }
 
 export type OrganizationSumOrderByAggregateInput = {
@@ -788,6 +912,9 @@ export type OrganizationSumOrderByAggregateInput = {
   searchDefaultTopK?: Prisma.SortOrder
   searchMinSimilarity?: Prisma.SortOrder
   embeddingCacheTtlSeconds?: Prisma.SortOrder
+  clusteringMinSamples?: Prisma.SortOrder
+  clusteringMinClusterSize?: Prisma.SortOrder
+  clusteringSimilarityThreshold?: Prisma.SortOrder
 }
 
 export type OrganizationScalarRelationFilter = {
@@ -839,6 +966,10 @@ export type EnumFaceRecognitionProviderFieldUpdateOperationsInput = {
   set?: $Enums.FaceRecognitionProvider
 }
 
+export type EnumClusteringProviderFieldUpdateOperationsInput = {
+  set?: $Enums.ClusteringProvider
+}
+
 export type OrganizationCreateNestedOneWithoutApiKeysInput = {
   create?: Prisma.XOR<Prisma.OrganizationCreateWithoutApiKeysInput, Prisma.OrganizationUncheckedCreateWithoutApiKeysInput>
   connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutApiKeysInput
@@ -881,6 +1012,48 @@ export type OrganizationUpdateOneRequiredWithoutEventVideoStatusesNestedInput = 
   update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutEventVideoStatusesInput, Prisma.OrganizationUpdateWithoutEventVideoStatusesInput>, Prisma.OrganizationUncheckedUpdateWithoutEventVideoStatusesInput>
 }
 
+export type OrganizationCreateNestedOneWithoutClusteringJobsInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutClusteringJobsInput, Prisma.OrganizationUncheckedCreateWithoutClusteringJobsInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutClusteringJobsInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+}
+
+export type OrganizationUpdateOneRequiredWithoutClusteringJobsNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutClusteringJobsInput, Prisma.OrganizationUncheckedCreateWithoutClusteringJobsInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutClusteringJobsInput
+  upsert?: Prisma.OrganizationUpsertWithoutClusteringJobsInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutClusteringJobsInput, Prisma.OrganizationUpdateWithoutClusteringJobsInput>, Prisma.OrganizationUncheckedUpdateWithoutClusteringJobsInput>
+}
+
+export type OrganizationCreateNestedOneWithoutPersonClustersInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutPersonClustersInput, Prisma.OrganizationUncheckedCreateWithoutPersonClustersInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutPersonClustersInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+}
+
+export type OrganizationUpdateOneRequiredWithoutPersonClustersNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutPersonClustersInput, Prisma.OrganizationUncheckedCreateWithoutPersonClustersInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutPersonClustersInput
+  upsert?: Prisma.OrganizationUpsertWithoutPersonClustersInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutPersonClustersInput, Prisma.OrganizationUpdateWithoutPersonClustersInput>, Prisma.OrganizationUncheckedUpdateWithoutPersonClustersInput>
+}
+
+export type OrganizationCreateNestedOneWithoutFaceClusterAssignmentsInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutFaceClusterAssignmentsInput, Prisma.OrganizationUncheckedCreateWithoutFaceClusterAssignmentsInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutFaceClusterAssignmentsInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+}
+
+export type OrganizationUpdateOneRequiredWithoutFaceClusterAssignmentsNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutFaceClusterAssignmentsInput, Prisma.OrganizationUncheckedCreateWithoutFaceClusterAssignmentsInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutFaceClusterAssignmentsInput
+  upsert?: Prisma.OrganizationUpsertWithoutFaceClusterAssignmentsInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutFaceClusterAssignmentsInput, Prisma.OrganizationUpdateWithoutFaceClusterAssignmentsInput>, Prisma.OrganizationUncheckedUpdateWithoutFaceClusterAssignmentsInput>
+}
+
 export type OrganizationCreateWithoutApiKeysInput = {
   id?: string
   name: string
@@ -905,8 +1078,15 @@ export type OrganizationCreateWithoutApiKeysInput = {
   enableAlignment?: boolean
   faceRecognitionProvider?: $Enums.FaceRecognitionProvider
   insightfaceModel?: string | null
+  clusteringProvider?: $Enums.ClusteringProvider
+  clusteringMinSamples?: number
+  clusteringMinClusterSize?: number
+  clusteringSimilarityThreshold?: number
   eventImageStatuses?: Prisma.EventImageStatusCreateNestedManyWithoutOrgInput
   eventVideoStatuses?: Prisma.EventVideoStatusCreateNestedManyWithoutOrgInput
+  clusteringJobs?: Prisma.ClusteringJobCreateNestedManyWithoutOrgInput
+  personClusters?: Prisma.PersonClusterCreateNestedManyWithoutOrgInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentCreateNestedManyWithoutOrgInput
 }
 
 export type OrganizationUncheckedCreateWithoutApiKeysInput = {
@@ -933,8 +1113,15 @@ export type OrganizationUncheckedCreateWithoutApiKeysInput = {
   enableAlignment?: boolean
   faceRecognitionProvider?: $Enums.FaceRecognitionProvider
   insightfaceModel?: string | null
+  clusteringProvider?: $Enums.ClusteringProvider
+  clusteringMinSamples?: number
+  clusteringMinClusterSize?: number
+  clusteringSimilarityThreshold?: number
   eventImageStatuses?: Prisma.EventImageStatusUncheckedCreateNestedManyWithoutOrgInput
   eventVideoStatuses?: Prisma.EventVideoStatusUncheckedCreateNestedManyWithoutOrgInput
+  clusteringJobs?: Prisma.ClusteringJobUncheckedCreateNestedManyWithoutOrgInput
+  personClusters?: Prisma.PersonClusterUncheckedCreateNestedManyWithoutOrgInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentUncheckedCreateNestedManyWithoutOrgInput
 }
 
 export type OrganizationCreateOrConnectWithoutApiKeysInput = {
@@ -977,8 +1164,15 @@ export type OrganizationUpdateWithoutApiKeysInput = {
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
   insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clusteringProvider?: Prisma.EnumClusteringProviderFieldUpdateOperationsInput | $Enums.ClusteringProvider
+  clusteringMinSamples?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringMinClusterSize?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringSimilarityThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   eventImageStatuses?: Prisma.EventImageStatusUpdateManyWithoutOrgNestedInput
   eventVideoStatuses?: Prisma.EventVideoStatusUpdateManyWithoutOrgNestedInput
+  clusteringJobs?: Prisma.ClusteringJobUpdateManyWithoutOrgNestedInput
+  personClusters?: Prisma.PersonClusterUpdateManyWithoutOrgNestedInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentUpdateManyWithoutOrgNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutApiKeysInput = {
@@ -1005,8 +1199,15 @@ export type OrganizationUncheckedUpdateWithoutApiKeysInput = {
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
   insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clusteringProvider?: Prisma.EnumClusteringProviderFieldUpdateOperationsInput | $Enums.ClusteringProvider
+  clusteringMinSamples?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringMinClusterSize?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringSimilarityThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   eventImageStatuses?: Prisma.EventImageStatusUncheckedUpdateManyWithoutOrgNestedInput
   eventVideoStatuses?: Prisma.EventVideoStatusUncheckedUpdateManyWithoutOrgNestedInput
+  clusteringJobs?: Prisma.ClusteringJobUncheckedUpdateManyWithoutOrgNestedInput
+  personClusters?: Prisma.PersonClusterUncheckedUpdateManyWithoutOrgNestedInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentUncheckedUpdateManyWithoutOrgNestedInput
 }
 
 export type OrganizationCreateWithoutEventImageStatusesInput = {
@@ -1033,8 +1234,15 @@ export type OrganizationCreateWithoutEventImageStatusesInput = {
   enableAlignment?: boolean
   faceRecognitionProvider?: $Enums.FaceRecognitionProvider
   insightfaceModel?: string | null
+  clusteringProvider?: $Enums.ClusteringProvider
+  clusteringMinSamples?: number
+  clusteringMinClusterSize?: number
+  clusteringSimilarityThreshold?: number
   apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutOrgInput
   eventVideoStatuses?: Prisma.EventVideoStatusCreateNestedManyWithoutOrgInput
+  clusteringJobs?: Prisma.ClusteringJobCreateNestedManyWithoutOrgInput
+  personClusters?: Prisma.PersonClusterCreateNestedManyWithoutOrgInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentCreateNestedManyWithoutOrgInput
 }
 
 export type OrganizationUncheckedCreateWithoutEventImageStatusesInput = {
@@ -1061,8 +1269,15 @@ export type OrganizationUncheckedCreateWithoutEventImageStatusesInput = {
   enableAlignment?: boolean
   faceRecognitionProvider?: $Enums.FaceRecognitionProvider
   insightfaceModel?: string | null
+  clusteringProvider?: $Enums.ClusteringProvider
+  clusteringMinSamples?: number
+  clusteringMinClusterSize?: number
+  clusteringSimilarityThreshold?: number
   apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutOrgInput
   eventVideoStatuses?: Prisma.EventVideoStatusUncheckedCreateNestedManyWithoutOrgInput
+  clusteringJobs?: Prisma.ClusteringJobUncheckedCreateNestedManyWithoutOrgInput
+  personClusters?: Prisma.PersonClusterUncheckedCreateNestedManyWithoutOrgInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentUncheckedCreateNestedManyWithoutOrgInput
 }
 
 export type OrganizationCreateOrConnectWithoutEventImageStatusesInput = {
@@ -1105,8 +1320,15 @@ export type OrganizationUpdateWithoutEventImageStatusesInput = {
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
   insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clusteringProvider?: Prisma.EnumClusteringProviderFieldUpdateOperationsInput | $Enums.ClusteringProvider
+  clusteringMinSamples?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringMinClusterSize?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringSimilarityThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   apiKeys?: Prisma.ApiKeyUpdateManyWithoutOrgNestedInput
   eventVideoStatuses?: Prisma.EventVideoStatusUpdateManyWithoutOrgNestedInput
+  clusteringJobs?: Prisma.ClusteringJobUpdateManyWithoutOrgNestedInput
+  personClusters?: Prisma.PersonClusterUpdateManyWithoutOrgNestedInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentUpdateManyWithoutOrgNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutEventImageStatusesInput = {
@@ -1133,8 +1355,15 @@ export type OrganizationUncheckedUpdateWithoutEventImageStatusesInput = {
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
   insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clusteringProvider?: Prisma.EnumClusteringProviderFieldUpdateOperationsInput | $Enums.ClusteringProvider
+  clusteringMinSamples?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringMinClusterSize?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringSimilarityThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutOrgNestedInput
   eventVideoStatuses?: Prisma.EventVideoStatusUncheckedUpdateManyWithoutOrgNestedInput
+  clusteringJobs?: Prisma.ClusteringJobUncheckedUpdateManyWithoutOrgNestedInput
+  personClusters?: Prisma.PersonClusterUncheckedUpdateManyWithoutOrgNestedInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentUncheckedUpdateManyWithoutOrgNestedInput
 }
 
 export type OrganizationCreateWithoutEventVideoStatusesInput = {
@@ -1161,8 +1390,15 @@ export type OrganizationCreateWithoutEventVideoStatusesInput = {
   enableAlignment?: boolean
   faceRecognitionProvider?: $Enums.FaceRecognitionProvider
   insightfaceModel?: string | null
+  clusteringProvider?: $Enums.ClusteringProvider
+  clusteringMinSamples?: number
+  clusteringMinClusterSize?: number
+  clusteringSimilarityThreshold?: number
   apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutOrgInput
   eventImageStatuses?: Prisma.EventImageStatusCreateNestedManyWithoutOrgInput
+  clusteringJobs?: Prisma.ClusteringJobCreateNestedManyWithoutOrgInput
+  personClusters?: Prisma.PersonClusterCreateNestedManyWithoutOrgInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentCreateNestedManyWithoutOrgInput
 }
 
 export type OrganizationUncheckedCreateWithoutEventVideoStatusesInput = {
@@ -1189,8 +1425,15 @@ export type OrganizationUncheckedCreateWithoutEventVideoStatusesInput = {
   enableAlignment?: boolean
   faceRecognitionProvider?: $Enums.FaceRecognitionProvider
   insightfaceModel?: string | null
+  clusteringProvider?: $Enums.ClusteringProvider
+  clusteringMinSamples?: number
+  clusteringMinClusterSize?: number
+  clusteringSimilarityThreshold?: number
   apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutOrgInput
   eventImageStatuses?: Prisma.EventImageStatusUncheckedCreateNestedManyWithoutOrgInput
+  clusteringJobs?: Prisma.ClusteringJobUncheckedCreateNestedManyWithoutOrgInput
+  personClusters?: Prisma.PersonClusterUncheckedCreateNestedManyWithoutOrgInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentUncheckedCreateNestedManyWithoutOrgInput
 }
 
 export type OrganizationCreateOrConnectWithoutEventVideoStatusesInput = {
@@ -1233,8 +1476,15 @@ export type OrganizationUpdateWithoutEventVideoStatusesInput = {
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
   insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clusteringProvider?: Prisma.EnumClusteringProviderFieldUpdateOperationsInput | $Enums.ClusteringProvider
+  clusteringMinSamples?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringMinClusterSize?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringSimilarityThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   apiKeys?: Prisma.ApiKeyUpdateManyWithoutOrgNestedInput
   eventImageStatuses?: Prisma.EventImageStatusUpdateManyWithoutOrgNestedInput
+  clusteringJobs?: Prisma.ClusteringJobUpdateManyWithoutOrgNestedInput
+  personClusters?: Prisma.PersonClusterUpdateManyWithoutOrgNestedInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentUpdateManyWithoutOrgNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutEventVideoStatusesInput = {
@@ -1261,8 +1511,483 @@ export type OrganizationUncheckedUpdateWithoutEventVideoStatusesInput = {
   enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
   faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
   insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clusteringProvider?: Prisma.EnumClusteringProviderFieldUpdateOperationsInput | $Enums.ClusteringProvider
+  clusteringMinSamples?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringMinClusterSize?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringSimilarityThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
   apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutOrgNestedInput
   eventImageStatuses?: Prisma.EventImageStatusUncheckedUpdateManyWithoutOrgNestedInput
+  clusteringJobs?: Prisma.ClusteringJobUncheckedUpdateManyWithoutOrgNestedInput
+  personClusters?: Prisma.PersonClusterUncheckedUpdateManyWithoutOrgNestedInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentUncheckedUpdateManyWithoutOrgNestedInput
+}
+
+export type OrganizationCreateWithoutClusteringJobsInput = {
+  id?: string
+  name: string
+  slug: string
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  comprefaceUrl?: string | null
+  comprefaceRecognitionApiKey?: string | null
+  comprefaceDetectionApiKey?: string | null
+  faceDetectionMode?: $Enums.FaceDetectionMode
+  imageSourceMode?: $Enums.ImageSourceMode
+  sharedStoragePath?: string | null
+  minConfidence?: number
+  minSizePx?: number
+  skipExtremeAngles?: boolean
+  searchDefaultTopK?: number
+  searchMinSimilarity?: number
+  embeddingCacheTtlSeconds?: number
+  pythonSidecarUrl?: string | null
+  enableFallbackDetection?: boolean
+  enableAlignment?: boolean
+  faceRecognitionProvider?: $Enums.FaceRecognitionProvider
+  insightfaceModel?: string | null
+  clusteringProvider?: $Enums.ClusteringProvider
+  clusteringMinSamples?: number
+  clusteringMinClusterSize?: number
+  clusteringSimilarityThreshold?: number
+  apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutOrgInput
+  eventImageStatuses?: Prisma.EventImageStatusCreateNestedManyWithoutOrgInput
+  eventVideoStatuses?: Prisma.EventVideoStatusCreateNestedManyWithoutOrgInput
+  personClusters?: Prisma.PersonClusterCreateNestedManyWithoutOrgInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentCreateNestedManyWithoutOrgInput
+}
+
+export type OrganizationUncheckedCreateWithoutClusteringJobsInput = {
+  id?: string
+  name: string
+  slug: string
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  comprefaceUrl?: string | null
+  comprefaceRecognitionApiKey?: string | null
+  comprefaceDetectionApiKey?: string | null
+  faceDetectionMode?: $Enums.FaceDetectionMode
+  imageSourceMode?: $Enums.ImageSourceMode
+  sharedStoragePath?: string | null
+  minConfidence?: number
+  minSizePx?: number
+  skipExtremeAngles?: boolean
+  searchDefaultTopK?: number
+  searchMinSimilarity?: number
+  embeddingCacheTtlSeconds?: number
+  pythonSidecarUrl?: string | null
+  enableFallbackDetection?: boolean
+  enableAlignment?: boolean
+  faceRecognitionProvider?: $Enums.FaceRecognitionProvider
+  insightfaceModel?: string | null
+  clusteringProvider?: $Enums.ClusteringProvider
+  clusteringMinSamples?: number
+  clusteringMinClusterSize?: number
+  clusteringSimilarityThreshold?: number
+  apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutOrgInput
+  eventImageStatuses?: Prisma.EventImageStatusUncheckedCreateNestedManyWithoutOrgInput
+  eventVideoStatuses?: Prisma.EventVideoStatusUncheckedCreateNestedManyWithoutOrgInput
+  personClusters?: Prisma.PersonClusterUncheckedCreateNestedManyWithoutOrgInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentUncheckedCreateNestedManyWithoutOrgInput
+}
+
+export type OrganizationCreateOrConnectWithoutClusteringJobsInput = {
+  where: Prisma.OrganizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutClusteringJobsInput, Prisma.OrganizationUncheckedCreateWithoutClusteringJobsInput>
+}
+
+export type OrganizationUpsertWithoutClusteringJobsInput = {
+  update: Prisma.XOR<Prisma.OrganizationUpdateWithoutClusteringJobsInput, Prisma.OrganizationUncheckedUpdateWithoutClusteringJobsInput>
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutClusteringJobsInput, Prisma.OrganizationUncheckedCreateWithoutClusteringJobsInput>
+  where?: Prisma.OrganizationWhereInput
+}
+
+export type OrganizationUpdateToOneWithWhereWithoutClusteringJobsInput = {
+  where?: Prisma.OrganizationWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUpdateWithoutClusteringJobsInput, Prisma.OrganizationUncheckedUpdateWithoutClusteringJobsInput>
+}
+
+export type OrganizationUpdateWithoutClusteringJobsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  faceDetectionMode?: Prisma.EnumFaceDetectionModeFieldUpdateOperationsInput | $Enums.FaceDetectionMode
+  imageSourceMode?: Prisma.EnumImageSourceModeFieldUpdateOperationsInput | $Enums.ImageSourceMode
+  sharedStoragePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  minConfidence?: Prisma.FloatFieldUpdateOperationsInput | number
+  minSizePx?: Prisma.IntFieldUpdateOperationsInput | number
+  skipExtremeAngles?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  searchDefaultTopK?: Prisma.IntFieldUpdateOperationsInput | number
+  searchMinSimilarity?: Prisma.FloatFieldUpdateOperationsInput | number
+  embeddingCacheTtlSeconds?: Prisma.IntFieldUpdateOperationsInput | number
+  pythonSidecarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enableFallbackDetection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
+  insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clusteringProvider?: Prisma.EnumClusteringProviderFieldUpdateOperationsInput | $Enums.ClusteringProvider
+  clusteringMinSamples?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringMinClusterSize?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringSimilarityThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
+  apiKeys?: Prisma.ApiKeyUpdateManyWithoutOrgNestedInput
+  eventImageStatuses?: Prisma.EventImageStatusUpdateManyWithoutOrgNestedInput
+  eventVideoStatuses?: Prisma.EventVideoStatusUpdateManyWithoutOrgNestedInput
+  personClusters?: Prisma.PersonClusterUpdateManyWithoutOrgNestedInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentUpdateManyWithoutOrgNestedInput
+}
+
+export type OrganizationUncheckedUpdateWithoutClusteringJobsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  faceDetectionMode?: Prisma.EnumFaceDetectionModeFieldUpdateOperationsInput | $Enums.FaceDetectionMode
+  imageSourceMode?: Prisma.EnumImageSourceModeFieldUpdateOperationsInput | $Enums.ImageSourceMode
+  sharedStoragePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  minConfidence?: Prisma.FloatFieldUpdateOperationsInput | number
+  minSizePx?: Prisma.IntFieldUpdateOperationsInput | number
+  skipExtremeAngles?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  searchDefaultTopK?: Prisma.IntFieldUpdateOperationsInput | number
+  searchMinSimilarity?: Prisma.FloatFieldUpdateOperationsInput | number
+  embeddingCacheTtlSeconds?: Prisma.IntFieldUpdateOperationsInput | number
+  pythonSidecarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enableFallbackDetection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
+  insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clusteringProvider?: Prisma.EnumClusteringProviderFieldUpdateOperationsInput | $Enums.ClusteringProvider
+  clusteringMinSamples?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringMinClusterSize?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringSimilarityThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
+  apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutOrgNestedInput
+  eventImageStatuses?: Prisma.EventImageStatusUncheckedUpdateManyWithoutOrgNestedInput
+  eventVideoStatuses?: Prisma.EventVideoStatusUncheckedUpdateManyWithoutOrgNestedInput
+  personClusters?: Prisma.PersonClusterUncheckedUpdateManyWithoutOrgNestedInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentUncheckedUpdateManyWithoutOrgNestedInput
+}
+
+export type OrganizationCreateWithoutPersonClustersInput = {
+  id?: string
+  name: string
+  slug: string
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  comprefaceUrl?: string | null
+  comprefaceRecognitionApiKey?: string | null
+  comprefaceDetectionApiKey?: string | null
+  faceDetectionMode?: $Enums.FaceDetectionMode
+  imageSourceMode?: $Enums.ImageSourceMode
+  sharedStoragePath?: string | null
+  minConfidence?: number
+  minSizePx?: number
+  skipExtremeAngles?: boolean
+  searchDefaultTopK?: number
+  searchMinSimilarity?: number
+  embeddingCacheTtlSeconds?: number
+  pythonSidecarUrl?: string | null
+  enableFallbackDetection?: boolean
+  enableAlignment?: boolean
+  faceRecognitionProvider?: $Enums.FaceRecognitionProvider
+  insightfaceModel?: string | null
+  clusteringProvider?: $Enums.ClusteringProvider
+  clusteringMinSamples?: number
+  clusteringMinClusterSize?: number
+  clusteringSimilarityThreshold?: number
+  apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutOrgInput
+  eventImageStatuses?: Prisma.EventImageStatusCreateNestedManyWithoutOrgInput
+  eventVideoStatuses?: Prisma.EventVideoStatusCreateNestedManyWithoutOrgInput
+  clusteringJobs?: Prisma.ClusteringJobCreateNestedManyWithoutOrgInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentCreateNestedManyWithoutOrgInput
+}
+
+export type OrganizationUncheckedCreateWithoutPersonClustersInput = {
+  id?: string
+  name: string
+  slug: string
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  comprefaceUrl?: string | null
+  comprefaceRecognitionApiKey?: string | null
+  comprefaceDetectionApiKey?: string | null
+  faceDetectionMode?: $Enums.FaceDetectionMode
+  imageSourceMode?: $Enums.ImageSourceMode
+  sharedStoragePath?: string | null
+  minConfidence?: number
+  minSizePx?: number
+  skipExtremeAngles?: boolean
+  searchDefaultTopK?: number
+  searchMinSimilarity?: number
+  embeddingCacheTtlSeconds?: number
+  pythonSidecarUrl?: string | null
+  enableFallbackDetection?: boolean
+  enableAlignment?: boolean
+  faceRecognitionProvider?: $Enums.FaceRecognitionProvider
+  insightfaceModel?: string | null
+  clusteringProvider?: $Enums.ClusteringProvider
+  clusteringMinSamples?: number
+  clusteringMinClusterSize?: number
+  clusteringSimilarityThreshold?: number
+  apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutOrgInput
+  eventImageStatuses?: Prisma.EventImageStatusUncheckedCreateNestedManyWithoutOrgInput
+  eventVideoStatuses?: Prisma.EventVideoStatusUncheckedCreateNestedManyWithoutOrgInput
+  clusteringJobs?: Prisma.ClusteringJobUncheckedCreateNestedManyWithoutOrgInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentUncheckedCreateNestedManyWithoutOrgInput
+}
+
+export type OrganizationCreateOrConnectWithoutPersonClustersInput = {
+  where: Prisma.OrganizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutPersonClustersInput, Prisma.OrganizationUncheckedCreateWithoutPersonClustersInput>
+}
+
+export type OrganizationUpsertWithoutPersonClustersInput = {
+  update: Prisma.XOR<Prisma.OrganizationUpdateWithoutPersonClustersInput, Prisma.OrganizationUncheckedUpdateWithoutPersonClustersInput>
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutPersonClustersInput, Prisma.OrganizationUncheckedCreateWithoutPersonClustersInput>
+  where?: Prisma.OrganizationWhereInput
+}
+
+export type OrganizationUpdateToOneWithWhereWithoutPersonClustersInput = {
+  where?: Prisma.OrganizationWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUpdateWithoutPersonClustersInput, Prisma.OrganizationUncheckedUpdateWithoutPersonClustersInput>
+}
+
+export type OrganizationUpdateWithoutPersonClustersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  faceDetectionMode?: Prisma.EnumFaceDetectionModeFieldUpdateOperationsInput | $Enums.FaceDetectionMode
+  imageSourceMode?: Prisma.EnumImageSourceModeFieldUpdateOperationsInput | $Enums.ImageSourceMode
+  sharedStoragePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  minConfidence?: Prisma.FloatFieldUpdateOperationsInput | number
+  minSizePx?: Prisma.IntFieldUpdateOperationsInput | number
+  skipExtremeAngles?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  searchDefaultTopK?: Prisma.IntFieldUpdateOperationsInput | number
+  searchMinSimilarity?: Prisma.FloatFieldUpdateOperationsInput | number
+  embeddingCacheTtlSeconds?: Prisma.IntFieldUpdateOperationsInput | number
+  pythonSidecarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enableFallbackDetection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
+  insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clusteringProvider?: Prisma.EnumClusteringProviderFieldUpdateOperationsInput | $Enums.ClusteringProvider
+  clusteringMinSamples?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringMinClusterSize?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringSimilarityThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
+  apiKeys?: Prisma.ApiKeyUpdateManyWithoutOrgNestedInput
+  eventImageStatuses?: Prisma.EventImageStatusUpdateManyWithoutOrgNestedInput
+  eventVideoStatuses?: Prisma.EventVideoStatusUpdateManyWithoutOrgNestedInput
+  clusteringJobs?: Prisma.ClusteringJobUpdateManyWithoutOrgNestedInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentUpdateManyWithoutOrgNestedInput
+}
+
+export type OrganizationUncheckedUpdateWithoutPersonClustersInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  faceDetectionMode?: Prisma.EnumFaceDetectionModeFieldUpdateOperationsInput | $Enums.FaceDetectionMode
+  imageSourceMode?: Prisma.EnumImageSourceModeFieldUpdateOperationsInput | $Enums.ImageSourceMode
+  sharedStoragePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  minConfidence?: Prisma.FloatFieldUpdateOperationsInput | number
+  minSizePx?: Prisma.IntFieldUpdateOperationsInput | number
+  skipExtremeAngles?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  searchDefaultTopK?: Prisma.IntFieldUpdateOperationsInput | number
+  searchMinSimilarity?: Prisma.FloatFieldUpdateOperationsInput | number
+  embeddingCacheTtlSeconds?: Prisma.IntFieldUpdateOperationsInput | number
+  pythonSidecarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enableFallbackDetection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
+  insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clusteringProvider?: Prisma.EnumClusteringProviderFieldUpdateOperationsInput | $Enums.ClusteringProvider
+  clusteringMinSamples?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringMinClusterSize?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringSimilarityThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
+  apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutOrgNestedInput
+  eventImageStatuses?: Prisma.EventImageStatusUncheckedUpdateManyWithoutOrgNestedInput
+  eventVideoStatuses?: Prisma.EventVideoStatusUncheckedUpdateManyWithoutOrgNestedInput
+  clusteringJobs?: Prisma.ClusteringJobUncheckedUpdateManyWithoutOrgNestedInput
+  faceClusterAssignments?: Prisma.FaceClusterAssignmentUncheckedUpdateManyWithoutOrgNestedInput
+}
+
+export type OrganizationCreateWithoutFaceClusterAssignmentsInput = {
+  id?: string
+  name: string
+  slug: string
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  comprefaceUrl?: string | null
+  comprefaceRecognitionApiKey?: string | null
+  comprefaceDetectionApiKey?: string | null
+  faceDetectionMode?: $Enums.FaceDetectionMode
+  imageSourceMode?: $Enums.ImageSourceMode
+  sharedStoragePath?: string | null
+  minConfidence?: number
+  minSizePx?: number
+  skipExtremeAngles?: boolean
+  searchDefaultTopK?: number
+  searchMinSimilarity?: number
+  embeddingCacheTtlSeconds?: number
+  pythonSidecarUrl?: string | null
+  enableFallbackDetection?: boolean
+  enableAlignment?: boolean
+  faceRecognitionProvider?: $Enums.FaceRecognitionProvider
+  insightfaceModel?: string | null
+  clusteringProvider?: $Enums.ClusteringProvider
+  clusteringMinSamples?: number
+  clusteringMinClusterSize?: number
+  clusteringSimilarityThreshold?: number
+  apiKeys?: Prisma.ApiKeyCreateNestedManyWithoutOrgInput
+  eventImageStatuses?: Prisma.EventImageStatusCreateNestedManyWithoutOrgInput
+  eventVideoStatuses?: Prisma.EventVideoStatusCreateNestedManyWithoutOrgInput
+  clusteringJobs?: Prisma.ClusteringJobCreateNestedManyWithoutOrgInput
+  personClusters?: Prisma.PersonClusterCreateNestedManyWithoutOrgInput
+}
+
+export type OrganizationUncheckedCreateWithoutFaceClusterAssignmentsInput = {
+  id?: string
+  name: string
+  slug: string
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  comprefaceUrl?: string | null
+  comprefaceRecognitionApiKey?: string | null
+  comprefaceDetectionApiKey?: string | null
+  faceDetectionMode?: $Enums.FaceDetectionMode
+  imageSourceMode?: $Enums.ImageSourceMode
+  sharedStoragePath?: string | null
+  minConfidence?: number
+  minSizePx?: number
+  skipExtremeAngles?: boolean
+  searchDefaultTopK?: number
+  searchMinSimilarity?: number
+  embeddingCacheTtlSeconds?: number
+  pythonSidecarUrl?: string | null
+  enableFallbackDetection?: boolean
+  enableAlignment?: boolean
+  faceRecognitionProvider?: $Enums.FaceRecognitionProvider
+  insightfaceModel?: string | null
+  clusteringProvider?: $Enums.ClusteringProvider
+  clusteringMinSamples?: number
+  clusteringMinClusterSize?: number
+  clusteringSimilarityThreshold?: number
+  apiKeys?: Prisma.ApiKeyUncheckedCreateNestedManyWithoutOrgInput
+  eventImageStatuses?: Prisma.EventImageStatusUncheckedCreateNestedManyWithoutOrgInput
+  eventVideoStatuses?: Prisma.EventVideoStatusUncheckedCreateNestedManyWithoutOrgInput
+  clusteringJobs?: Prisma.ClusteringJobUncheckedCreateNestedManyWithoutOrgInput
+  personClusters?: Prisma.PersonClusterUncheckedCreateNestedManyWithoutOrgInput
+}
+
+export type OrganizationCreateOrConnectWithoutFaceClusterAssignmentsInput = {
+  where: Prisma.OrganizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutFaceClusterAssignmentsInput, Prisma.OrganizationUncheckedCreateWithoutFaceClusterAssignmentsInput>
+}
+
+export type OrganizationUpsertWithoutFaceClusterAssignmentsInput = {
+  update: Prisma.XOR<Prisma.OrganizationUpdateWithoutFaceClusterAssignmentsInput, Prisma.OrganizationUncheckedUpdateWithoutFaceClusterAssignmentsInput>
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutFaceClusterAssignmentsInput, Prisma.OrganizationUncheckedCreateWithoutFaceClusterAssignmentsInput>
+  where?: Prisma.OrganizationWhereInput
+}
+
+export type OrganizationUpdateToOneWithWhereWithoutFaceClusterAssignmentsInput = {
+  where?: Prisma.OrganizationWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUpdateWithoutFaceClusterAssignmentsInput, Prisma.OrganizationUncheckedUpdateWithoutFaceClusterAssignmentsInput>
+}
+
+export type OrganizationUpdateWithoutFaceClusterAssignmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  faceDetectionMode?: Prisma.EnumFaceDetectionModeFieldUpdateOperationsInput | $Enums.FaceDetectionMode
+  imageSourceMode?: Prisma.EnumImageSourceModeFieldUpdateOperationsInput | $Enums.ImageSourceMode
+  sharedStoragePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  minConfidence?: Prisma.FloatFieldUpdateOperationsInput | number
+  minSizePx?: Prisma.IntFieldUpdateOperationsInput | number
+  skipExtremeAngles?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  searchDefaultTopK?: Prisma.IntFieldUpdateOperationsInput | number
+  searchMinSimilarity?: Prisma.FloatFieldUpdateOperationsInput | number
+  embeddingCacheTtlSeconds?: Prisma.IntFieldUpdateOperationsInput | number
+  pythonSidecarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enableFallbackDetection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
+  insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clusteringProvider?: Prisma.EnumClusteringProviderFieldUpdateOperationsInput | $Enums.ClusteringProvider
+  clusteringMinSamples?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringMinClusterSize?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringSimilarityThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
+  apiKeys?: Prisma.ApiKeyUpdateManyWithoutOrgNestedInput
+  eventImageStatuses?: Prisma.EventImageStatusUpdateManyWithoutOrgNestedInput
+  eventVideoStatuses?: Prisma.EventVideoStatusUpdateManyWithoutOrgNestedInput
+  clusteringJobs?: Prisma.ClusteringJobUpdateManyWithoutOrgNestedInput
+  personClusters?: Prisma.PersonClusterUpdateManyWithoutOrgNestedInput
+}
+
+export type OrganizationUncheckedUpdateWithoutFaceClusterAssignmentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  faceDetectionMode?: Prisma.EnumFaceDetectionModeFieldUpdateOperationsInput | $Enums.FaceDetectionMode
+  imageSourceMode?: Prisma.EnumImageSourceModeFieldUpdateOperationsInput | $Enums.ImageSourceMode
+  sharedStoragePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  minConfidence?: Prisma.FloatFieldUpdateOperationsInput | number
+  minSizePx?: Prisma.IntFieldUpdateOperationsInput | number
+  skipExtremeAngles?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  searchDefaultTopK?: Prisma.IntFieldUpdateOperationsInput | number
+  searchMinSimilarity?: Prisma.FloatFieldUpdateOperationsInput | number
+  embeddingCacheTtlSeconds?: Prisma.IntFieldUpdateOperationsInput | number
+  pythonSidecarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  enableFallbackDetection?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  enableAlignment?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  faceRecognitionProvider?: Prisma.EnumFaceRecognitionProviderFieldUpdateOperationsInput | $Enums.FaceRecognitionProvider
+  insightfaceModel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  clusteringProvider?: Prisma.EnumClusteringProviderFieldUpdateOperationsInput | $Enums.ClusteringProvider
+  clusteringMinSamples?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringMinClusterSize?: Prisma.IntFieldUpdateOperationsInput | number
+  clusteringSimilarityThreshold?: Prisma.FloatFieldUpdateOperationsInput | number
+  apiKeys?: Prisma.ApiKeyUncheckedUpdateManyWithoutOrgNestedInput
+  eventImageStatuses?: Prisma.EventImageStatusUncheckedUpdateManyWithoutOrgNestedInput
+  eventVideoStatuses?: Prisma.EventVideoStatusUncheckedUpdateManyWithoutOrgNestedInput
+  clusteringJobs?: Prisma.ClusteringJobUncheckedUpdateManyWithoutOrgNestedInput
+  personClusters?: Prisma.PersonClusterUncheckedUpdateManyWithoutOrgNestedInput
 }
 
 
@@ -1274,12 +1999,18 @@ export type OrganizationCountOutputType = {
   apiKeys: number
   eventImageStatuses: number
   eventVideoStatuses: number
+  clusteringJobs: number
+  personClusters: number
+  faceClusterAssignments: number
 }
 
 export type OrganizationCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   apiKeys?: boolean | OrganizationCountOutputTypeCountApiKeysArgs
   eventImageStatuses?: boolean | OrganizationCountOutputTypeCountEventImageStatusesArgs
   eventVideoStatuses?: boolean | OrganizationCountOutputTypeCountEventVideoStatusesArgs
+  clusteringJobs?: boolean | OrganizationCountOutputTypeCountClusteringJobsArgs
+  personClusters?: boolean | OrganizationCountOutputTypeCountPersonClustersArgs
+  faceClusterAssignments?: boolean | OrganizationCountOutputTypeCountFaceClusterAssignmentsArgs
 }
 
 /**
@@ -1313,6 +2044,27 @@ export type OrganizationCountOutputTypeCountEventVideoStatusesArgs<ExtArgs exten
   where?: Prisma.EventVideoStatusWhereInput
 }
 
+/**
+ * OrganizationCountOutputType without action
+ */
+export type OrganizationCountOutputTypeCountClusteringJobsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ClusteringJobWhereInput
+}
+
+/**
+ * OrganizationCountOutputType without action
+ */
+export type OrganizationCountOutputTypeCountPersonClustersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PersonClusterWhereInput
+}
+
+/**
+ * OrganizationCountOutputType without action
+ */
+export type OrganizationCountOutputTypeCountFaceClusterAssignmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.FaceClusterAssignmentWhereInput
+}
+
 
 export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1338,9 +2090,16 @@ export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   enableAlignment?: boolean
   faceRecognitionProvider?: boolean
   insightfaceModel?: boolean
+  clusteringProvider?: boolean
+  clusteringMinSamples?: boolean
+  clusteringMinClusterSize?: boolean
+  clusteringSimilarityThreshold?: boolean
   apiKeys?: boolean | Prisma.Organization$apiKeysArgs<ExtArgs>
   eventImageStatuses?: boolean | Prisma.Organization$eventImageStatusesArgs<ExtArgs>
   eventVideoStatuses?: boolean | Prisma.Organization$eventVideoStatusesArgs<ExtArgs>
+  clusteringJobs?: boolean | Prisma.Organization$clusteringJobsArgs<ExtArgs>
+  personClusters?: boolean | Prisma.Organization$personClustersArgs<ExtArgs>
+  faceClusterAssignments?: boolean | Prisma.Organization$faceClusterAssignmentsArgs<ExtArgs>
   _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["organization"]>
 
@@ -1368,6 +2127,10 @@ export type OrganizationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   enableAlignment?: boolean
   faceRecognitionProvider?: boolean
   insightfaceModel?: boolean
+  clusteringProvider?: boolean
+  clusteringMinSamples?: boolean
+  clusteringMinClusterSize?: boolean
+  clusteringSimilarityThreshold?: boolean
 }, ExtArgs["result"]["organization"]>
 
 export type OrganizationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1394,6 +2157,10 @@ export type OrganizationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   enableAlignment?: boolean
   faceRecognitionProvider?: boolean
   insightfaceModel?: boolean
+  clusteringProvider?: boolean
+  clusteringMinSamples?: boolean
+  clusteringMinClusterSize?: boolean
+  clusteringSimilarityThreshold?: boolean
 }, ExtArgs["result"]["organization"]>
 
 export type OrganizationSelectScalar = {
@@ -1420,13 +2187,20 @@ export type OrganizationSelectScalar = {
   enableAlignment?: boolean
   faceRecognitionProvider?: boolean
   insightfaceModel?: boolean
+  clusteringProvider?: boolean
+  clusteringMinSamples?: boolean
+  clusteringMinClusterSize?: boolean
+  clusteringSimilarityThreshold?: boolean
 }
 
-export type OrganizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "isActive" | "createdAt" | "updatedAt" | "comprefaceUrl" | "comprefaceRecognitionApiKey" | "comprefaceDetectionApiKey" | "faceDetectionMode" | "imageSourceMode" | "sharedStoragePath" | "minConfidence" | "minSizePx" | "skipExtremeAngles" | "searchDefaultTopK" | "searchMinSimilarity" | "embeddingCacheTtlSeconds" | "pythonSidecarUrl" | "enableFallbackDetection" | "enableAlignment" | "faceRecognitionProvider" | "insightfaceModel", ExtArgs["result"]["organization"]>
+export type OrganizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "isActive" | "createdAt" | "updatedAt" | "comprefaceUrl" | "comprefaceRecognitionApiKey" | "comprefaceDetectionApiKey" | "faceDetectionMode" | "imageSourceMode" | "sharedStoragePath" | "minConfidence" | "minSizePx" | "skipExtremeAngles" | "searchDefaultTopK" | "searchMinSimilarity" | "embeddingCacheTtlSeconds" | "pythonSidecarUrl" | "enableFallbackDetection" | "enableAlignment" | "faceRecognitionProvider" | "insightfaceModel" | "clusteringProvider" | "clusteringMinSamples" | "clusteringMinClusterSize" | "clusteringSimilarityThreshold", ExtArgs["result"]["organization"]>
 export type OrganizationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   apiKeys?: boolean | Prisma.Organization$apiKeysArgs<ExtArgs>
   eventImageStatuses?: boolean | Prisma.Organization$eventImageStatusesArgs<ExtArgs>
   eventVideoStatuses?: boolean | Prisma.Organization$eventVideoStatusesArgs<ExtArgs>
+  clusteringJobs?: boolean | Prisma.Organization$clusteringJobsArgs<ExtArgs>
+  personClusters?: boolean | Prisma.Organization$personClustersArgs<ExtArgs>
+  faceClusterAssignments?: boolean | Prisma.Organization$faceClusterAssignmentsArgs<ExtArgs>
   _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type OrganizationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1438,6 +2212,9 @@ export type $OrganizationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     apiKeys: Prisma.$ApiKeyPayload<ExtArgs>[]
     eventImageStatuses: Prisma.$EventImageStatusPayload<ExtArgs>[]
     eventVideoStatuses: Prisma.$EventVideoStatusPayload<ExtArgs>[]
+    clusteringJobs: Prisma.$ClusteringJobPayload<ExtArgs>[]
+    personClusters: Prisma.$PersonClusterPayload<ExtArgs>[]
+    faceClusterAssignments: Prisma.$FaceClusterAssignmentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1463,6 +2240,10 @@ export type $OrganizationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     enableAlignment: boolean
     faceRecognitionProvider: $Enums.FaceRecognitionProvider
     insightfaceModel: string | null
+    clusteringProvider: $Enums.ClusteringProvider
+    clusteringMinSamples: number
+    clusteringMinClusterSize: number
+    clusteringSimilarityThreshold: number
   }, ExtArgs["result"]["organization"]>
   composites: {}
 }
@@ -1860,6 +2641,9 @@ export interface Prisma__OrganizationClient<T, Null = never, ExtArgs extends run
   apiKeys<T extends Prisma.Organization$apiKeysArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$apiKeysArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ApiKeyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   eventImageStatuses<T extends Prisma.Organization$eventImageStatusesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$eventImageStatusesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventImageStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   eventVideoStatuses<T extends Prisma.Organization$eventVideoStatusesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$eventVideoStatusesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventVideoStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  clusteringJobs<T extends Prisma.Organization$clusteringJobsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$clusteringJobsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ClusteringJobPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  personClusters<T extends Prisma.Organization$personClustersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$personClustersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PersonClusterPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  faceClusterAssignments<T extends Prisma.Organization$faceClusterAssignmentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$faceClusterAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FaceClusterAssignmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1912,6 +2696,10 @@ export interface OrganizationFieldRefs {
   readonly enableAlignment: Prisma.FieldRef<"Organization", 'Boolean'>
   readonly faceRecognitionProvider: Prisma.FieldRef<"Organization", 'FaceRecognitionProvider'>
   readonly insightfaceModel: Prisma.FieldRef<"Organization", 'String'>
+  readonly clusteringProvider: Prisma.FieldRef<"Organization", 'ClusteringProvider'>
+  readonly clusteringMinSamples: Prisma.FieldRef<"Organization", 'Int'>
+  readonly clusteringMinClusterSize: Prisma.FieldRef<"Organization", 'Int'>
+  readonly clusteringSimilarityThreshold: Prisma.FieldRef<"Organization", 'Float'>
 }
     
 
@@ -2369,6 +3157,78 @@ export type Organization$eventVideoStatusesArgs<ExtArgs extends runtime.Types.Ex
   take?: number
   skip?: number
   distinct?: Prisma.EventVideoStatusScalarFieldEnum | Prisma.EventVideoStatusScalarFieldEnum[]
+}
+
+/**
+ * Organization.clusteringJobs
+ */
+export type Organization$clusteringJobsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ClusteringJob
+   */
+  select?: Prisma.ClusteringJobSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ClusteringJob
+   */
+  omit?: Prisma.ClusteringJobOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ClusteringJobInclude<ExtArgs> | null
+  where?: Prisma.ClusteringJobWhereInput
+  orderBy?: Prisma.ClusteringJobOrderByWithRelationInput | Prisma.ClusteringJobOrderByWithRelationInput[]
+  cursor?: Prisma.ClusteringJobWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ClusteringJobScalarFieldEnum | Prisma.ClusteringJobScalarFieldEnum[]
+}
+
+/**
+ * Organization.personClusters
+ */
+export type Organization$personClustersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PersonCluster
+   */
+  select?: Prisma.PersonClusterSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PersonCluster
+   */
+  omit?: Prisma.PersonClusterOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PersonClusterInclude<ExtArgs> | null
+  where?: Prisma.PersonClusterWhereInput
+  orderBy?: Prisma.PersonClusterOrderByWithRelationInput | Prisma.PersonClusterOrderByWithRelationInput[]
+  cursor?: Prisma.PersonClusterWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PersonClusterScalarFieldEnum | Prisma.PersonClusterScalarFieldEnum[]
+}
+
+/**
+ * Organization.faceClusterAssignments
+ */
+export type Organization$faceClusterAssignmentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the FaceClusterAssignment
+   */
+  select?: Prisma.FaceClusterAssignmentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the FaceClusterAssignment
+   */
+  omit?: Prisma.FaceClusterAssignmentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.FaceClusterAssignmentInclude<ExtArgs> | null
+  where?: Prisma.FaceClusterAssignmentWhereInput
+  orderBy?: Prisma.FaceClusterAssignmentOrderByWithRelationInput | Prisma.FaceClusterAssignmentOrderByWithRelationInput[]
+  cursor?: Prisma.FaceClusterAssignmentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.FaceClusterAssignmentScalarFieldEnum | Prisma.FaceClusterAssignmentScalarFieldEnum[]
 }
 
 /**

@@ -140,6 +140,14 @@ export const orgService = {
           faceRecognitionProvider: data.faceRecognitionProvider,
         }),
         ...(data.insightfaceModel !== undefined && { insightfaceModel: data.insightfaceModel }),
+
+        // Clustering Settings
+        ...(data.clusteringProvider !== undefined && { clusteringProvider: data.clusteringProvider }),
+        ...(data.clusteringMinSamples !== undefined && { clusteringMinSamples: data.clusteringMinSamples }),
+        ...(data.clusteringMinClusterSize !== undefined && { clusteringMinClusterSize: data.clusteringMinClusterSize }),
+        ...(data.clusteringSimilarityThreshold !== undefined && {
+          clusteringSimilarityThreshold: data.clusteringSimilarityThreshold
+        }),
       },
     });
   },

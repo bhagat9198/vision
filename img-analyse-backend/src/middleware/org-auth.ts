@@ -79,7 +79,8 @@ export async function requireOrgAuth(
   next: NextFunction
 ): Promise<void> {
   const apiKey = req.headers['x-api-key'] as string;
-  const authToken = req.headers['x-auth-token'] as string;
+  // Support auth token in header OR query param (for image URLs that can't use headers)
+  const authToken = (req.headers['x-auth-token'] as string) || (req.query.token as string);
 
   // 1. Check for Auth Token first
   if (authToken) {

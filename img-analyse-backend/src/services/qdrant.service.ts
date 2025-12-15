@@ -514,6 +514,149 @@ class QdrantService {
       throw error;
     }
   }
+
+  // =============================================================================
+  // CLUSTERING SUPPORT METHODS
+  // =============================================================================
+
+  /**
+   * Scroll through all faces in a collection and return their embeddings.
+   * Used for clustering - retrieves all face vectors for an event.
+   *
+   * @param orgSlug - Organization Slug
+   * @param eventSlug - Event Slug
+   * @param batchSize - Number of points to fetch per scroll (default 100)
+   * @returns Array of points with embeddings and payloads
+   */
+  async scrollAllFacesWithEmbeddings(
+    orgSlug: string,
+    eventSlug: string,
+    batchSize: number = 100
+  ): Promise<Array<{
+    id: string;
+    embedding: number[];
+    payload: QdrantFacePayload;
+  }>> {
+    const collectionName = getOrgCollectionName(orgSlug, eventSlug);
+    logger.info(`[CLUSTERING] Scrolling all faces from ${collectionName}`);
+
+    const allPoints: Array<{
+      id: string;
+      embedding: number[];
+      payload: QdrantFacePayload;
+    }> = [];
+
+    try {
+      // Check if collection exists
+      const collections = await qdrantClient.getCollections();
+      const exists = collections.collections.some((c) => c.name === collectionName);
+
+      if (!exists) {
+        logger.warn(`[CLUSTERING] Collection ${collectionName} does not exist`);
+        return [];
+      }
+
+      let offset: string | number | undefined = undefined;
+      let hasMore = true;
+
+      while (hasMore) {
+        const result = await qdrantClient.scroll(collectionName, {
+          limit: batchSize,
+          offset,
+          with_payload: true,
+          with_vector: true, // Need vectors for clustering
+        });
+
+        for (const point of result.points) {
+          // Handle both string and number IDs
+          const pointId = typeof point.id === 'string' ? point.id : String(point.id);
+
+          // Get vector (handle both dense and named vectors)
+          let embedding: number[] = [];
+          if (Array.isArray(point.vector)) {
+            embedding = point.vector as number[];
+          } else if (point.vector && typeof point.vector === 'object') {
+            // Named vectors - get the first/default one
+            const vectors = point.vector as Record<string, number[]>;
+            embedding = Object.values(vectors)[0] || [];
+          }
+
+          if (embedding.length > 0) {
+            allPoints.push({
+              id: pointId,
+              embedding,
+              payload: point.payload as QdrantFacePayload,
+            });
+          }
+        }
+
+        // Check if there are more results
+        const nextOffset = result.next_page_offset;
+        if (nextOffset !== null && nextOffset !== undefined && typeof nextOffset !== 'object') {
+          offset = nextOffset as string | number;
+          hasMore = true;
+        } else {
+          hasMore = false;
+        }
+      }
+
+      logger.info(`[CLUSTERING] Retrieved ${allPoints.length} faces with embeddings from ${collectionName}`);
+      return allPoints;
+    } catch (error) {
+      logger.error(`[CLUSTERING] Failed to scroll faces from ${collectionName}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get points by their IDs with payloads (for thumbnail generation after clustering).
+   *
+   * @param orgSlug - Organization Slug
+   * @param eventSlug - Event Slug
+   * @param pointIds - Array of Qdrant point IDs
+   * @returns Array of points with payloads
+   */
+  async getPointsByIds(
+    orgSlug: string,
+    eventSlug: string,
+    pointIds: string[]
+  ): Promise<Array<{
+    id: string;
+    payload: QdrantFacePayload;
+  }>> {
+    if (pointIds.length === 0) return [];
+
+    const collectionName = getOrgCollectionName(orgSlug, eventSlug);
+
+    try {
+      const result = await qdrantClient.retrieve(collectionName, {
+        ids: pointIds,
+        with_payload: true,
+        with_vector: false,
+      });
+
+      return result.map((point) => ({
+        id: typeof point.id === 'string' ? point.id : String(point.id),
+        payload: point.payload as QdrantFacePayload,
+      }));
+    } catch (error) {
+      logger.error(`[CLUSTERING] Failed to get points by IDs from ${collectionName}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get the total count of faces in a collection.
+   * Used to estimate clustering job size.
+   *
+   * @param orgSlug - Organization Slug
+   * @param eventSlug - Event Slug
+   * @returns Number of face vectors in the collection
+   */
+  async getFaceCount(orgSlug: string, eventSlug: string): Promise<number> {
+    const info = await this.getCollectionInfo(orgSlug, eventSlug);
+    return info?.vectorCount ?? 0;
+  }
 }
 
 // Export singleton instance

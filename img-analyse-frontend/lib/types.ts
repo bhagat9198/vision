@@ -79,6 +79,12 @@ export interface Organization {
   // Face Recognition Provider
   faceRecognitionProvider: FaceRecognitionProvider;
   insightfaceModel?: string | null;
+
+  // Clustering Settings
+  clusteringProvider: ClusteringProvider;
+  clusteringMinClusterSize: number;
+  clusteringMinSamples: number;
+  clusteringSimilarityThreshold: number;
 }
 
 export interface OrganizationListItem {
@@ -97,6 +103,36 @@ export interface CreateOrgResponse {
   org: Organization;
   apiKey: string;
 }
+
+// =============================================================================
+// Global Settings Types
+// =============================================================================
+
+export interface GlobalSettings {
+  id: string;
+  faceRecognitionProvider: FaceRecognitionProvider;
+  insightfaceModel?: string | null;
+  comprefaceUrl?: string | null;
+  pythonSidecarUrl?: string | null;
+  faceDetectionMode: FaceDetectionMode;
+  minConfidence: number;
+  minSizePx: number;
+  skipExtremeAngles: boolean;
+  imageSourceMode: ImageSourceMode;
+  sharedStoragePath?: string | null;
+  enableFallbackDetection: boolean;
+  enableAlignment: boolean;
+  searchDefaultTopK: number;
+  searchMinSimilarity: number;
+  embeddingCacheTtlSeconds: number;
+  clusteringProvider: ClusteringProvider;
+  clusteringMinClusterSize: number;
+  clusteringMinSamples: number;
+  clusteringSimilarityThreshold: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 
 // =============================================================================
 // API Key Types
@@ -265,5 +301,76 @@ export interface VideoWithFrames {
   frames?: VideoFrame[];
   frameStats: VideoFrameStats;
   _count?: { frames: number };
+}
+
+// =============================================================================
+// Clustering Types
+// =============================================================================
+
+export type ClusteringProvider = 'QDRANT' | 'HDBSCAN';
+export type ClusteringJobStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+
+export interface PersonCluster {
+  id: string;
+  orgId: string;
+  eventId: string;
+  eventSlug: string;
+  name: string;
+  displayOrder: number;
+  representativeFaceId?: string | null;
+  faceCount: number;
+  photoCount: number;
+  isNoise: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ClusteringJob {
+  id: string;
+  orgId: string;
+  eventId: string;
+  eventSlug: string;
+  status: ClusteringJobStatus;
+  provider: ClusteringProvider;
+  totalFaces?: number | null;
+  clustersCreated?: number | null;
+  noiseFaces?: number | null;
+  processingTimeMs?: number | null;
+  error?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FaceClusterAssignment {
+  id: string;
+  qdrantPointId: string;
+  photoId: string;
+  confidence: number;
+  isManual: boolean;
+}
+
+export interface ClusterFace extends FaceClusterAssignment {
+  thumbnailUrl?: string;
+  imageUrl?: string;
+  bbox?: BoundingBox;
+}
+
+export interface ClusterListResponse {
+  clusters: PersonCluster[];
+  totalFaces: number;
+  totalClusters: number;
+}
+
+export interface ClusterFacesResponse {
+  cluster: PersonCluster;
+  faces: ClusterFace[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface RunClusteringResponse {
+  jobId: string;
+  status: ClusteringJobStatus;
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState, useEffect, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, RefreshCw, AlertCircle, CheckCircle, Clock, XCircle, RotateCcw, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { api, API_BASE_URL } from "@/lib/api";
 import { AppLayout } from "@/components/layout/app-layout";
 import { formatDistanceToNow } from "date-fns";
 import { VideoList } from "@/components/events/video-list";
+import { PersonGallery } from "@/components/clustering";
 
 import Link from "next/link";
 import { EventDetailSkeleton } from "@/components/events/event-detail-skeleton";
@@ -22,6 +23,8 @@ import { EventStats, ImageStatus, VideoWithFrames, FaceDetail } from "@/lib/type
 
 export default function EventDetailPage() {
     const params = useParams();
+    const router = useRouter();
+    const searchParams = useSearchParams();
     const eventId = params.id as string;
     const [activeTab, setActiveTab] = useQueryTabs("images", "tab");
     // Cast to any to bypass type check for now, or we can improve the hook to be generic. 
@@ -87,7 +90,12 @@ export default function EventDetailPage() {
         setSelectedImage(imageUrl);
         setSelectedPhotoId(photoId);
         fetchFacesForPhoto(photoId);
-    }, [fetchFacesForPhoto]);
+
+        // Update URL with photo query parameter
+        const params = new URLSearchParams(window.location.search);
+        params.set('photo', photoId);
+        router.push(`${window.location.pathname}?${params.toString()}`, { scroll: false });
+    }, [fetchFacesForPhoto, router]);
 
     // Handle re-indexing with high accuracy
     const handleReindex = useCallback(async (photoId: string) => {
@@ -171,6 +179,20 @@ export default function EventDetailPage() {
             return () => clearTimeout(timer);
         }
     }, [selectedImage, facesForPhoto, drawBoundingBoxes]);
+
+    // Open photo from URL query parameter on page load
+    useEffect(() => {
+        const photoId = searchParams.get('photo');
+        if (photoId && images && !selectedImage) {
+            const image = images.find(img => img.photoId === photoId);
+            if (image && image.imageUrl) {
+                handleImageSelect(
+                    `${image.imageUrl.startsWith('http') ? '' : API_BASE_URL}${image.imageUrl}`,
+                    image.photoId
+                );
+            }
+        }
+    }, [searchParams, images, selectedImage, handleImageSelect]);
 
     if (eventLoading && !event) {
         return (
@@ -298,6 +320,7 @@ export default function EventDetailPage() {
                     <TabsList>
                         <TabsTrigger value="images">Images</TabsTrigger>
                         <TabsTrigger value="videos">Videos</TabsTrigger>
+                        <TabsTrigger value="people">People</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="images" className="space-y-4">
@@ -422,6 +445,13 @@ export default function EventDetailPage() {
                             onRefresh={refetchVideos}
                         />
                     </TabsContent>
+
+                    <TabsContent value="people" className="space-y-4">
+                        <PersonGallery
+                            eventId={eventId}
+                            eventSlug={event.eventSlug || eventId}
+                        />
+                    </TabsContent>
                 </Tabs>
             </div>
 
@@ -430,6 +460,12 @@ export default function EventDetailPage() {
                     setSelectedImage(null);
                     setSelectedPhotoId(null);
                     setFacesForPhoto([]);
+
+                    // Remove photo query parameter from URL
+                    const params = new URLSearchParams(window.location.search);
+                    params.delete('photo');
+                    const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
+                    router.push(newUrl, { scroll: false });
                 }
             }}>
                 <DialogContent className="max-w-4xl border-none bg-transparent p-0 shadow-none">

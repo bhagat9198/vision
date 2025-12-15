@@ -400,12 +400,39 @@ export const indexController = {
         },
       });
 
+      // Calculate the correct imagePath based on mode
+      let resolvedImagePath = image.imageUrl;
+
+      if (settings.imageSourceMode === 'SHARED_STORAGE' && image.imageUrl && image.imageUrl.startsWith('http')) {
+        try {
+          // Extract pathname from URL (e.g., http://loc:4000/uploads/foo.jpg -> /uploads/foo.jpg)
+          const url = new URL(image.imageUrl);
+          let pathname = url.pathname;
+
+          // Remove leading slash
+          if (pathname.startsWith('/')) {
+            pathname = pathname.substring(1);
+          }
+
+          // Remove 'uploads/' prefix if present (URL has /uploads/, but shared storage doesn't)
+          if (pathname.startsWith('uploads/')) {
+            pathname = pathname.substring('uploads/'.length);
+          }
+
+          resolvedImagePath = pathname;
+          logger.info(`Resolved reindex path for SHARED_STORAGE: ${image.imageUrl} -> ${resolvedImagePath}`);
+        } catch (e) {
+          logger.warn(`Failed to parse URL for shared storage path resolution: ${image.imageUrl}`);
+          // Fallback to original, might fail but better than nothing
+        }
+      }
+
       // Add to indexing queue with high accuracy flag
       await addToIndexingQueue({
         photoId,
         eventId: actualEventId,
         eventSlug: actualEventSlug,
-        imagePath: image.imageUrl,
+        imagePath: resolvedImagePath,
         orgSettings: settings,
         highAccuracy: highAccuracy || false, // Pass flag to use larger det_size
       });

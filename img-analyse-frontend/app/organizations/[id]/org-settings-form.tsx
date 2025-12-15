@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Settings, Save } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import { api } from "@/lib/api";
-import type { Organization, FaceDetectionMode, ImageSourceMode, FaceRecognitionProvider } from "@/lib/types";
+import type { Organization, FaceDetectionMode, ImageSourceMode, FaceRecognitionProvider, ClusteringProvider, GlobalSettings } from "@/lib/types";
 
 interface OrgSettingsFormProps {
   org: Organization;
@@ -18,12 +20,13 @@ interface OrgSettingsFormProps {
 
 export function OrgSettingsForm({ org, onUpdate }: OrgSettingsFormProps) {
   const [saving, setSaving] = useState(false);
+  const [globalDefaults, setGlobalDefaults] = useState<GlobalSettings | null>(null);
   const [settings, setSettings] = useState({
     comprefaceUrl: org.comprefaceUrl || "",
     comprefaceRecognitionApiKey: "",
     comprefaceDetectionApiKey: "",
     faceDetectionMode: org.faceDetectionMode,
-    imageSourceMode: org.imageSourceMode,
+    imageSourceMode: org.imageSourceMode || "URL",
     sharedStoragePath: org.sharedStoragePath || "",
     minConfidence: org.minConfidence,
     minSizePx: org.minSizePx,
@@ -37,7 +40,23 @@ export function OrgSettingsForm({ org, onUpdate }: OrgSettingsFormProps) {
     // Face Recognition Provider
     faceRecognitionProvider: org.faceRecognitionProvider || "COMPREFACE",
     insightfaceModel: org.insightfaceModel || "buffalo_l",
+    // Clustering Settings
+    clusteringProvider: org.clusteringProvider || "QDRANT",
+    clusteringMinClusterSize: org.clusteringMinClusterSize ?? 2,
+    clusteringMinSamples: org.clusteringMinSamples ?? 2,
+    clusteringSimilarityThreshold: org.clusteringSimilarityThreshold ?? 0.6,
   });
+
+  useEffect(() => {
+    // Load global defaults
+    api.getGlobalSettings().then(response => {
+      if (response.success && response.data) {
+        setGlobalDefaults(response.data);
+      }
+    }).catch(err => {
+      console.error("Failed to load global defaults:", err);
+    });
+  }, []);
 
   const handleSave = async () => {
     setSaving(true);
@@ -50,6 +69,7 @@ export function OrgSettingsForm({ org, onUpdate }: OrgSettingsFormProps) {
       if (settings.pythonSidecarUrl) updateData.pythonSidecarUrl = settings.pythonSidecarUrl;
       updateData.faceDetectionMode = settings.faceDetectionMode;
       updateData.imageSourceMode = settings.imageSourceMode;
+      updateData.skipExtremeAngles = settings.skipExtremeAngles;
       updateData.minConfidence = settings.minConfidence;
       updateData.minSizePx = settings.minSizePx;
       updateData.skipExtremeAngles = settings.skipExtremeAngles;
@@ -60,6 +80,11 @@ export function OrgSettingsForm({ org, onUpdate }: OrgSettingsFormProps) {
       updateData.enableAlignment = settings.enableAlignment;
       updateData.faceRecognitionProvider = settings.faceRecognitionProvider;
       if (settings.insightfaceModel) updateData.insightfaceModel = settings.insightfaceModel;
+      // Clustering settings
+      updateData.clusteringProvider = settings.clusteringProvider;
+      updateData.clusteringMinClusterSize = settings.clusteringMinClusterSize;
+      updateData.clusteringMinSamples = settings.clusteringMinSamples;
+      updateData.clusteringSimilarityThreshold = settings.clusteringSimilarityThreshold;
 
       const response = await api.updateOrgSettings(org.id, updateData as Partial<Organization>);
       if (response.success) {
@@ -138,6 +163,10 @@ export function OrgSettingsForm({ org, onUpdate }: OrgSettingsFormProps) {
                 <Label htmlFor="recognitionKey">Recognition API Key</Label>
                 <Input id="recognitionKey" type="password" placeholder="Leave blank to keep current" value={settings.comprefaceRecognitionApiKey} onChange={(e) => setSettings({ ...settings, comprefaceRecognitionApiKey: e.target.value })} />
               </div>
+              <div className="grid gap-2">
+                <Label htmlFor="detectionKey">Detection API Key</Label>
+                <Input id="detectionKey" type="password" placeholder="Leave blank to keep current" value={settings.comprefaceDetectionApiKey} onChange={(e) => setSettings({ ...settings, comprefaceDetectionApiKey: e.target.value })} />
+              </div>
             </div>
           </div>
         )}
@@ -157,6 +186,48 @@ export function OrgSettingsForm({ org, onUpdate }: OrgSettingsFormProps) {
 
         <Separator />
 
+        {/* Image Source Configuration */}
+        <div className="space-y-4">
+          <h3 className="font-medium">Image Source Configuration</h3>
+          <p className="text-sm text-muted-foreground">
+            Configure how images are provided to the face detection service
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-2">
+              <Label htmlFor="imageSourceMode">Image Source Mode</Label>
+              <select
+                id="imageSourceMode"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={settings.imageSourceMode}
+                onChange={(e) => setSettings({ ...settings, imageSourceMode: e.target.value as ImageSourceMode })}
+              >
+                <option value="URL">URL (HTTP/HTTPS)</option>
+                <option value="MULTIPART">Multipart Upload</option>
+                <option value="SHARED_STORAGE">Shared Storage (File System)</option>
+              </select>
+              <p className="text-xs text-muted-foreground">
+                How images are provided to the backend
+              </p>
+            </div>
+            {settings.imageSourceMode === 'SHARED_STORAGE' && (
+              <div className="grid gap-2">
+                <Label htmlFor="sharedStoragePath">Shared Storage Path</Label>
+                <Input
+                  id="sharedStoragePath"
+                  placeholder="/path/to/shared/storage"
+                  value={settings.sharedStoragePath}
+                  onChange={(e) => setSettings({ ...settings, sharedStoragePath: e.target.value })}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Absolute path to shared storage directory
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <Separator />
+
         {/* Detection Settings */}
         <div className="space-y-4">
           <h3 className="font-medium">Detection Settings</h3>
@@ -169,12 +240,77 @@ export function OrgSettingsForm({ org, onUpdate }: OrgSettingsFormProps) {
               </select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="minConfidence">Min Confidence</Label>
-              <Input id="minConfidence" type="number" step="0.01" min="0" max="1" value={settings.minConfidence} onChange={(e) => setSettings({ ...settings, minConfidence: parseFloat(e.target.value) })} />
+              <Label htmlFor="minConfidence">
+                Min Confidence
+                {!org.minConfidence && globalDefaults && (
+                  <Badge variant="secondary" className="ml-2 text-xs">
+                    Using global default
+                  </Badge>
+                )}
+              </Label>
+              <Input
+                id="minConfidence"
+                type="number"
+                step="0.01"
+                min="0"
+                max="1"
+                placeholder={globalDefaults?.minConfidence?.toString() || "0.7"}
+                value={settings.minConfidence}
+                onChange={(e) => setSettings({ ...settings, minConfidence: parseFloat(e.target.value) })}
+              />
+              {!org.minConfidence && globalDefaults && (
+                <p className="text-xs text-muted-foreground">
+                  Current: {globalDefaults.minConfidence} (global default)
+                </p>
+              )}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="minSizePx">Min Face Size (px)</Label>
               <Input id="minSizePx" type="number" min="0" value={settings.minSizePx} onChange={(e) => setSettings({ ...settings, minSizePx: parseInt(e.target.value) })} />
+            </div>
+          </div>
+
+          {/* Advanced Options */}
+          <div className="space-y-3 pt-2">
+            <Label className="text-sm font-medium">Advanced Options</Label>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="skipExtremeAngles">Skip Extreme Angles</Label>
+                <p className="text-xs text-muted-foreground">
+                  Filter out faces with extreme head poses
+                </p>
+              </div>
+              <Switch
+                id="skipExtremeAngles"
+                checked={settings.skipExtremeAngles}
+                onCheckedChange={(checked: boolean) => setSettings({ ...settings, skipExtremeAngles: checked })}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="enableFallbackDetection">Enable Fallback Detection</Label>
+                <p className="text-xs text-muted-foreground">
+                  Use Python sidecar as fallback if primary detector fails
+                </p>
+              </div>
+              <Switch
+                id="enableFallbackDetection"
+                checked={settings.enableFallbackDetection}
+                onCheckedChange={(checked: boolean) => setSettings({ ...settings, enableFallbackDetection: checked })}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="enableAlignment">Enable Face Alignment</Label>
+                <p className="text-xs text-muted-foreground">
+                  Align faces before embedding extraction for better accuracy
+                </p>
+              </div>
+              <Switch
+                id="enableAlignment"
+                checked={settings.enableAlignment}
+                onCheckedChange={(checked: boolean) => setSettings({ ...settings, enableAlignment: checked })}
+              />
             </div>
           </div>
         </div>
@@ -196,6 +332,65 @@ export function OrgSettingsForm({ org, onUpdate }: OrgSettingsFormProps) {
             <div className="grid gap-2">
               <Label htmlFor="cacheTtl">Cache TTL (seconds)</Label>
               <Input id="cacheTtl" type="number" min="0" value={settings.embeddingCacheTtlSeconds} onChange={(e) => setSettings({ ...settings, embeddingCacheTtlSeconds: parseInt(e.target.value) })} />
+            </div>
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Clustering Settings */}
+        <div className="space-y-4">
+          <h3 className="font-medium">Face Clustering Settings</h3>
+          <p className="text-sm text-muted-foreground">
+            Configure how faces are grouped into person clusters
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-2">
+              <Label htmlFor="clusteringProvider">Clustering Provider</Label>
+              <select
+                id="clusteringProvider"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                value={settings.clusteringProvider}
+                onChange={(e) => setSettings({ ...settings, clusteringProvider: e.target.value as ClusteringProvider })}
+              >
+                <option value="QDRANT">QDRANT (Built-in, Fast)</option>
+                <option value="HDBSCAN">HDBSCAN (Python Sidecar, Better Quality)</option>
+              </select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="similarityThreshold">Similarity Threshold</Label>
+              <Input
+                id="similarityThreshold"
+                type="number"
+                step="0.05"
+                min="0"
+                max="1"
+                value={settings.clusteringSimilarityThreshold}
+                onChange={(e) => setSettings({ ...settings, clusteringSimilarityThreshold: parseFloat(e.target.value) })}
+              />
+              <p className="text-xs text-muted-foreground">Higher = stricter (0.6-0.8 typical)</p>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="minClusterSize">Min Cluster Size</Label>
+              <Input
+                id="minClusterSize"
+                type="number"
+                min="2"
+                value={settings.clusteringMinClusterSize}
+                onChange={(e) => setSettings({ ...settings, clusteringMinClusterSize: parseInt(e.target.value) })}
+              />
+              <p className="text-xs text-muted-foreground">Min faces to form a cluster</p>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="minSamples">Min Samples</Label>
+              <Input
+                id="minSamples"
+                type="number"
+                min="1"
+                value={settings.clusteringMinSamples}
+                onChange={(e) => setSettings({ ...settings, clusteringMinSamples: parseInt(e.target.value) })}
+              />
+              <p className="text-xs text-muted-foreground">HDBSCAN parameter</p>
             </div>
           </div>
         </div>

@@ -394,7 +394,11 @@ export const ModelName = {
   ApiKey: 'ApiKey',
   User: 'User',
   EventImageStatus: 'EventImageStatus',
-  EventVideoStatus: 'EventVideoStatus'
+  EventVideoStatus: 'EventVideoStatus',
+  ClusteringJob: 'ClusteringJob',
+  PersonCluster: 'PersonCluster',
+  FaceClusterAssignment: 'FaceClusterAssignment',
+  GlobalSettings: 'GlobalSettings'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -410,7 +414,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organization" | "apiKey" | "user" | "eventImageStatus" | "eventVideoStatus"
+    modelProps: "organization" | "apiKey" | "user" | "eventImageStatus" | "eventVideoStatus" | "clusteringJob" | "personCluster" | "faceClusterAssignment" | "globalSettings"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -784,6 +788,302 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ClusteringJob: {
+      payload: Prisma.$ClusteringJobPayload<ExtArgs>
+      fields: Prisma.ClusteringJobFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ClusteringJobFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClusteringJobPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ClusteringJobFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClusteringJobPayload>
+        }
+        findFirst: {
+          args: Prisma.ClusteringJobFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClusteringJobPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ClusteringJobFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClusteringJobPayload>
+        }
+        findMany: {
+          args: Prisma.ClusteringJobFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClusteringJobPayload>[]
+        }
+        create: {
+          args: Prisma.ClusteringJobCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClusteringJobPayload>
+        }
+        createMany: {
+          args: Prisma.ClusteringJobCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ClusteringJobCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClusteringJobPayload>[]
+        }
+        delete: {
+          args: Prisma.ClusteringJobDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClusteringJobPayload>
+        }
+        update: {
+          args: Prisma.ClusteringJobUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClusteringJobPayload>
+        }
+        deleteMany: {
+          args: Prisma.ClusteringJobDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ClusteringJobUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ClusteringJobUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClusteringJobPayload>[]
+        }
+        upsert: {
+          args: Prisma.ClusteringJobUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClusteringJobPayload>
+        }
+        aggregate: {
+          args: Prisma.ClusteringJobAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateClusteringJob>
+        }
+        groupBy: {
+          args: Prisma.ClusteringJobGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ClusteringJobGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ClusteringJobCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ClusteringJobCountAggregateOutputType> | number
+        }
+      }
+    }
+    PersonCluster: {
+      payload: Prisma.$PersonClusterPayload<ExtArgs>
+      fields: Prisma.PersonClusterFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PersonClusterFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonClusterPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PersonClusterFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonClusterPayload>
+        }
+        findFirst: {
+          args: Prisma.PersonClusterFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonClusterPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PersonClusterFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonClusterPayload>
+        }
+        findMany: {
+          args: Prisma.PersonClusterFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonClusterPayload>[]
+        }
+        create: {
+          args: Prisma.PersonClusterCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonClusterPayload>
+        }
+        createMany: {
+          args: Prisma.PersonClusterCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PersonClusterCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonClusterPayload>[]
+        }
+        delete: {
+          args: Prisma.PersonClusterDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonClusterPayload>
+        }
+        update: {
+          args: Prisma.PersonClusterUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonClusterPayload>
+        }
+        deleteMany: {
+          args: Prisma.PersonClusterDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PersonClusterUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PersonClusterUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonClusterPayload>[]
+        }
+        upsert: {
+          args: Prisma.PersonClusterUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PersonClusterPayload>
+        }
+        aggregate: {
+          args: Prisma.PersonClusterAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePersonCluster>
+        }
+        groupBy: {
+          args: Prisma.PersonClusterGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PersonClusterGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PersonClusterCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PersonClusterCountAggregateOutputType> | number
+        }
+      }
+    }
+    FaceClusterAssignment: {
+      payload: Prisma.$FaceClusterAssignmentPayload<ExtArgs>
+      fields: Prisma.FaceClusterAssignmentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FaceClusterAssignmentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FaceClusterAssignmentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FaceClusterAssignmentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FaceClusterAssignmentPayload>
+        }
+        findFirst: {
+          args: Prisma.FaceClusterAssignmentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FaceClusterAssignmentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FaceClusterAssignmentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FaceClusterAssignmentPayload>
+        }
+        findMany: {
+          args: Prisma.FaceClusterAssignmentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FaceClusterAssignmentPayload>[]
+        }
+        create: {
+          args: Prisma.FaceClusterAssignmentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FaceClusterAssignmentPayload>
+        }
+        createMany: {
+          args: Prisma.FaceClusterAssignmentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FaceClusterAssignmentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FaceClusterAssignmentPayload>[]
+        }
+        delete: {
+          args: Prisma.FaceClusterAssignmentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FaceClusterAssignmentPayload>
+        }
+        update: {
+          args: Prisma.FaceClusterAssignmentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FaceClusterAssignmentPayload>
+        }
+        deleteMany: {
+          args: Prisma.FaceClusterAssignmentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FaceClusterAssignmentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FaceClusterAssignmentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FaceClusterAssignmentPayload>[]
+        }
+        upsert: {
+          args: Prisma.FaceClusterAssignmentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FaceClusterAssignmentPayload>
+        }
+        aggregate: {
+          args: Prisma.FaceClusterAssignmentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFaceClusterAssignment>
+        }
+        groupBy: {
+          args: Prisma.FaceClusterAssignmentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FaceClusterAssignmentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FaceClusterAssignmentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FaceClusterAssignmentCountAggregateOutputType> | number
+        }
+      }
+    }
+    GlobalSettings: {
+      payload: Prisma.$GlobalSettingsPayload<ExtArgs>
+      fields: Prisma.GlobalSettingsFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.GlobalSettingsFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalSettingsPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.GlobalSettingsFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalSettingsPayload>
+        }
+        findFirst: {
+          args: Prisma.GlobalSettingsFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalSettingsPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.GlobalSettingsFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalSettingsPayload>
+        }
+        findMany: {
+          args: Prisma.GlobalSettingsFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalSettingsPayload>[]
+        }
+        create: {
+          args: Prisma.GlobalSettingsCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalSettingsPayload>
+        }
+        createMany: {
+          args: Prisma.GlobalSettingsCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.GlobalSettingsCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalSettingsPayload>[]
+        }
+        delete: {
+          args: Prisma.GlobalSettingsDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalSettingsPayload>
+        }
+        update: {
+          args: Prisma.GlobalSettingsUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalSettingsPayload>
+        }
+        deleteMany: {
+          args: Prisma.GlobalSettingsDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.GlobalSettingsUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.GlobalSettingsUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalSettingsPayload>[]
+        }
+        upsert: {
+          args: Prisma.GlobalSettingsUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GlobalSettingsPayload>
+        }
+        aggregate: {
+          args: Prisma.GlobalSettingsAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGlobalSettings>
+        }
+        groupBy: {
+          args: Prisma.GlobalSettingsGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GlobalSettingsGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.GlobalSettingsCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GlobalSettingsCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -846,7 +1146,11 @@ export const OrganizationScalarFieldEnum = {
   enableFallbackDetection: 'enableFallbackDetection',
   enableAlignment: 'enableAlignment',
   faceRecognitionProvider: 'faceRecognitionProvider',
-  insightfaceModel: 'insightfaceModel'
+  insightfaceModel: 'insightfaceModel',
+  clusteringProvider: 'clusteringProvider',
+  clusteringMinSamples: 'clusteringMinSamples',
+  clusteringMinClusterSize: 'clusteringMinClusterSize',
+  clusteringSimilarityThreshold: 'clusteringSimilarityThreshold'
 } as const
 
 export type OrganizationScalarFieldEnum = (typeof OrganizationScalarFieldEnum)[keyof typeof OrganizationScalarFieldEnum]
@@ -917,6 +1221,90 @@ export const EventVideoStatusScalarFieldEnum = {
 } as const
 
 export type EventVideoStatusScalarFieldEnum = (typeof EventVideoStatusScalarFieldEnum)[keyof typeof EventVideoStatusScalarFieldEnum]
+
+
+export const ClusteringJobScalarFieldEnum = {
+  id: 'id',
+  orgId: 'orgId',
+  eventId: 'eventId',
+  eventSlug: 'eventSlug',
+  status: 'status',
+  provider: 'provider',
+  totalFaces: 'totalFaces',
+  clustersFound: 'clustersFound',
+  noiseFaces: 'noiseFaces',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt',
+  error: 'error',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ClusteringJobScalarFieldEnum = (typeof ClusteringJobScalarFieldEnum)[keyof typeof ClusteringJobScalarFieldEnum]
+
+
+export const PersonClusterScalarFieldEnum = {
+  id: 'id',
+  orgId: 'orgId',
+  eventId: 'eventId',
+  eventSlug: 'eventSlug',
+  name: 'name',
+  displayOrder: 'displayOrder',
+  representativeFaceId: 'representativeFaceId',
+  thumbnailUrl: 'thumbnailUrl',
+  faceCount: 'faceCount',
+  photoCount: 'photoCount',
+  isNoise: 'isNoise',
+  isMerged: 'isMerged',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PersonClusterScalarFieldEnum = (typeof PersonClusterScalarFieldEnum)[keyof typeof PersonClusterScalarFieldEnum]
+
+
+export const FaceClusterAssignmentScalarFieldEnum = {
+  id: 'id',
+  orgId: 'orgId',
+  eventId: 'eventId',
+  qdrantPointId: 'qdrantPointId',
+  photoId: 'photoId',
+  clusterId: 'clusterId',
+  confidence: 'confidence',
+  isManual: 'isManual',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FaceClusterAssignmentScalarFieldEnum = (typeof FaceClusterAssignmentScalarFieldEnum)[keyof typeof FaceClusterAssignmentScalarFieldEnum]
+
+
+export const GlobalSettingsScalarFieldEnum = {
+  id: 'id',
+  faceRecognitionProvider: 'faceRecognitionProvider',
+  insightfaceModel: 'insightfaceModel',
+  comprefaceUrl: 'comprefaceUrl',
+  pythonSidecarUrl: 'pythonSidecarUrl',
+  faceDetectionMode: 'faceDetectionMode',
+  minConfidence: 'minConfidence',
+  minSizePx: 'minSizePx',
+  skipExtremeAngles: 'skipExtremeAngles',
+  imageSourceMode: 'imageSourceMode',
+  sharedStoragePath: 'sharedStoragePath',
+  enableFallbackDetection: 'enableFallbackDetection',
+  enableAlignment: 'enableAlignment',
+  searchDefaultTopK: 'searchDefaultTopK',
+  searchMinSimilarity: 'searchMinSimilarity',
+  embeddingCacheTtlSeconds: 'embeddingCacheTtlSeconds',
+  clusteringProvider: 'clusteringProvider',
+  clusteringMinClusterSize: 'clusteringMinClusterSize',
+  clusteringMinSamples: 'clusteringMinSamples',
+  clusteringSimilarityThreshold: 'clusteringSimilarityThreshold',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GlobalSettingsScalarFieldEnum = (typeof GlobalSettingsScalarFieldEnum)[keyof typeof GlobalSettingsScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1055,6 +1443,20 @@ export type ListEnumFaceRecognitionProviderFieldRefInput<$PrismaModel> = FieldRe
 
 
 /**
+ * Reference to a field of type 'ClusteringProvider'
+ */
+export type EnumClusteringProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ClusteringProvider'>
+    
+
+
+/**
+ * Reference to a field of type 'ClusteringProvider[]'
+ */
+export type ListEnumClusteringProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ClusteringProvider[]'>
+    
+
+
+/**
  * Reference to a field of type 'IndexingStatus'
  */
 export type EnumIndexingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IndexingStatus'>
@@ -1065,6 +1467,20 @@ export type EnumIndexingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$P
  * Reference to a field of type 'IndexingStatus[]'
  */
 export type ListEnumIndexingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'IndexingStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ClusteringJobStatus'
+ */
+export type EnumClusteringJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ClusteringJobStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ClusteringJobStatus[]'
+ */
+export type ListEnumClusteringJobStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ClusteringJobStatus[]'>
     
 
 /**
@@ -1159,6 +1575,10 @@ export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
   eventImageStatus?: Prisma.EventImageStatusOmit
   eventVideoStatus?: Prisma.EventVideoStatusOmit
+  clusteringJob?: Prisma.ClusteringJobOmit
+  personCluster?: Prisma.PersonClusterOmit
+  faceClusterAssignment?: Prisma.FaceClusterAssignmentOmit
+  globalSettings?: Prisma.GlobalSettingsOmit
 }
 
 /* Types for Logging */

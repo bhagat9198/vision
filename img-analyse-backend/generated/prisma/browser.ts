@@ -42,3 +42,24 @@ export type EventImageStatus = Prisma.EventImageStatusModel
  * EventVideoStatus - tracks video processing status
  */
 export type EventVideoStatus = Prisma.EventVideoStatusModel
+/**
+ * Model ClusteringJob
+ * ClusteringJob - tracks face clustering jobs for an event
+ */
+export type ClusteringJob = Prisma.ClusteringJobModel
+/**
+ * Model PersonCluster
+ * PersonCluster - represents a group of faces belonging to the same person
+ */
+export type PersonCluster = Prisma.PersonClusterModel
+/**
+ * Model FaceClusterAssignment
+ * FaceClusterAssignment - maps individual faces to clusters
+ */
+export type FaceClusterAssignment = Prisma.FaceClusterAssignmentModel
+/**
+ * Model GlobalSettings
+ * GlobalSettings - system-wide default settings for organizations
+ * This is a singleton table (only one row should exist)
+ */
+export type GlobalSettings = Prisma.GlobalSettingsModel

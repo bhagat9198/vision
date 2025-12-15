@@ -10,7 +10,7 @@ import express, { type Express, type RequestHandler } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import swaggerUi from 'swagger-ui-express';
-import { healthRoutes, indexRoutes, searchRoutes } from './routes/index.js';
+import { healthRoutes, indexRoutes, searchRoutes, clusteringRoutes } from './routes/index.js';
 import { errorHandler, notFoundHandler } from './middleware/index.js';
 import { indexController } from './controllers/index.js';
 import { imagesController } from './controllers/images.controller.js';
@@ -19,6 +19,7 @@ import { logger } from './utils/logger.js';
 import { orgRoutes } from './modules/org/index.js';
 import { apiKeyRoutes } from './modules/api-key/index.js';
 import { authRoutes } from './modules/auth/index.js';
+import { globalSettingsRoutes } from './modules/settings/index.js';
 import { swaggerSpec } from './config/swagger.js';
 import { requestLogger } from './middleware/request-logger.js';
 
@@ -83,6 +84,9 @@ export function createApp(): Express {
   // Auth routes
   app.use('/auth', authRoutes);
 
+  // Global settings routes
+  app.use('/settings/global', globalSettingsRoutes);
+
   // Organization management routes
   app.use('/orgs', orgRoutes);
 
@@ -97,6 +101,8 @@ export function createApp(): Express {
   app.use('/api/v1/index', requireOrgAuth, indexRoutes);
   // Search routes require CompreFace to be configured
   app.use('/api/v1/search', requireOrgAuth, requireOrgSettings('comprefaceUrl', 'comprefaceRecognitionApiKey'), searchRoutes);
+  // Clustering routes
+  app.use('/api/v1/clustering', requireOrgAuth, clusteringRoutes);
 
   // ==========================================================================
   // ERROR HANDLING

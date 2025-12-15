@@ -28,6 +28,14 @@ from detectors import YuNetDetector, SCRFDDetector
 from alignment import align_face
 from insightface_service import get_insightface_service, InsightFaceService
 
+# HDBSCAN clustering (lazy import to avoid startup delay)
+hdbscan_available = True
+try:
+    import hdbscan
+    from sklearn.preprocessing import normalize
+except ImportError:
+    hdbscan_available = False
+
 # =============================================================================
 # LOGGING SETUP
 # =============================================================================
@@ -294,6 +302,7 @@ async def health_check():
             "alignment": True,
             "embedding": insightface_available,  # Only with InsightFace
             "age_gender": insightface_available,  # Only with InsightFace
+            "clustering": hdbscan_available,      # HDBSCAN face clustering
         }
     }
 
@@ -588,6 +597,153 @@ async def insightface_health():
 
 
 # =============================================================================
+# HDBSCAN CLUSTERING ENDPOINTS
+# =============================================================================
+
+class ClusteringRequest(BaseModel):
+    """Request body for HDBSCAN clustering."""
+    embeddings: list[list[float]]  # List of 512-dim face embeddings
+    point_ids: list[str]           # Corresponding Qdrant point IDs
+    min_cluster_size: int = 2      # HDBSCAN parameter
+    min_samples: int = 2           # HDBSCAN parameter
+    metric: str = "euclidean"      # Distance metric
+
+
+class ClusterResult(BaseModel):
+    """Single cluster result."""
+    cluster_id: int                # -1 for noise
+    point_ids: list[str]           # Face IDs in this cluster
+    size: int                      # Number of faces
+
+
+class ClusteringResponse(BaseModel):
+    """Clustering endpoint response."""
+    success: bool
+    clusters: list[ClusterResult]
+    total_faces: int
+    clustered_faces: int
+    noise_faces: int
+    num_clusters: int
+    processing_time_ms: float
+
+
+@app.post("/cluster/hdbscan", response_model=ClusteringResponse)
+async def cluster_hdbscan(request: ClusteringRequest):
+    """
+    Cluster face embeddings using HDBSCAN.
+
+    This endpoint receives pre-computed embeddings (from Qdrant) and returns
+    cluster assignments. HDBSCAN is ideal for face clustering because:
+    - No need to specify number of clusters upfront
+    - Handles noise (unclustered faces) gracefully
+    - Works well with high-dimensional embeddings
+
+    Args:
+        request: ClusteringRequest with embeddings and parameters
+
+    Returns:
+        ClusteringResponse with cluster assignments
+    """
+    start_time = time.time()
+    logger.info(f"Received HDBSCAN clustering request: {len(request.embeddings)} embeddings")
+
+    if not hdbscan_available:
+        raise HTTPException(
+            status_code=503,
+            detail="HDBSCAN not available. Install: pip install hdbscan scikit-learn"
+        )
+
+    if len(request.embeddings) != len(request.point_ids):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Mismatch: {len(request.embeddings)} embeddings vs {len(request.point_ids)} point_ids"
+        )
+
+    if len(request.embeddings) < request.min_cluster_size:
+        # Not enough faces to cluster
+        logger.info(f"Not enough faces to cluster: {len(request.embeddings)} < min_cluster_size={request.min_cluster_size}")
+        return ClusteringResponse(
+            success=True,
+            clusters=[ClusterResult(cluster_id=-1, point_ids=request.point_ids, size=len(request.point_ids))],
+            total_faces=len(request.embeddings),
+            clustered_faces=0,
+            noise_faces=len(request.embeddings),
+            num_clusters=0,
+            processing_time_ms=(time.time() - start_time) * 1000,
+        )
+
+    try:
+        # Convert to numpy and normalize (cosine similarity via euclidean on normalized vectors)
+        embeddings = np.array(request.embeddings, dtype=np.float32)
+        embeddings = normalize(embeddings, axis=1)  # L2 normalize for cosine similarity
+
+        logger.info(f"Running HDBSCAN with min_cluster_size={request.min_cluster_size}, min_samples={request.min_samples}")
+
+        # Run HDBSCAN
+        clusterer = hdbscan.HDBSCAN(
+            min_cluster_size=request.min_cluster_size,
+            min_samples=request.min_samples,
+            metric=request.metric,
+            cluster_selection_method='eom',  # Excess of Mass - better for face clustering
+            core_dist_n_jobs=1,  # Single thread for CPU-only
+        )
+
+        labels = clusterer.fit_predict(embeddings)
+
+        # Group point_ids by cluster
+        cluster_map: dict[int, list[str]] = {}
+        for point_id, label in zip(request.point_ids, labels):
+            label_int = int(label)
+            if label_int not in cluster_map:
+                cluster_map[label_int] = []
+            cluster_map[label_int].append(point_id)
+
+        # Build response
+        clusters = []
+        noise_count = 0
+        clustered_count = 0
+
+        for cluster_id, point_ids in sorted(cluster_map.items()):
+            clusters.append(ClusterResult(
+                cluster_id=cluster_id,
+                point_ids=point_ids,
+                size=len(point_ids),
+            ))
+            if cluster_id == -1:
+                noise_count = len(point_ids)
+            else:
+                clustered_count += len(point_ids)
+
+        num_clusters = len([c for c in clusters if c.cluster_id != -1])
+
+        processing_time = (time.time() - start_time) * 1000
+        logger.info(f"HDBSCAN complete: {num_clusters} clusters, {noise_count} noise faces in {processing_time:.2f}ms")
+
+        return ClusteringResponse(
+            success=True,
+            clusters=clusters,
+            total_faces=len(request.embeddings),
+            clustered_faces=clustered_count,
+            noise_faces=noise_count,
+            num_clusters=num_clusters,
+            processing_time_ms=processing_time,
+        )
+
+    except Exception as e:
+        logger.error(f"HDBSCAN clustering failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/cluster/health")
+async def cluster_health():
+    """Check HDBSCAN clustering availability."""
+    return {
+        "status": "available" if hdbscan_available else "unavailable",
+        "hdbscan_version": hdbscan.__version__ if hdbscan_available else None,
+    }
+
+
+# =============================================================================
 # STARTUP
 # =============================================================================
 
@@ -621,6 +777,13 @@ async def startup_event():
         logger.warning(f"InsightFace not available: {e}")
         logger.info("Continuing without InsightFace embedding capability")
 
+    # Check HDBSCAN availability
+    if hdbscan_available:
+        hdbscan_version = getattr(hdbscan, '__version__', 'unknown')
+        logger.info(f"HDBSCAN clustering available (version {hdbscan_version})")
+    else:
+        logger.warning("HDBSCAN not available. Install: pip install hdbscan scikit-learn")
+
     logger.info("Python sidecar ready!")
-    logger.info(f"Capabilities: Detection=True, Alignment=True, Embedding={insightface_available}")
+    logger.info(f"Capabilities: Detection=True, Alignment=True, Embedding={insightface_available}, Clustering={hdbscan_available}")
 

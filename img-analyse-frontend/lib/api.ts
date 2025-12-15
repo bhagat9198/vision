@@ -5,12 +5,19 @@ import type {
   OrganizationListItem,
   CreateOrgRequest,
   CreateOrgResponse,
+  GlobalSettings,
   ApiKeyListItem,
   EventStats,
   OrgCollectionsResponse,
   AllCollectionsResponse,
   VideoWithFrames,
   PhotoFacesResponse,
+  PersonCluster,
+  ClusteringJob,
+  ClusterListResponse,
+  ClusterFacesResponse,
+  RunClusteringResponse,
+  ImageStatus,
 } from "./types";
 
 // =============================================================================
@@ -152,6 +159,22 @@ class ApiClient {
   }
 
   // ===========================================================================
+  // Global Settings Endpoints
+  // ===========================================================================
+
+  async getGlobalSettings(): Promise<ApiResponse<GlobalSettings>> {
+    return this.request("/settings/global", {}, false);
+  }
+
+  async updateGlobalSettings(settings: Partial<GlobalSettings>): Promise<ApiResponse<GlobalSettings>> {
+    return this.request("/settings/global", {
+      method: "PUT",
+      body: JSON.stringify(settings),
+    }, false);
+  }
+
+
+  // ===========================================================================
   // API Key Endpoints
   // ===========================================================================
 
@@ -237,6 +260,79 @@ class ApiClient {
         highAccuracy: options?.highAccuracy,
       }),
     });
+  }
+
+  // =============================================================================
+  // Face Clustering
+  // =============================================================================
+
+  async runClustering(eventId: string, eventSlug: string): Promise<ApiResponse<RunClusteringResponse>> {
+    return this.request<ApiResponse<RunClusteringResponse>>('/api/v1/clustering/run', {
+      method: 'POST',
+      body: JSON.stringify({ eventId, eventSlug }),
+    });
+  }
+
+  async getClusteringJobStatus(jobId: string): Promise<ApiResponse<{ job: ClusteringJob }>> {
+    return this.request<ApiResponse<{ job: ClusteringJob }>>(`/api/v1/clustering/job/${jobId}`);
+  }
+
+  async getEventClusters(eventId: string, includeNoise = false): Promise<ApiResponse<ClusterListResponse>> {
+    const params = new URLSearchParams();
+    if (includeNoise) params.append('includeNoise', 'true');
+    const query = params.toString();
+    return this.request<ApiResponse<ClusterListResponse>>(`/api/v1/clustering/event/${eventId}/clusters${query ? `?${query}` : ''}`);
+  }
+
+  async getClusterFaces(clusterId: string, page = 1, limit = 50): Promise<ApiResponse<ClusterFacesResponse>> {
+    return this.request<ApiResponse<ClusterFacesResponse>>(`/api/v1/clustering/cluster/${clusterId}/faces?page=${page}&limit=${limit}`);
+  }
+
+  async renameCluster(clusterId: string, name: string): Promise<ApiResponse<{ cluster: PersonCluster }>> {
+    return this.request<ApiResponse<{ cluster: PersonCluster }>>(`/api/v1/clustering/cluster/${clusterId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ name }),
+    });
+  }
+
+  async mergeClusters(clusterIds: string[], targetName?: string): Promise<ApiResponse<{ targetClusterId: string; mergedCount: number }>> {
+    return this.request<ApiResponse<{ targetClusterId: string; mergedCount: number }>>('/api/v1/clustering/merge', {
+      method: 'POST',
+      body: JSON.stringify({ clusterIds, targetName }),
+    });
+  }
+
+  async moveFace(faceId: string, targetClusterId: string): Promise<ApiResponse<{ faceId: string; sourceClusterId: string; targetClusterId: string }>> {
+    return this.request<ApiResponse<{ faceId: string; sourceClusterId: string; targetClusterId: string }>>('/api/v1/clustering/move-face', {
+      method: 'POST',
+      body: JSON.stringify({ faceId, targetClusterId }),
+    });
+  }
+
+  async splitCluster(
+    faceIds: string[],
+    eventId: string,
+    eventSlug: string,
+    newClusterName?: string
+  ): Promise<ApiResponse<{ newClusterId: string; newClusterName: string; faceCount: number }>> {
+    return this.request<ApiResponse<{ newClusterId: string; newClusterName: string; faceCount: number }>>('/api/v1/clustering/split', {
+      method: 'POST',
+      body: JSON.stringify({ faceIds, eventId, eventSlug, newClusterName }),
+    });
+  }
+
+  // Thumbnail URLs (not API calls, just URL builders)
+  // Include auth token as query param since img src can't use headers
+  getFaceThumbnailUrl(faceId: string, size = 150, format = 'jpeg'): string {
+    const authToken = this.getAuthToken();
+    const tokenParam = authToken ? `&token=${encodeURIComponent(authToken)}` : '';
+    return `${API_BASE_URL}/api/v1/clustering/face/${faceId}/thumbnail?size=${size}&format=${format}${tokenParam}`;
+  }
+
+  getClusterThumbnailUrl(clusterId: string, size = 150, format = 'jpeg'): string {
+    const authToken = this.getAuthToken();
+    const tokenParam = authToken ? `&token=${encodeURIComponent(authToken)}` : '';
+    return `${API_BASE_URL}/api/v1/clustering/cluster/${clusterId}/thumbnail?size=${size}&format=${format}${tokenParam}`;
   }
 }
 
