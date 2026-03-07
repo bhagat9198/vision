@@ -60,6 +60,11 @@ export type ApiKey = Prisma.ApiKeyModel
  */
 export type User = Prisma.UserModel
 /**
+ * Model CollectionSettings
+ * CollectionSettings - per-collection configuration
+ */
+export type CollectionSettings = Prisma.CollectionSettingsModel
+/**
  * Model EventImageStatus
  * EventImageStatus - tracks indexing status of individual images
  */

@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { usePollingApi } from "@/lib/hooks/use-api";
+import { useApi } from "@/lib/hooks/use-api";
 import { api } from "@/lib/api";
 import { formatNumber } from "@/lib/utils";
 import type { OrgCollectionsResponse } from "@/lib/types";
@@ -26,9 +26,8 @@ export function OrgCollections({ orgId }: OrgCollectionsProps) {
     return response.data;
   }, [orgId, status]);
 
-  const { data, loading, error, refetch } = usePollingApi<OrgCollectionsResponse | undefined>(
-    fetcher,
-    30000
+  const { data, loading, error, refetch } = useApi<OrgCollectionsResponse | undefined>(
+    fetcher
   );
 
   if (loading && !data) {

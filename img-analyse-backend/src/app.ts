@@ -20,6 +20,7 @@ import { orgRoutes } from './modules/org/index.js';
 import { apiKeyRoutes } from './modules/api-key/index.js';
 import { authRoutes } from './modules/auth/index.js';
 import { globalSettingsRoutes } from './modules/settings/index.js';
+import * as collectionSettingsController from './controllers/collection-settings.controller.js';
 import { swaggerSpec } from './config/swagger.js';
 import { requestLogger } from './middleware/request-logger.js';
 
@@ -103,6 +104,10 @@ export function createApp(): Express {
   app.use('/api/v1/search', requireOrgAuth, requireOrgSettings('comprefaceUrl', 'comprefaceRecognitionApiKey'), searchRoutes);
   // Clustering routes
   app.use('/api/v1/clustering', requireOrgAuth, clusteringRoutes);
+
+  // Collection settings routes (no auth required for now)
+  app.get('/collections/:collectionName/settings', collectionSettingsController.getSettings);
+  app.put('/collections/:collectionName/settings', collectionSettingsController.updateSettings);
 
   // ==========================================================================
   // ERROR HANDLING

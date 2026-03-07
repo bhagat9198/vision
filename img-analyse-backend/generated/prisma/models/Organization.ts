@@ -55,6 +55,7 @@ export type OrganizationMinAggregateOutputType = {
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
+  useCustomSettings: boolean | null
   comprefaceUrl: string | null
   comprefaceRecognitionApiKey: string | null
   comprefaceDetectionApiKey: string | null
@@ -85,6 +86,7 @@ export type OrganizationMaxAggregateOutputType = {
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
+  useCustomSettings: boolean | null
   comprefaceUrl: string | null
   comprefaceRecognitionApiKey: string | null
   comprefaceDetectionApiKey: string | null
@@ -115,6 +117,7 @@ export type OrganizationCountAggregateOutputType = {
   isActive: number
   createdAt: number
   updatedAt: number
+  useCustomSettings: number
   comprefaceUrl: number
   comprefaceRecognitionApiKey: number
   comprefaceDetectionApiKey: number
@@ -169,6 +172,7 @@ export type OrganizationMinAggregateInputType = {
   isActive?: true
   createdAt?: true
   updatedAt?: true
+  useCustomSettings?: true
   comprefaceUrl?: true
   comprefaceRecognitionApiKey?: true
   comprefaceDetectionApiKey?: true
@@ -199,6 +203,7 @@ export type OrganizationMaxAggregateInputType = {
   isActive?: true
   createdAt?: true
   updatedAt?: true
+  useCustomSettings?: true
   comprefaceUrl?: true
   comprefaceRecognitionApiKey?: true
   comprefaceDetectionApiKey?: true
@@ -229,6 +234,7 @@ export type OrganizationCountAggregateInputType = {
   isActive?: true
   createdAt?: true
   updatedAt?: true
+  useCustomSettings?: true
   comprefaceUrl?: true
   comprefaceRecognitionApiKey?: true
   comprefaceDetectionApiKey?: true
@@ -346,6 +352,7 @@ export type OrganizationGroupByOutputType = {
   isActive: boolean
   createdAt: Date
   updatedAt: Date
+  useCustomSettings: boolean
   comprefaceUrl: string | null
   comprefaceRecognitionApiKey: string | null
   comprefaceDetectionApiKey: string | null
@@ -399,6 +406,7 @@ export type OrganizationWhereInput = {
   isActive?: Prisma.BoolFilter<"Organization"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Organization"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Organization"> | Date | string
+  useCustomSettings?: Prisma.BoolFilter<"Organization"> | boolean
   comprefaceUrl?: Prisma.StringNullableFilter<"Organization"> | string | null
   comprefaceRecognitionApiKey?: Prisma.StringNullableFilter<"Organization"> | string | null
   comprefaceDetectionApiKey?: Prisma.StringNullableFilter<"Organization"> | string | null
@@ -435,6 +443,7 @@ export type OrganizationOrderByWithRelationInput = {
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  useCustomSettings?: Prisma.SortOrder
   comprefaceUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   comprefaceRecognitionApiKey?: Prisma.SortOrderInput | Prisma.SortOrder
   comprefaceDetectionApiKey?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -474,6 +483,7 @@ export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
   isActive?: Prisma.BoolFilter<"Organization"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Organization"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Organization"> | Date | string
+  useCustomSettings?: Prisma.BoolFilter<"Organization"> | boolean
   comprefaceUrl?: Prisma.StringNullableFilter<"Organization"> | string | null
   comprefaceRecognitionApiKey?: Prisma.StringNullableFilter<"Organization"> | string | null
   comprefaceDetectionApiKey?: Prisma.StringNullableFilter<"Organization"> | string | null
@@ -510,6 +520,7 @@ export type OrganizationOrderByWithAggregationInput = {
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  useCustomSettings?: Prisma.SortOrder
   comprefaceUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   comprefaceRecognitionApiKey?: Prisma.SortOrderInput | Prisma.SortOrder
   comprefaceDetectionApiKey?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -548,6 +559,7 @@ export type OrganizationScalarWhereWithAggregatesInput = {
   isActive?: Prisma.BoolWithAggregatesFilter<"Organization"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Organization"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Organization"> | Date | string
+  useCustomSettings?: Prisma.BoolWithAggregatesFilter<"Organization"> | boolean
   comprefaceUrl?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
   comprefaceRecognitionApiKey?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
   comprefaceDetectionApiKey?: Prisma.StringNullableWithAggregatesFilter<"Organization"> | string | null
@@ -578,6 +590,7 @@ export type OrganizationCreateInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  useCustomSettings?: boolean
   comprefaceUrl?: string | null
   comprefaceRecognitionApiKey?: string | null
   comprefaceDetectionApiKey?: string | null
@@ -614,6 +627,7 @@ export type OrganizationUncheckedCreateInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  useCustomSettings?: boolean
   comprefaceUrl?: string | null
   comprefaceRecognitionApiKey?: string | null
   comprefaceDetectionApiKey?: string | null
@@ -650,6 +664,7 @@ export type OrganizationUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  useCustomSettings?: Prisma.BoolFieldUpdateOperationsInput | boolean
   comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -686,6 +701,7 @@ export type OrganizationUncheckedUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  useCustomSettings?: Prisma.BoolFieldUpdateOperationsInput | boolean
   comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -722,6 +738,7 @@ export type OrganizationCreateManyInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  useCustomSettings?: boolean
   comprefaceUrl?: string | null
   comprefaceRecognitionApiKey?: string | null
   comprefaceDetectionApiKey?: string | null
@@ -752,6 +769,7 @@ export type OrganizationUpdateManyMutationInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  useCustomSettings?: Prisma.BoolFieldUpdateOperationsInput | boolean
   comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -782,6 +800,7 @@ export type OrganizationUncheckedUpdateManyInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  useCustomSettings?: Prisma.BoolFieldUpdateOperationsInput | boolean
   comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -812,6 +831,7 @@ export type OrganizationCountOrderByAggregateInput = {
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  useCustomSettings?: Prisma.SortOrder
   comprefaceUrl?: Prisma.SortOrder
   comprefaceRecognitionApiKey?: Prisma.SortOrder
   comprefaceDetectionApiKey?: Prisma.SortOrder
@@ -853,6 +873,7 @@ export type OrganizationMaxOrderByAggregateInput = {
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  useCustomSettings?: Prisma.SortOrder
   comprefaceUrl?: Prisma.SortOrder
   comprefaceRecognitionApiKey?: Prisma.SortOrder
   comprefaceDetectionApiKey?: Prisma.SortOrder
@@ -883,6 +904,7 @@ export type OrganizationMinOrderByAggregateInput = {
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  useCustomSettings?: Prisma.SortOrder
   comprefaceUrl?: Prisma.SortOrder
   comprefaceRecognitionApiKey?: Prisma.SortOrder
   comprefaceDetectionApiKey?: Prisma.SortOrder
@@ -1061,6 +1083,7 @@ export type OrganizationCreateWithoutApiKeysInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  useCustomSettings?: boolean
   comprefaceUrl?: string | null
   comprefaceRecognitionApiKey?: string | null
   comprefaceDetectionApiKey?: string | null
@@ -1096,6 +1119,7 @@ export type OrganizationUncheckedCreateWithoutApiKeysInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  useCustomSettings?: boolean
   comprefaceUrl?: string | null
   comprefaceRecognitionApiKey?: string | null
   comprefaceDetectionApiKey?: string | null
@@ -1147,6 +1171,7 @@ export type OrganizationUpdateWithoutApiKeysInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  useCustomSettings?: Prisma.BoolFieldUpdateOperationsInput | boolean
   comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1182,6 +1207,7 @@ export type OrganizationUncheckedUpdateWithoutApiKeysInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  useCustomSettings?: Prisma.BoolFieldUpdateOperationsInput | boolean
   comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1217,6 +1243,7 @@ export type OrganizationCreateWithoutEventImageStatusesInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  useCustomSettings?: boolean
   comprefaceUrl?: string | null
   comprefaceRecognitionApiKey?: string | null
   comprefaceDetectionApiKey?: string | null
@@ -1252,6 +1279,7 @@ export type OrganizationUncheckedCreateWithoutEventImageStatusesInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  useCustomSettings?: boolean
   comprefaceUrl?: string | null
   comprefaceRecognitionApiKey?: string | null
   comprefaceDetectionApiKey?: string | null
@@ -1303,6 +1331,7 @@ export type OrganizationUpdateWithoutEventImageStatusesInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  useCustomSettings?: Prisma.BoolFieldUpdateOperationsInput | boolean
   comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1338,6 +1367,7 @@ export type OrganizationUncheckedUpdateWithoutEventImageStatusesInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  useCustomSettings?: Prisma.BoolFieldUpdateOperationsInput | boolean
   comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1373,6 +1403,7 @@ export type OrganizationCreateWithoutEventVideoStatusesInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  useCustomSettings?: boolean
   comprefaceUrl?: string | null
   comprefaceRecognitionApiKey?: string | null
   comprefaceDetectionApiKey?: string | null
@@ -1408,6 +1439,7 @@ export type OrganizationUncheckedCreateWithoutEventVideoStatusesInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  useCustomSettings?: boolean
   comprefaceUrl?: string | null
   comprefaceRecognitionApiKey?: string | null
   comprefaceDetectionApiKey?: string | null
@@ -1459,6 +1491,7 @@ export type OrganizationUpdateWithoutEventVideoStatusesInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  useCustomSettings?: Prisma.BoolFieldUpdateOperationsInput | boolean
   comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1494,6 +1527,7 @@ export type OrganizationUncheckedUpdateWithoutEventVideoStatusesInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  useCustomSettings?: Prisma.BoolFieldUpdateOperationsInput | boolean
   comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1529,6 +1563,7 @@ export type OrganizationCreateWithoutClusteringJobsInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  useCustomSettings?: boolean
   comprefaceUrl?: string | null
   comprefaceRecognitionApiKey?: string | null
   comprefaceDetectionApiKey?: string | null
@@ -1564,6 +1599,7 @@ export type OrganizationUncheckedCreateWithoutClusteringJobsInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  useCustomSettings?: boolean
   comprefaceUrl?: string | null
   comprefaceRecognitionApiKey?: string | null
   comprefaceDetectionApiKey?: string | null
@@ -1615,6 +1651,7 @@ export type OrganizationUpdateWithoutClusteringJobsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  useCustomSettings?: Prisma.BoolFieldUpdateOperationsInput | boolean
   comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1650,6 +1687,7 @@ export type OrganizationUncheckedUpdateWithoutClusteringJobsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  useCustomSettings?: Prisma.BoolFieldUpdateOperationsInput | boolean
   comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1685,6 +1723,7 @@ export type OrganizationCreateWithoutPersonClustersInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  useCustomSettings?: boolean
   comprefaceUrl?: string | null
   comprefaceRecognitionApiKey?: string | null
   comprefaceDetectionApiKey?: string | null
@@ -1720,6 +1759,7 @@ export type OrganizationUncheckedCreateWithoutPersonClustersInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  useCustomSettings?: boolean
   comprefaceUrl?: string | null
   comprefaceRecognitionApiKey?: string | null
   comprefaceDetectionApiKey?: string | null
@@ -1771,6 +1811,7 @@ export type OrganizationUpdateWithoutPersonClustersInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  useCustomSettings?: Prisma.BoolFieldUpdateOperationsInput | boolean
   comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1806,6 +1847,7 @@ export type OrganizationUncheckedUpdateWithoutPersonClustersInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  useCustomSettings?: Prisma.BoolFieldUpdateOperationsInput | boolean
   comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1841,6 +1883,7 @@ export type OrganizationCreateWithoutFaceClusterAssignmentsInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  useCustomSettings?: boolean
   comprefaceUrl?: string | null
   comprefaceRecognitionApiKey?: string | null
   comprefaceDetectionApiKey?: string | null
@@ -1876,6 +1919,7 @@ export type OrganizationUncheckedCreateWithoutFaceClusterAssignmentsInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  useCustomSettings?: boolean
   comprefaceUrl?: string | null
   comprefaceRecognitionApiKey?: string | null
   comprefaceDetectionApiKey?: string | null
@@ -1927,6 +1971,7 @@ export type OrganizationUpdateWithoutFaceClusterAssignmentsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  useCustomSettings?: Prisma.BoolFieldUpdateOperationsInput | boolean
   comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1962,6 +2007,7 @@ export type OrganizationUncheckedUpdateWithoutFaceClusterAssignmentsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  useCustomSettings?: Prisma.BoolFieldUpdateOperationsInput | boolean
   comprefaceUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceRecognitionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   comprefaceDetectionApiKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2073,6 +2119,7 @@ export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  useCustomSettings?: boolean
   comprefaceUrl?: boolean
   comprefaceRecognitionApiKey?: boolean
   comprefaceDetectionApiKey?: boolean
@@ -2110,6 +2157,7 @@ export type OrganizationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  useCustomSettings?: boolean
   comprefaceUrl?: boolean
   comprefaceRecognitionApiKey?: boolean
   comprefaceDetectionApiKey?: boolean
@@ -2140,6 +2188,7 @@ export type OrganizationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  useCustomSettings?: boolean
   comprefaceUrl?: boolean
   comprefaceRecognitionApiKey?: boolean
   comprefaceDetectionApiKey?: boolean
@@ -2170,6 +2219,7 @@ export type OrganizationSelectScalar = {
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  useCustomSettings?: boolean
   comprefaceUrl?: boolean
   comprefaceRecognitionApiKey?: boolean
   comprefaceDetectionApiKey?: boolean
@@ -2193,7 +2243,7 @@ export type OrganizationSelectScalar = {
   clusteringSimilarityThreshold?: boolean
 }
 
-export type OrganizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "isActive" | "createdAt" | "updatedAt" | "comprefaceUrl" | "comprefaceRecognitionApiKey" | "comprefaceDetectionApiKey" | "faceDetectionMode" | "imageSourceMode" | "sharedStoragePath" | "minConfidence" | "minSizePx" | "skipExtremeAngles" | "searchDefaultTopK" | "searchMinSimilarity" | "embeddingCacheTtlSeconds" | "pythonSidecarUrl" | "enableFallbackDetection" | "enableAlignment" | "faceRecognitionProvider" | "insightfaceModel" | "clusteringProvider" | "clusteringMinSamples" | "clusteringMinClusterSize" | "clusteringSimilarityThreshold", ExtArgs["result"]["organization"]>
+export type OrganizationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "isActive" | "createdAt" | "updatedAt" | "useCustomSettings" | "comprefaceUrl" | "comprefaceRecognitionApiKey" | "comprefaceDetectionApiKey" | "faceDetectionMode" | "imageSourceMode" | "sharedStoragePath" | "minConfidence" | "minSizePx" | "skipExtremeAngles" | "searchDefaultTopK" | "searchMinSimilarity" | "embeddingCacheTtlSeconds" | "pythonSidecarUrl" | "enableFallbackDetection" | "enableAlignment" | "faceRecognitionProvider" | "insightfaceModel" | "clusteringProvider" | "clusteringMinSamples" | "clusteringMinClusterSize" | "clusteringSimilarityThreshold", ExtArgs["result"]["organization"]>
 export type OrganizationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   apiKeys?: boolean | Prisma.Organization$apiKeysArgs<ExtArgs>
   eventImageStatuses?: boolean | Prisma.Organization$eventImageStatusesArgs<ExtArgs>
@@ -2223,6 +2273,7 @@ export type $OrganizationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     isActive: boolean
     createdAt: Date
     updatedAt: Date
+    useCustomSettings: boolean
     comprefaceUrl: string | null
     comprefaceRecognitionApiKey: string | null
     comprefaceDetectionApiKey: string | null
@@ -2679,6 +2730,7 @@ export interface OrganizationFieldRefs {
   readonly isActive: Prisma.FieldRef<"Organization", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Organization", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Organization", 'DateTime'>
+  readonly useCustomSettings: Prisma.FieldRef<"Organization", 'Boolean'>
   readonly comprefaceUrl: Prisma.FieldRef<"Organization", 'String'>
   readonly comprefaceRecognitionApiKey: Prisma.FieldRef<"Organization", 'String'>
   readonly comprefaceDetectionApiKey: Prisma.FieldRef<"Organization", 'String'>

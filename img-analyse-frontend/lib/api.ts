@@ -144,6 +144,10 @@ class ApiClient {
     return this.request(`/orgs/${id}`);
   }
 
+  async getOrgSettings(id: string): Promise<ApiResponse<Organization>> {
+    return this.request(`/orgs/${id}/settings`);
+  }
+
   async createOrganization(data: CreateOrgRequest): Promise<ApiResponse<CreateOrgResponse>> {
     return this.request("/orgs/register", {
       method: "POST",
@@ -200,6 +204,17 @@ class ApiClient {
   async listOrgCollections(orgId: string, status?: string): Promise<ApiResponse<OrgCollectionsResponse>> {
     const query = status ? `?status=${status}` : '';
     return this.request(`/orgs/${orgId}/collections${query}`);
+  }
+
+  async getCollectionSettings(collectionName: string): Promise<ApiResponse<any>> {
+    return this.request(`/collections/${encodeURIComponent(collectionName)}/settings`, {}, false);
+  }
+
+  async updateCollectionSettings(collectionName: string, settings: any): Promise<ApiResponse<any>> {
+    return this.request(`/collections/${encodeURIComponent(collectionName)}/settings`, {
+      method: "PUT",
+      body: JSON.stringify(settings),
+    }, false);
   }
 
   // ===========================================================================

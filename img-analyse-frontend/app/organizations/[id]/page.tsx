@@ -25,7 +25,7 @@ export default function OrganizationDetailPage() {
   const [activeTab, setActiveTab] = useQueryTabs("overview", "tab");
 
   const fetcher = useCallback(async () => {
-    const response = await api.getOrganization(orgId);
+    const response = await api.getOrgSettings(orgId);
     return response.data;
   }, [orgId]);
 

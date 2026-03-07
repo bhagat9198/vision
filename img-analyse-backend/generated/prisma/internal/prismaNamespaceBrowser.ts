@@ -52,6 +52,7 @@ export const ModelName = {
   Organization: 'Organization',
   ApiKey: 'ApiKey',
   User: 'User',
+  CollectionSettings: 'CollectionSettings',
   EventImageStatus: 'EventImageStatus',
   EventVideoStatus: 'EventVideoStatus',
   ClusteringJob: 'ClusteringJob',
@@ -83,6 +84,7 @@ export const OrganizationScalarFieldEnum = {
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  useCustomSettings: 'useCustomSettings',
   comprefaceUrl: 'comprefaceUrl',
   comprefaceRecognitionApiKey: 'comprefaceRecognitionApiKey',
   comprefaceDetectionApiKey: 'comprefaceDetectionApiKey',
@@ -133,6 +135,21 @@ export const UserScalarFieldEnum = {
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const CollectionSettingsScalarFieldEnum = {
+  id: 'id',
+  collectionName: 'collectionName',
+  orgId: 'orgId',
+  eventId: 'eventId',
+  autoClustering: 'autoClustering',
+  autoIndexing: 'autoIndexing',
+  notifyOnCompletion: 'notifyOnCompletion',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CollectionSettingsScalarFieldEnum = (typeof CollectionSettingsScalarFieldEnum)[keyof typeof CollectionSettingsScalarFieldEnum]
 
 
 export const EventImageStatusScalarFieldEnum = {

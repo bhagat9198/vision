@@ -98,24 +98,8 @@ export interface EnvConfig {
   redisPort: number;
   redisPassword: string;
 
-  // CompreFace defaults
-  comprefaceUrl: string;
-  comprefaceRecognitionApiKey: string;
-  comprefaceDetectionApiKey: string;
-
   // Python sidecar
   pythonSidecarUrl: string;
-
-  // Face processing defaults
-  faceMinSizePx: number;
-  faceMinConfidence: number;
-  faceSkipExtremeAngles: boolean;
-  faceEmbeddingDimension: number;
-
-  // Search defaults
-  searchDefaultTopK: number;
-  searchMinSimilarity: number;
-  embeddingCacheTtlSeconds: number;
 
   // Logging
   logLevel: string;

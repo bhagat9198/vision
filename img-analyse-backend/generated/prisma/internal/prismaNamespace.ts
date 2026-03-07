@@ -393,6 +393,7 @@ export const ModelName = {
   Organization: 'Organization',
   ApiKey: 'ApiKey',
   User: 'User',
+  CollectionSettings: 'CollectionSettings',
   EventImageStatus: 'EventImageStatus',
   EventVideoStatus: 'EventVideoStatus',
   ClusteringJob: 'ClusteringJob',
@@ -414,7 +415,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "organization" | "apiKey" | "user" | "eventImageStatus" | "eventVideoStatus" | "clusteringJob" | "personCluster" | "faceClusterAssignment" | "globalSettings"
+    modelProps: "organization" | "apiKey" | "user" | "collectionSettings" | "eventImageStatus" | "eventVideoStatus" | "clusteringJob" | "personCluster" | "faceClusterAssignment" | "globalSettings"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -637,6 +638,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.UserCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.UserCountAggregateOutputType> | number
+        }
+      }
+    }
+    CollectionSettings: {
+      payload: Prisma.$CollectionSettingsPayload<ExtArgs>
+      fields: Prisma.CollectionSettingsFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CollectionSettingsFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionSettingsPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CollectionSettingsFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionSettingsPayload>
+        }
+        findFirst: {
+          args: Prisma.CollectionSettingsFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionSettingsPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CollectionSettingsFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionSettingsPayload>
+        }
+        findMany: {
+          args: Prisma.CollectionSettingsFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionSettingsPayload>[]
+        }
+        create: {
+          args: Prisma.CollectionSettingsCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionSettingsPayload>
+        }
+        createMany: {
+          args: Prisma.CollectionSettingsCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CollectionSettingsCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionSettingsPayload>[]
+        }
+        delete: {
+          args: Prisma.CollectionSettingsDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionSettingsPayload>
+        }
+        update: {
+          args: Prisma.CollectionSettingsUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionSettingsPayload>
+        }
+        deleteMany: {
+          args: Prisma.CollectionSettingsDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CollectionSettingsUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CollectionSettingsUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionSettingsPayload>[]
+        }
+        upsert: {
+          args: Prisma.CollectionSettingsUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CollectionSettingsPayload>
+        }
+        aggregate: {
+          args: Prisma.CollectionSettingsAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCollectionSettings>
+        }
+        groupBy: {
+          args: Prisma.CollectionSettingsGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CollectionSettingsGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CollectionSettingsCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CollectionSettingsCountAggregateOutputType> | number
         }
       }
     }
@@ -1130,6 +1205,7 @@ export const OrganizationScalarFieldEnum = {
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  useCustomSettings: 'useCustomSettings',
   comprefaceUrl: 'comprefaceUrl',
   comprefaceRecognitionApiKey: 'comprefaceRecognitionApiKey',
   comprefaceDetectionApiKey: 'comprefaceDetectionApiKey',
@@ -1180,6 +1256,21 @@ export const UserScalarFieldEnum = {
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const CollectionSettingsScalarFieldEnum = {
+  id: 'id',
+  collectionName: 'collectionName',
+  orgId: 'orgId',
+  eventId: 'eventId',
+  autoClustering: 'autoClustering',
+  autoIndexing: 'autoIndexing',
+  notifyOnCompletion: 'notifyOnCompletion',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CollectionSettingsScalarFieldEnum = (typeof CollectionSettingsScalarFieldEnum)[keyof typeof CollectionSettingsScalarFieldEnum]
 
 
 export const EventImageStatusScalarFieldEnum = {
@@ -1573,6 +1664,7 @@ export type GlobalOmitConfig = {
   organization?: Prisma.OrganizationOmit
   apiKey?: Prisma.ApiKeyOmit
   user?: Prisma.UserOmit
+  collectionSettings?: Prisma.CollectionSettingsOmit
   eventImageStatus?: Prisma.EventImageStatusOmit
   eventVideoStatus?: Prisma.EventVideoStatusOmit
   clusteringJob?: Prisma.ClusteringJobOmit

@@ -2,7 +2,7 @@
 
 import { useCallback, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { RefreshCw, Database, Layers, Building2, Search, CheckCircle } from "lucide-react";
+import { RefreshCw, Database, Layers, Building2, Search, CheckCircle, Settings } from "lucide-react";
 import Link from "next/link";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { usePollingApi } from "@/lib/hooks/use-api";
+import { useApi } from "@/lib/hooks/use-api";
 import { api } from "@/lib/api";
 import { formatNumber } from "@/lib/utils";
 import type { AllCollectionsResponse } from "@/lib/types";
@@ -27,9 +27,8 @@ function CollectionsContent() {
     return response.data;
   }, []);
 
-  const { data, loading, error, refetch } = usePollingApi<AllCollectionsResponse | undefined>(
-    fetcher,
-    30000
+  const { data, loading, error, refetch } = useApi<AllCollectionsResponse | undefined>(
+    fetcher
   );
 
   const filteredCollections = data?.collections?.filter((c) => {
@@ -172,24 +171,22 @@ function CollectionsContent() {
                       <TableHead className="text-right">Vectors</TableHead>
                       <TableHead className="text-right">Indexed</TableHead>
                       <TableHead>Progress</TableHead>
+                      <TableHead className="w-16">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredCollections.map((c) => {
                       const progress = c.vectorCount > 0 ? Math.round((c.indexedVectorCount / c.vectorCount) * 100) : 100;
-                      const match = c.collectionName.match(/event_([^_]+)_faces/);
-                      const eventId = match ? match[1] : null;
 
                       return (
                         <TableRow key={c.collectionName}>
                           <TableCell className="font-mono text-xs">
-                            {eventId ? (
-                              <Link href={`/dashboard/events/${eventId}`} className="hover:underline text-primary">
-                                {c.collectionName}
-                              </Link>
-                            ) : (
-                              c.collectionName
-                            )}
+                            <Link
+                              href={`/organizations/${c.orgId}?tab=collections`}
+                              className="hover:underline text-primary cursor-pointer"
+                            >
+                              {c.collectionName}
+                            </Link>
                           </TableCell>
                           <TableCell>
                             <Badge variant={c.status === "green" ? "success" : "warning"}>{c.status}</Badge>
@@ -201,6 +198,13 @@ function CollectionsContent() {
                               <Progress value={progress} className="h-2" />
                               <span className="text-xs text-muted-foreground w-8">{progress}%</span>
                             </div>
+                          </TableCell>
+                          <TableCell>
+                            <Link href={`/collections/${encodeURIComponent(c.collectionName)}/settings`}>
+                              <Button variant="ghost" size="icon-sm" title="Collection Settings">
+                                <Settings className="h-4 w-4" />
+                              </Button>
+                            </Link>
                           </TableCell>
                         </TableRow>
                       );

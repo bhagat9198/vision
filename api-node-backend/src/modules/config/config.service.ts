@@ -468,6 +468,44 @@ export class ConfigService {
       trashPath: await this.get('storage_trash_path', '_trash') ?? '_trash',
     };
   }
+
+  /**
+   * Test face analysis connection by calling img-analyse-backend health endpoint.
+   */
+  async testFaceAnalysisConnection(): Promise<{ success: boolean; message: string }> {
+    try {
+      const { faceAnalysisClient } = await import('../../services/face-analysis.client.js');
+      const backendUrl = await this.getFaceAnalysisBackendUrl();
+      const apiKey = await this.getFaceAnalysisApiKey();
+
+      if (!apiKey) {
+        return {
+          success: false,
+          message: 'API key is not configured'
+        };
+      }
+
+      // Call health endpoint to test connection
+      const response = await faceAnalysisClient.get('/health');
+
+      if (response.status === 'ok') {
+        return {
+          success: true,
+          message: 'Connection successful! Face analysis backend is reachable.'
+        };
+      } else {
+        return {
+          success: false,
+          message: 'Connection failed. Backend returned unexpected status.'
+        };
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.message || 'Connection failed. Please check the API key and backend URL.'
+      };
+    }
+  }
 }
 
 export const configService = new ConfigService();

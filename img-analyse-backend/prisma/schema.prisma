@@ -48,6 +48,11 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // === Custom Settings Toggle ===
+  // When false, organization uses global default settings
+  // When true, organization uses its own custom settings below
+  useCustomSettings Boolean @default(false)
+
   // === CompreFace Settings ===
   comprefaceUrl               String?
   comprefaceRecognitionApiKey String?
@@ -128,6 +133,26 @@ model User {
   updatedAt DateTime @updatedAt
 
   @@map("users")
+}
+
+/// CollectionSettings - per-collection configuration
+model CollectionSettings {
+  id                 String   @id @default(uuid())
+  collectionName     String   @unique
+  orgId              String
+  eventId            String
+  
+  // Settings
+  autoClustering     Boolean  @default(false)
+  autoIndexing       Boolean  @default(true)
+  notifyOnCompletion Boolean  @default(false)
+  
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  
+  @@index([orgId])
+  @@index([eventId])
+  @@map("collection_settings")
 }
 
 // ============ TRACKING MODELS ============

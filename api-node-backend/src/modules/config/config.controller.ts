@@ -139,6 +139,19 @@ export class ConfigController {
       next(error);
     }
   }
+
+  /**
+   * Test face analysis connection.
+   * Validates API key by making a test call to img-analyse-backend.
+   */
+  async testFaceAnalysisConnection(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await configService.testFaceAnalysisConnection();
+      sendSuccess(res, result, 200, 'Connection test completed');
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const configController = new ConfigController();

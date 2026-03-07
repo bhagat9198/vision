@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Settings, Save } from "lucide-react";
+import { Settings, Save, Eye, EyeOff } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,10 +21,12 @@ interface OrgSettingsFormProps {
 export function OrgSettingsForm({ org, onUpdate }: OrgSettingsFormProps) {
   const [saving, setSaving] = useState(false);
   const [globalDefaults, setGlobalDefaults] = useState<GlobalSettings | null>(null);
+  const [showRecognitionKey, setShowRecognitionKey] = useState(false);
+  const [showDetectionKey, setShowDetectionKey] = useState(false);
   const [settings, setSettings] = useState({
     comprefaceUrl: org.comprefaceUrl || "",
-    comprefaceRecognitionApiKey: "",
-    comprefaceDetectionApiKey: "",
+    comprefaceRecognitionApiKey: org.comprefaceRecognitionApiKey || "",
+    comprefaceDetectionApiKey: org.comprefaceDetectionApiKey || "",
     faceDetectionMode: org.faceDetectionMode,
     imageSourceMode: org.imageSourceMode || "URL",
     sharedStoragePath: org.sharedStoragePath || "",
@@ -47,16 +49,6 @@ export function OrgSettingsForm({ org, onUpdate }: OrgSettingsFormProps) {
     clusteringSimilarityThreshold: org.clusteringSimilarityThreshold ?? 0.6,
   });
 
-  useEffect(() => {
-    // Load global defaults
-    api.getGlobalSettings().then(response => {
-      if (response.success && response.data) {
-        setGlobalDefaults(response.data);
-      }
-    }).catch(err => {
-      console.error("Failed to load global defaults:", err);
-    });
-  }, []);
 
   const handleSave = async () => {
     setSaving(true);
@@ -161,11 +153,45 @@ export function OrgSettingsForm({ org, onUpdate }: OrgSettingsFormProps) {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="recognitionKey">Recognition API Key</Label>
-                <Input id="recognitionKey" type="password" placeholder="Leave blank to keep current" value={settings.comprefaceRecognitionApiKey} onChange={(e) => setSettings({ ...settings, comprefaceRecognitionApiKey: e.target.value })} />
+                <div className="relative">
+                  <Input
+                    id="recognitionKey"
+                    type={showRecognitionKey ? "text" : "password"}
+                    placeholder="Leave blank to keep current"
+                    value={settings.comprefaceRecognitionApiKey}
+                    onChange={(e) => setSettings({ ...settings, comprefaceRecognitionApiKey: e.target.value })}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowRecognitionKey(!showRecognitionKey)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    tabIndex={-1}
+                  >
+                    {showRecognitionKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="detectionKey">Detection API Key</Label>
-                <Input id="detectionKey" type="password" placeholder="Leave blank to keep current" value={settings.comprefaceDetectionApiKey} onChange={(e) => setSettings({ ...settings, comprefaceDetectionApiKey: e.target.value })} />
+                <div className="relative">
+                  <Input
+                    id="detectionKey"
+                    type={showDetectionKey ? "text" : "password"}
+                    placeholder="Leave blank to keep current"
+                    value={settings.comprefaceDetectionApiKey}
+                    onChange={(e) => setSettings({ ...settings, comprefaceDetectionApiKey: e.target.value })}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowDetectionKey(!showDetectionKey)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    tabIndex={-1}
+                  >
+                    {showDetectionKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

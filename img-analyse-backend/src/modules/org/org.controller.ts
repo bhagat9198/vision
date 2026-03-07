@@ -74,22 +74,87 @@ export async function getOrg(req: Request, res: Response) {
       });
     }
 
-    // Don't expose sensitive keys in response
-    const safeOrg = {
-      ...org,
-      comprefaceRecognitionApiKey: org.comprefaceRecognitionApiKey ? '***' : null,
-      comprefaceDetectionApiKey: org.comprefaceDetectionApiKey ? '***' : null,
-    };
-
+    // Return organization with actual API keys (not masked)
     return res.json({
       success: true,
-      data: safeOrg,
+      data: org,
     });
   } catch (error) {
     logger.error('Failed to get organization:', error);
     return res.status(500).json({
       success: false,
       error: 'Failed to get organization',
+    });
+  }
+}
+
+/**
+ * GET /orgs/:id/settings
+ * Get organization settings.
+ */
+export async function getOrgSettings(req: Request, res: Response) {
+  try {
+    const id = req.params.id as string;
+
+    const org = await orgService.getById(id);
+
+    if (!org) {
+      return res.status(404).json({
+        success: false,
+        error: 'Organization not found',
+      });
+    }
+
+    // Return settings with actual API keys (not masked)
+    const settings = {
+      id: org.id,
+      name: org.name,
+      slug: org.slug,
+      isActive: org.isActive,
+      useCustomSettings: org.useCustomSettings,
+      // CompreFace
+      comprefaceUrl: org.comprefaceUrl,
+      comprefaceRecognitionApiKey: org.comprefaceRecognitionApiKey,
+      comprefaceDetectionApiKey: org.comprefaceDetectionApiKey,
+      // Detection
+      faceDetectionMode: org.faceDetectionMode,
+      imageSourceMode: org.imageSourceMode,
+      sharedStoragePath: org.sharedStoragePath,
+      // Quality
+      minConfidence: org.minConfidence,
+      minSizePx: org.minSizePx,
+      skipExtremeAngles: org.skipExtremeAngles,
+      // Search
+      searchDefaultTopK: org.searchDefaultTopK,
+      searchMinSimilarity: org.searchMinSimilarity,
+      // Cache
+      embeddingCacheTtlSeconds: org.embeddingCacheTtlSeconds,
+      // Python Sidecar
+      pythonSidecarUrl: org.pythonSidecarUrl,
+      enableFallbackDetection: org.enableFallbackDetection,
+      enableAlignment: org.enableAlignment,
+      // Face Recognition
+      faceRecognitionProvider: org.faceRecognitionProvider,
+      insightfaceModel: org.insightfaceModel,
+      // Clustering
+      clusteringProvider: org.clusteringProvider,
+      clusteringMinSamples: org.clusteringMinSamples,
+      clusteringMinClusterSize: org.clusteringMinClusterSize,
+      clusteringSimilarityThreshold: org.clusteringSimilarityThreshold,
+      // Timestamps
+      createdAt: org.createdAt,
+      updatedAt: org.updatedAt,
+    };
+
+    return res.json({
+      success: true,
+      data: settings,
+    });
+  } catch (error) {
+    logger.error('Failed to get organization settings:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to get organization settings',
     });
   }
 }

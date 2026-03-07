@@ -78,6 +78,20 @@ router.get('/auth', configController.getAuthConfig);
  */
 router.patch('/auth', configController.updateAuthConfig);
 
+/**
+ * @swagger
+ * /config/test-face-analysis:
+ *   get:
+ *     summary: Test face analysis backend connection (Admin)
+ *     tags: [Config]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Connection test result
+ */
+router.get('/test-face-analysis', configController.testFaceAnalysisConnection);
+
 // Enabled providers (for template dropdown)
 router.get('/providers', configController.getEnabledProviders);
 

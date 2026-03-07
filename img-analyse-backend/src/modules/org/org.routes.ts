@@ -10,6 +10,7 @@ import { Router } from 'express';
 import {
   registerOrg,
   getOrg,
+  getOrgSettings,
   updateOrgSettings,
   deactivateOrg,
   listOrgs,
@@ -155,6 +156,33 @@ router.get('/:id/collections', requireOrgAuth, listOrgCollections);
  *         description: Organization not found
  */
 router.get('/:id', requireOrgAuth, getOrg);
+
+/**
+ * @swagger
+ * /orgs/{id}/settings:
+ *   get:
+ *     summary: Get organization settings
+ *     tags: [Organizations]
+ *     security:
+ *       - ApiKeyAuth: []
+ *       - AuthToken: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Organization settings
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/OrganizationSettingsResponse'
+ *       404:
+ *         description: Organization not found
+ */
+router.get('/:id/settings', requireOrgAuth, getOrgSettings);
 
 /**
  * @swagger
