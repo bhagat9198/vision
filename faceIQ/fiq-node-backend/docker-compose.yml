@@ -1,0 +1,128 @@
+# =============================================================================
+# Docker Compose for img-analyse-backend
+# =============================================================================
+# Multi-tenant face detection and search service.
+#
+# Services:
+#   - PostgreSQL: Organization and API key storage
+#   - Redis: API key caching and embedding sessions
+#   - Qdrant: Vector database for face embeddings
+#   - Python Sidecar: Fallback face detection (YuNet/SCRFD) and alignment
+#
+# Usage:
+#   docker-compose up -d
+# =============================================================================
+
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # External Services
+  # ---------------------------------------------------------------------------
+  # Postgres & Redis: Using external/existing instances as requested.
+  # Ensure your .env file points to the correct host/port.
+
+
+  # ---------------------------------------------------------------------------
+  # Qdrant - Vector Database for Face Embeddings
+  # ---------------------------------------------------------------------------
+  # Documentation: https://qdrant.tech/documentation/
+  # Each event gets collection: org_{orgId}_event_{eventId}_faces
+  # ---------------------------------------------------------------------------
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: img-analyse-qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"   # REST API
+      - "6334:6334"   # gRPC API
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__GRPC_PORT=6334
+      - QDRANT__SERVICE__HTTP_PORT=6333
+      # Performance tuning for face search
+      - QDRANT__STORAGE__PERFORMANCE__MAX_SEARCH_THREADS=4
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+
+
+  # ---------------------------------------------------------------------------
+  # CompreFace - Face Recognition Platform
+  # ---------------------------------------------------------------------------
+  # Source: https://github.com/exadel-inc/CompreFace
+  # ---------------------------------------------------------------------------
+  compreface-postgres-db:
+    image: postgres:13.3-alpine
+    restart: always
+    container_name: "compreface-postgres-db"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=sip_compreface
+      - POSTGRES_DB=compreface
+    volumes:
+      - compreface_postgres_data:/var/lib/postgresql/data
+
+  compreface-admin:
+    image: exadel/compreface-admin:latest
+    restart: always
+    container_name: "compreface-admin"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=sip_compreface
+      - POSTGRES_URL=jdbc:postgresql://compreface-postgres-db:5432/compreface
+      - SPRING_PROFILES_ACTIVE=dev
+      - ENABLE_EMAIL_SERVER=false
+    depends_on:
+      - compreface-postgres-db
+      - compreface-api
+
+  compreface-api:
+    image: exadel/compreface-api:latest
+    restart: always
+    container_name: "compreface-api"
+    depends_on:
+      - compreface-postgres-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=sip_compreface
+      - POSTGRES_URL=jdbc:postgresql://compreface-postgres-db:5432/compreface
+      - SPRING_PROFILES_ACTIVE=dev
+      - SAVE_IMAGES_TO_DB=false
+
+  compreface-fe:
+    image: exadel/compreface-fe:latest
+    restart: always
+    container_name: "compreface-ui"
+    ports:
+      - "8000:80"
+    environment:
+      - CLIENT_MAX_BODY_SIZE=50M
+      - PROXY_READ_TIMEOUT=60s
+      - PROXY_CONNECT_TIMEOUT=60s
+    depends_on:
+      - compreface-api
+      - compreface-admin
+
+  compreface-core:
+    image: exadel/compreface-core:latest
+    restart: always
+    container_name: "compreface-core"
+    environment:
+      - ML_PORT=3000
+
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  qdrant_data:
+    driver: local
+  compreface_postgres_data:
+    driver: local
+
+# toorRoot@2025

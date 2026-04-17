@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to PICS</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #0a0a0a;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #0a0a0a; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" style="max-width: 600px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(0,0,0,0) 50%, rgba(168, 85, 247, 0.1) 100%); border-radius: 16px;">
+          <tr>
+            <td style="padding: 40px;">
+              <!-- Logo -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="center" style="padding-bottom: 32px;">
+                    <div style="display: inline-block; width: 56px; height: 56px; background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); border-radius: 12px; line-height: 56px; text-align: center;">
+                      <span style="color: white; font-size: 24px; font-weight: bold;">📷</span>
+                    </div>
+                    <h1 style="margin: 16px 0 0 0; color: #ffffff; font-size: 24px; font-weight: 700;">PICS</h1>
+                    <p style="margin: 4px 0 0 0; color: rgba(255,255,255,0.6); font-size: 14px;">Photo Gallery Platform</p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Content Card -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #171717; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                <tr>
+                  <td style="padding: 32px;">
+                    <h2 style="margin: 0 0 8px 0; color: #ffffff; font-size: 20px; font-weight: 600; text-align: center;">Welcome to PICS! 🎉</h2>
+                    <p style="margin: 0 0 24px 0; color: rgba(255,255,255,0.7); font-size: 15px; line-height: 1.6; text-align: center;">
+                      Hi {{userName}},<br>Your account has been successfully created. You're ready to start sharing beautiful photo galleries with your clients.
+                    </p>
+
+                    <!-- Features -->
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom: 24px;">
+                      <tr>
+                        <td style="padding: 12px; background-color: #0a0a0a; border-radius: 8px; margin-bottom: 8px;">
+                          <p style="margin: 0; color: #f59e0b; font-size: 14px;">✨ <strong style="color: #fff;">Create Events</strong></p>
+                          <p style="margin: 4px 0 0 0; color: rgba(255,255,255,0.5); font-size: 13px;">Organize photos by events and share easily</p>
+                        </td>
+                      </tr>
+                      <tr><td style="height: 8px;"></td></tr>
+                      <tr>
+                        <td style="padding: 12px; background-color: #0a0a0a; border-radius: 8px;">
+                          <p style="margin: 0; color: #f59e0b; font-size: 14px;">🎨 <strong style="color: #fff;">Custom Galleries</strong></p>
+                          <p style="margin: 4px 0 0 0; color: rgba(255,255,255,0.5); font-size: 13px;">Choose from multiple stunning gallery templates</p>
+                        </td>
+                      </tr>
+                      <tr><td style="height: 8px;"></td></tr>
+                      <tr>
+                        <td style="padding: 12px; background-color: #0a0a0a; border-radius: 8px;">
+                          <p style="margin: 0; color: #f59e0b; font-size: 14px;">📤 <strong style="color: #fff;">Easy Sharing</strong></p>
+                          <p style="margin: 4px 0 0 0; color: rgba(255,255,255,0.5); font-size: 13px;">Share galleries with clients via unique links</p>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- CTA Button -->
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td align="center" style="padding: 8px 0;">
+                          <a href="{{loginUrl}}" style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-size: 16px; font-weight: 600;">
+                            Go to Dashboard
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- Account Info -->
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top: 24px; background-color: rgba(245, 158, 11, 0.1); border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                      <tr>
+                        <td style="padding: 16px;">
+                          <p style="margin: 0 0 8px 0; color: rgba(255,255,255,0.7); font-size: 13px;"><strong>Your Account Details:</strong></p>
+                          <p style="margin: 0; color: #f59e0b; font-size: 13px;">Email: {{email}}</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Footer -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td style="padding-top: 32px; text-align: center;">
+                    <p style="margin: 0; color: rgba(255,255,255,0.4); font-size: 12px;">© {{year}} PICS. All rights reserved.</p>
+                    <p style="margin: 8px 0 0 0; color: rgba(255,255,255,0.3); font-size: 11px;">Need help? Contact us at support@pics.com</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+

@@ -1,0 +1,564 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============ ENUMS ============
+enum SubscriptionTier {
+  FREE
+  PRO
+  BUSINESS
+}
+
+enum GalleryTemplate {
+  MODERN
+  CLASSIC
+  MINIMAL
+  ELEGANT
+  FASHION
+  SIDEBAR
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AspectRatio {
+  PORTRAIT
+  LANDSCAPE
+  SQUARE
+}
+
+enum SimilarityReason {
+  FACE
+  SCENE
+  COLOR
+  CLOTHING
+}
+
+enum DownloadStatus {
+  PENDING
+  PROCESSING
+  READY
+  EXPIRED
+}
+
+enum ActivityType {
+  COMMENT
+  LIKE
+  DOWNLOAD
+  VIEW
+  UPLOAD
+}
+
+enum WatermarkPosition {
+  TOP_LEFT
+  TOP_CENTER
+  TOP_RIGHT
+  CENTER_LEFT
+  CENTER
+  CENTER_RIGHT
+  BOTTOM_LEFT
+  BOTTOM_CENTER
+  BOTTOM_RIGHT
+}
+
+enum UploadSessionStatus {
+  UPLOADING
+  PROCESSING
+  COMPLETED
+  FAILED
+  EXPIRED
+}
+
+enum UploadFileStatus {
+  PENDING
+  UPLOADING
+  UPLOADED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// ============ SUPER ADMIN ============
+model SuperAdmin {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  name         String
+  isActive     Boolean   @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("super_admin")
+  @@index([email])
+}
+
+// ============ CLIENTS ============
+model Client {
+  id           String    @id @default(uuid())
+  phone        String?   @unique
+  email        String?   @unique
+  name         String?
+  avatar       String?
+  isActive     Boolean   @default(true) @map("is_active")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("client")
+}
+
+// ============ SYSTEM CONFIG ============
+model SystemConfig {
+  id      String  @id @default(uuid())
+  key     String  @unique
+  value   String
+  options Json?   // For select dropdowns - e.g., ["option1", "option2"]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("system_config")
+  @@index([key])
+}
+
+// ============ MESSAGE TEMPLATES ============
+model MessageTemplate {
+  id           String   @id @default(uuid())
+  name         String
+  type         String
+  provider     String?  // fast2sms, bulksms, sendgrid, smtp, twilio
+  templateId   String?  @map("template_id")
+  templateText String   @map("template_text")
+  variables    String[]
+  isHtml       Boolean  @default(false) @map("is_html")
+  isActive     Boolean  @default(true) @map("is_active")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("message_template")
+  @@unique([type, provider, isActive])
+  @@index([type])
+  @@index([provider])
+}
+
+// ============ PHOTOGRAPHERS ============
+model Photographer {
+  id                   String           @id @default(uuid())
+  displayId            Int              @unique @default(autoincrement()) @map("display_id")
+  username             String           @unique // Unique username for URLs (e.g., "john_doe")
+  email                String?          @unique
+  phone                String?          @unique
+  passwordHash         String           @map("password_hash")
+  name                 String
+  avatar               String?
+  bio                  String?
+  website              String?
+  instagram            String?
+  emailVerified        Boolean          @default(false) @map("email_verified")
+  phoneVerified        Boolean          @default(false) @map("phone_verified")
+  subscription         SubscriptionTier @default(FREE)
+  storageUsed          BigInt           @default(0) @map("storage_used")
+  storageLimit         BigInt           @default(5368709120) @map("storage_limit")
+
+  // Watermark Settings
+  watermarkEnabled     Boolean          @default(false) @map("watermark_enabled")
+  watermarkUrl         String?          @map("watermark_url")
+  watermarkText        String?          @map("watermark_text") // Text watermark if no image URL
+  watermarkPosition    WatermarkPosition @default(BOTTOM_RIGHT) @map("watermark_position")
+  watermarkOpacity     Int              @default(50) @map("watermark_opacity") // 0-100
+  watermarkScale       Int              @default(20) @map("watermark_scale") // % of image width
+
+  defaultTemplate      GalleryTemplate  @default(MODERN) @map("default_template")
+  notificationSettings Json?            @map("notification_settings")
+  isActive             Boolean          @default(true) @map("is_active")
+
+  events         Event[]
+  uploadSessions UploadSession[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("photographer")
+  @@index([email])
+  @@index([phone])
+  @@index([isActive])
+}
+
+// ============ EVENTS ============
+model Event {
+  id                  String          @id @default(uuid())
+  displayId           Int             @unique @default(autoincrement()) @map("display_id")
+  slug                String          @unique // Unique slug: photographer_username/event_name_slug
+  name                String
+  description         String?
+  coverPhoto          String?         @map("cover_photo")
+  date                DateTime
+  location            String?
+  isPasswordProtected Boolean         @default(false) @map("is_password_protected")
+  password            String?
+  instructions        String?
+  status              EventStatus     @default(DRAFT)
+  template            GalleryTemplate @default(MODERN)
+
+  // Settings
+  watermarkEnabled Boolean @default(true) @map("watermark_enabled")
+  watermarkText    String? @map("watermark_text") // Custom watermark text for this event
+  allowDownloads   Boolean @default(true) @map("allow_downloads")
+  allowComments    Boolean @default(true) @map("allow_comments")
+  allowLikes       Boolean @default(true) @map("allow_likes")
+
+  photographerId String       @map("photographer_id")
+  photographer   Photographer @relation(fields: [photographerId], references: [id], onDelete: Cascade)
+
+  albums        Album[]
+  photos        Photo[]
+  folders       FavoriteFolder[]
+  downloads     DownloadPackage[]
+  clientVisits  ClientVisit[]
+  detectedFaces DetectedFace[]
+  activities    ActivityLog[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("event")
+  @@index([photographerId])
+  @@index([status])
+  @@index([date])
+}
+
+// ============ ALBUMS ============
+model Album {
+  id         String  @id @default(uuid())
+  displayId  Int     @unique @default(autoincrement()) @map("display_id")
+  name       String
+  coverPhoto String? @map("cover_photo")
+  sortOrder  Int     @default(0) @map("sort_order")
+
+  eventId String @map("event_id")
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  // Nested folders support
+  parentId String? @map("parent_id")
+  parent   Album?  @relation("AlbumHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children Album[] @relation("AlbumHierarchy")
+
+  photos Photo[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("album")
+  @@index([eventId])
+  @@index([parentId])
+  @@index([sortOrder])
+}
+
+// ============ PHOTOS ============
+model Photo {
+  id           String      @id @default(uuid())
+  displayId    Int         @default(autoincrement()) @map("display_id")
+  url          String
+  thumbnail    String
+  originalName String?     @map("original_name")
+  fileSize     BigInt      @default(0) @map("file_size")
+  width        Int?
+  height       Int?
+  aspectRatio  AspectRatio @default(LANDSCAPE) @map("aspect_ratio")
+  downloadable Boolean     @default(true)
+  metadata     Json?
+  sortOrder    Int         @default(0) @map("sort_order")
+
+  albumId String? @map("album_id")
+  album   Album?  @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  eventId String @map("event_id")
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  comments    Comment[]
+  likes       PhotoLike[]
+  personTags  PersonTag[]
+  similarFrom SimilarPhoto[]  @relation("SimilarFrom")
+  similarTo   SimilarPhoto[]  @relation("SimilarTo")
+  favorites   FavoritePhoto[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("photo")
+  @@unique([eventId, displayId])
+  @@index([eventId])
+  @@index([albumId])
+  @@index([sortOrder])
+}
+
+// ============ SOCIAL FEATURES ============
+model Comment {
+  id         String  @id @default(uuid())
+  text       String
+  userName   String  @map("user_name")
+  userAvatar String? @map("user_avatar")
+  userEmail  String? @map("user_email")
+
+  photoId String @map("photo_id")
+  photo   Photo  @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("comment")
+  @@index([photoId])
+  @@index([createdAt])
+}
+
+model PhotoLike {
+  id        String  @id @default(uuid())
+  userEmail String? @map("user_email")
+  sessionId String? @map("session_id")
+
+  photoId String @map("photo_id")
+  photo   Photo  @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("photo_like")
+  @@unique([photoId, userEmail])
+  @@unique([photoId, sessionId])
+  @@index([photoId])
+}
+
+// ============ AI FEATURES ============
+model PersonTag {
+  id          String @id @default(uuid())
+  name        String?
+  thumbnail   String
+  boundingBox Json?  @map("bounding_box")
+
+  photoId String @map("photo_id")
+  photo   Photo  @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  detectedFaceId String?       @map("detected_face_id")
+  detectedFace   DetectedFace? @relation(fields: [detectedFaceId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("person_tag")
+  @@index([photoId])
+  @@index([detectedFaceId])
+}
+
+model DetectedFace {
+  id        String  @id @default(uuid())
+  name      String?
+  thumbnail String
+
+  eventId String @map("event_id")
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  personTags PersonTag[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("detected_face")
+  @@index([eventId])
+}
+
+model SimilarPhoto {
+  id         String           @id @default(uuid())
+  similarity Float
+  reason     SimilarityReason
+
+  photoId        String @map("photo_id")
+  photo          Photo  @relation("SimilarFrom", fields: [photoId], references: [id], onDelete: Cascade)
+  similarPhotoId String @map("similar_photo_id")
+  similarPhoto   Photo  @relation("SimilarTo", fields: [similarPhotoId], references: [id], onDelete: Cascade)
+
+  @@map("similar_photo")
+  @@unique([photoId, similarPhotoId])
+  @@index([photoId])
+}
+
+// ============ FAVORITES ============
+model FavoriteFolder {
+  id    String @id @default(uuid())
+  name  String
+  color String @default("#6366f1")
+
+  eventId String @map("event_id")
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  photos FavoritePhoto[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("favorite_folder")
+  @@index([eventId])
+}
+
+model FavoritePhoto {
+  id        String  @id @default(uuid())
+  sessionId String? @map("session_id")
+  userEmail String? @map("user_email")
+
+  photoId  String          @map("photo_id")
+  photo    Photo           @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  folderId String?         @map("folder_id")
+  folder   FavoriteFolder? @relation(fields: [folderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("favorite_photo")
+  @@unique([photoId, sessionId, folderId])
+  @@index([folderId])
+  @@index([photoId])
+}
+
+// ============ DOWNLOADS ============
+model DownloadPackage {
+  id          String         @id @default(uuid())
+  name        String
+  description String?
+  photoIds    String[]       @map("photo_ids")
+  totalSize   BigInt         @default(0) @map("total_size")
+  sizeOption  String         @map("size_option")
+  status      DownloadStatus @default(PENDING)
+  downloadUrl String?        @map("download_url")
+  expiresAt   DateTime       @map("expires_at")
+
+  eventId String @map("event_id")
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("download_package")
+  @@index([eventId])
+  @@index([status])
+}
+
+// ============ ANALYTICS ============
+model ClientVisit {
+  id               String  @id @default(uuid())
+  clientName       String? @map("client_name")
+  clientEmail      String? @map("client_email")
+  sessionId        String  @map("session_id")
+  photosViewed     Int     @default(0) @map("photos_viewed")
+  photosLiked      Int     @default(0) @map("photos_liked")
+  photosDownloaded Int     @default(0) @map("photos_downloaded")
+  commentsLeft     Int     @default(0) @map("comments_left")
+
+  eventId String @map("event_id")
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  visitedAt DateTime @default(now()) @map("visited_at")
+
+  @@map("client_visit")
+  @@index([eventId])
+  @@index([visitedAt])
+}
+
+model ActivityLog {
+  id         String       @id @default(uuid())
+  type       ActivityType
+  eventId    String       @map("event_id")
+  event      Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  eventName  String       @map("event_name")
+  photoId    String?      @map("photo_id")
+  clientName String?      @map("client_name")
+  message    String
+  metadata   Json?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("activity_log")
+  @@index([eventId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+// ============ OTP ============
+model Otp {
+  id        String   @id @default(cuid())
+  phone     String?
+  email     String?
+  code      String
+  type      String   // signup, login, password_reset
+  expiresAt DateTime @map("expires_at")
+  verified  Boolean  @default(false)
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("otp")
+  @@index([phone, type])
+  @@index([email, type])
+  @@index([expiresAt])
+}
+
+// ============ UPLOAD SESSIONS ============
+model UploadSession {
+  id              String              @id @default(uuid())
+  photographerId  String              @map("photographer_id")
+  photographer    Photographer        @relation(fields: [photographerId], references: [id], onDelete: Cascade)
+  eventId         String              @map("event_id")
+  albumId         String?             @map("album_id")
+
+  totalFiles      Int                 @map("total_files")
+  processedFiles  Int                 @default(0) @map("processed_files")
+  failedFiles     Int                 @default(0) @map("failed_files")
+  totalSize       BigInt              @default(0) @map("total_size")
+
+  status          UploadSessionStatus @default(UPLOADING)
+
+  files           UploadFile[]
+
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+  expiresAt       DateTime            @map("expires_at")
+
+  @@map("upload_session")
+  @@index([photographerId])
+  @@index([eventId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model UploadFile {
+  id              String           @id @default(uuid())
+  sessionId       String           @map("session_id")
+  session         UploadSession    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  originalName    String           @map("original_name")
+  mimeType        String           @map("mime_type")
+  fileSize        BigInt           @map("file_size")
+
+  // Chunked upload tracking
+  totalChunks     Int              @map("total_chunks")
+  uploadedChunks  Int              @default(0) @map("uploaded_chunks")
+  chunksReceived  String[]         @default([]) @map("chunks_received") // Array of received chunk indices
+
+  status          UploadFileStatus @default(PENDING)
+  errorMessage    String?          @map("error_message")
+  retryCount      Int              @default(0) @map("retry_count")
+
+  // After processing - link to created photo
+  photoId         String?          @map("photo_id")
+
+  // Temp storage paths
+  tempPath        String?          @map("temp_path")
+
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  @@map("upload_file")
+  @@index([sessionId])
+  @@index([status])
+}
+

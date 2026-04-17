@@ -1,0 +1,382 @@
+// =============================================================================
+// Prisma Schema - img-analyse-backend
+// =============================================================================
+// Multi-tenant face analysis service with organization-based configuration
+// =============================================================================
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ ENUMS ============
+
+enum FaceDetectionMode {
+  RECOGNITION_ONLY
+  DETECTION_THEN_RECOGNITION
+}
+
+enum ImageSourceMode {
+  URL
+  MULTIPART
+  SHARED_STORAGE
+}
+
+enum FaceRecognitionProvider {
+  COMPREFACE
+  INSIGHTFACE
+}
+
+enum ClusteringProvider {
+  QDRANT    // Uses Qdrant Distance Matrix + Union-Find (pure Node.js)
+  HDBSCAN   // Uses Python sidecar HDBSCAN (battle-tested, better quality)
+}
+
+// ============ MODELS ============
+
+/// Organization - represents a tenant in the multi-tenant system
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // === Custom Settings Toggle ===
+  // When false, organization uses global default settings
+  // When true, organization uses its own custom settings below
+  useCustomSettings Boolean @default(false)
+
+  // === CompreFace Settings ===
+  comprefaceUrl               String?
+  comprefaceRecognitionApiKey String?
+  comprefaceDetectionApiKey   String?
+
+  // === Detection Settings ===
+  faceDetectionMode FaceDetectionMode @default(RECOGNITION_ONLY)
+  imageSourceMode   ImageSourceMode   @default(URL)
+  sharedStoragePath String?
+
+  // === Quality Filters ===
+  minConfidence     Float   @default(0.5)
+  minSizePx         Int     @default(60)
+  skipExtremeAngles Boolean @default(true)
+
+  // === Search Settings ===
+  searchDefaultTopK   Int   @default(50)
+  searchMinSimilarity Float @default(0.6)
+
+  // === Cache Settings ===
+  embeddingCacheTtlSeconds Int @default(1800) // 30 min
+
+  // === Python Sidecar ===
+  pythonSidecarUrl        String?
+  enableFallbackDetection Boolean @default(true)
+  enableAlignment         Boolean @default(true)
+
+  // === Face Recognition Provider ===
+  // COMPREFACE: Uses external CompreFace service (requires comprefaceUrl)
+  // INSIGHTFACE: Uses Python sidecar's built-in InsightFace (self-contained)
+  faceRecognitionProvider FaceRecognitionProvider @default(COMPREFACE)
+  insightfaceModel        String?  // e.g., 'buffalo_l', 'buffalo_s', 'antelopev2'
+
+  // === Face Clustering Settings ===
+  // QDRANT: Pure Node.js clustering using Qdrant Distance Matrix + Union-Find
+  // HDBSCAN: Python sidecar HDBSCAN clustering (battle-tested, better quality)
+  clusteringProvider      ClusteringProvider @default(QDRANT)
+  clusteringMinSamples    Int     @default(2)   // HDBSCAN min_samples parameter
+  clusteringMinClusterSize Int    @default(2)   // HDBSCAN min_cluster_size parameter
+  clusteringSimilarityThreshold Float @default(0.6) // Threshold for Qdrant-based clustering
+
+  // === Relations ===
+  apiKeys ApiKey[]
+  eventImageStatuses EventImageStatus[]
+  eventVideoStatuses EventVideoStatus[]
+  clusteringJobs ClusteringJob[]
+  personClusters PersonCluster[]
+  faceClusterAssignments FaceClusterAssignment[]
+
+  @@map("organizations")
+}
+
+/// ApiKey - authentication keys for organizations
+model ApiKey {
+  id        String    @id @default(uuid())
+  orgId     String
+  key       String    @unique
+  name      String    @default("Default")
+  isActive  Boolean   @default(true)
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([key])
+  @@index([orgId])
+  @@map("api_keys")
+}
+
+/// User - system administrators
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String   // Hashed
+  name      String?
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+/// CollectionSettings - per-collection configuration
+model CollectionSettings {
+  id                 String   @id @default(uuid())
+  collectionName     String   @unique
+  orgId              String
+  eventId            String
+  
+  // Settings
+  autoClustering     Boolean  @default(false)
+  autoIndexing       Boolean  @default(true)
+  notifyOnCompletion Boolean  @default(false)
+  
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  
+  @@index([orgId])
+  @@index([eventId])
+  @@map("collection_settings")
+}
+
+// ============ TRACKING MODELS ============
+
+enum IndexingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+/// EventImageStatus - tracks indexing status of individual images
+model EventImageStatus {
+  id        String         @id @default(uuid())
+  eventId   String
+  photoId   String
+  eventSlug     String?
+  orgId         String
+  status        IndexingStatus @default(PENDING)
+  isActive      Boolean        @default(true)
+  error         String?
+  imageUrl      String?        // URL to display the image
+  facesDetected Int            @default(0)
+  facesIndexed  Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  // Video Relation
+  sourceVideoId String?
+  videoTimestamp Float?
+  video EventVideoStatus? @relation(fields: [sourceVideoId], references: [id], onDelete: SetNull)
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, photoId])
+  @@index([eventId])
+  @@index([eventSlug])
+  @@index([orgId])
+  @@map("event_image_statuses")
+}
+
+/// EventVideoStatus - tracks video processing status
+model EventVideoStatus {
+  id        String         @id @default(uuid())
+  eventId   String
+  videoId   String         // User provided or generated
+  eventSlug String?
+  orgId     String
+  status    IndexingStatus @default(PENDING)
+  isActive  Boolean        @default(true)
+  error     String?
+  videoUrl  String?        // URL to stream/download the video (if applicable)
+  
+  // Stats
+  durationSec    Float     @default(0)
+  framesExtracted Int      @default(0)
+  facesFound     Int       @default(0)
+
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  // Relation to extracted frames
+  frames EventImageStatus[]
+
+  @@unique([eventId, videoId])
+  @@index([eventId])
+  @@index([eventSlug])
+  @@index([orgId])
+  @@map("event_video_statuses")
+}
+
+// ============ FACE CLUSTERING MODELS ============
+
+enum ClusteringJobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+/// ClusteringJob - tracks face clustering jobs for an event
+model ClusteringJob {
+  id            String              @id @default(uuid())
+  orgId         String
+  eventId       String
+  eventSlug     String
+  status        ClusteringJobStatus @default(PENDING)
+  provider      ClusteringProvider
+
+  // Stats
+  totalFaces    Int                 @default(0)
+  clustersFound Int                 @default(0)
+  noiseFaces    Int                 @default(0) // Faces that couldn't be clustered
+
+  // Timing
+  startedAt     DateTime?
+  completedAt   DateTime?
+  error         String?
+
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  org           Organization        @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+  @@index([eventId])
+  @@index([eventSlug])
+  @@map("clustering_jobs")
+}
+
+/// PersonCluster - represents a group of faces belonging to the same person
+model PersonCluster {
+  id            String   @id @default(uuid())
+  orgId         String
+  eventId       String
+  eventSlug     String
+
+  // Display info
+  name          String   @default("Unknown") // e.g., "Person 1", or user-assigned name
+  displayOrder  Int      @default(0)         // For UI ordering
+
+  // Representative face (for avatar/thumbnail)
+  representativeFaceId String?              // Qdrant point ID of best face
+  thumbnailUrl         String?              // URL to cropped face thumbnail
+
+  // Stats
+  faceCount     Int      @default(0)
+  photoCount    Int      @default(0)         // Distinct photos this person appears in
+
+  // Metadata
+  isNoise       Boolean  @default(false)     // True if this is the "unclustered" bucket
+  isMerged      Boolean  @default(false)     // True if merged from other clusters
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  org             Organization @relation(fields: [orgId], references: [id])
+  faceAssignments FaceClusterAssignment[]
+
+  @@index([orgId])
+  @@index([eventId])
+  @@index([eventSlug])
+  @@index([orgId, eventSlug])
+  @@map("person_clusters")
+}
+
+/// FaceClusterAssignment - maps individual faces to clusters
+model FaceClusterAssignment {
+  id            String   @id @default(uuid())
+  orgId         String
+  eventId       String
+
+  // Face identification (from Qdrant)
+  qdrantPointId String              // The face's ID in Qdrant
+  photoId       String              // Which photo this face is from
+
+  // Cluster assignment
+  clusterId     String
+  cluster       PersonCluster       @relation(fields: [clusterId], references: [id], onDelete: Cascade)
+  org           Organization        @relation(fields: [orgId], references: [id])
+
+  // Confidence
+  confidence    Float   @default(1.0) // How confident the clustering is
+
+  // For manual adjustments
+  isManual      Boolean @default(false) // True if user manually assigned
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([qdrantPointId])          // Each face can only be in one cluster
+  @@index([orgId])
+  @@index([eventId])
+  @@index([clusterId])
+  @@index([photoId])
+  @@map("face_cluster_assignments")
+}
+
+// ============ GLOBAL SETTINGS ============
+
+/// GlobalSettings - system-wide default settings for organizations
+/// This is a singleton table (only one row should exist)
+model GlobalSettings {
+  id String @id @default(uuid())
+
+  // === Face Recognition Provider ===
+  faceRecognitionProvider FaceRecognitionProvider @default(COMPREFACE)
+  insightfaceModel        String?                 @default("buffalo_l")
+
+  // === CompreFace URLs ===
+  comprefaceUrl    String?
+  pythonSidecarUrl String?
+
+  // === Detection Settings ===
+  faceDetectionMode FaceDetectionMode @default(RECOGNITION_ONLY)
+  minConfidence     Float             @default(0.7)
+  minSizePx         Int               @default(60)
+  skipExtremeAngles Boolean           @default(false)
+
+  // === Image Source ===
+  imageSourceMode   ImageSourceMode @default(URL)
+  sharedStoragePath String?
+
+  // === Advanced Detection ===
+  enableFallbackDetection Boolean @default(true)
+  enableAlignment         Boolean @default(true)
+
+  // === Search Settings ===
+  searchDefaultTopK        Int @default(50)
+  searchMinSimilarity      Float @default(0.6)
+  embeddingCacheTtlSeconds Int @default(1800)
+
+  // === Clustering Settings ===
+  clusteringProvider            ClusteringProvider @default(QDRANT)
+  clusteringMinClusterSize      Int                @default(2)
+  clusteringMinSamples          Int                @default(2)
+  clusteringSimilarityThreshold Float              @default(0.6)
+
+  // === Metadata ===
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("global_settings")
+}
