@@ -1,0 +1,56 @@
+# =============================================================================
+# Docker Compose — photography/node-backend-photography
+# =============================================================================
+# Local infrastructure for the photography product API:
+#
+#   - PostgreSQL 15 : photographers, events, albums, photos, social features,
+#                     upload sessions, activity logs, super-admin, templates.
+#   - Redis 7       : BullMQ backing for image-processing + event-cleanup
+#                     queues, rate limiting, caches.
+#
+# Usage:
+#   docker compose up -d
+#   docker compose logs -f postgres
+#   docker compose down               # keep volumes
+#   docker compose down -v            # wipe db + redis data
+#
+# The backend itself runs natively (`npm run dev`). This compose file only
+# provides its dependencies.
+# =============================================================================
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: photography_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: pics
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: photography_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:

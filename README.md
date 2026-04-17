@@ -176,10 +176,11 @@ Primary product. A platform for **event photographers** to upload, manage, and s
 | Docs | [photography/docs-photography/](photography/docs-photography/) | — | Pipeline & ops notes |
 
 **Key features**
-- 8 gallery templates (Masonry, Grid, Carousel, Timeline, Filmstrip, Collage, Story, Magazine)
-- Chunked file uploads with session tracking
+- **8 gallery view modes** (Masonry, Grid, Carousel, Timeline, Filmstrip, Collage, Story, Magazine) — chosen by the client
+- **6 theme presets** (MODERN, CLASSIC, MINIMAL, ELEGANT, FASHION, SIDEBAR) — chosen by the photographer in event settings
+- Chunked file uploads (5 MB chunks, 4 parallel files) with session tracking and retry
 - Face search: upload a selfie to find all your photos
-- Social: comments, likes, favorites, download packages
+- Social: comments, likes, favorites (with custom folders), download packages
 - Subscription tiers: FREE, PRO, BUSINESS
 
 ### 2. faceIQ — face analysis platform
