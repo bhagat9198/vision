@@ -11,8 +11,8 @@ pics/
 ├── img-analyse/                  # Photo gallery platform (primary product)
 │   ├── api-node-backend/         # Main product API (Express + Prisma)
 │   ├── img-analyse-backend/      # Face analysis microservice (Express + Qdrant)
-│   ├── next-frontend/            # Photographer & client portal (Next.js 16)
-│   ├── img-analyse-frontend/     # Admin monitoring dashboard (Next.js 16)
+│   ├── client-next-frontend/            # Photographer & client portal (Next.js 16)
+│   ├── admin-next-frontend/     # Admin monitoring dashboard (Next.js 16)
 │   ├── docs/
 │   └── scripts/
 │
@@ -38,7 +38,7 @@ pics/
                               │                    img-analyse                        │
                               │                                                      │
  ┌─────────────┐   HTTP       │  ┌──────────────────┐        ┌────────────────────┐  │
- │   Browser    │────────────►│  │  next-frontend    │        │ img-analyse-       │  │
+ │   Browser    │────────────►│  │  client-next-frontend    │        │ admin-next-frontend       │  │
  │  (end user)  │◄────────────│  │  (Next.js :3000)  │        │ frontend (:3001)   │  │
  └─────────────┘              │  │                   │        │ (admin dashboard)  │  │
                               │  │  Photographer     │        │                    │  │
@@ -189,7 +189,7 @@ The primary product. A platform for **event photographers** to upload, manage, a
 | [api-node-backend](img-analyse/api-node-backend/) | 4000 | Express, Prisma, BullMQ | Main product API: auth, events, albums, photos, uploads, social features |
 | [img-analyse-backend](img-analyse/img-analyse-backend/) | 4001 | Express, Prisma, Qdrant | Face analysis microservice: detection, indexing, search, clustering |
 | [next-frontend](img-analyse/next-frontend/) | 3000 | Next.js 16, React 19, shadcn/ui | Photographer portal + client gallery (69 components) |
-| [img-analyse-frontend](img-analyse/img-analyse-frontend/) | 3001 | Next.js 16, React 19, shadcn/ui | Admin dashboard for monitoring face indexing (28 components) |
+| [admin-next-frontend](img-analyse/admin-next-frontend/) | 3001 | Next.js 16, React 19, shadcn/ui | Admin dashboard for monitoring face indexing (28 components) |
 
 #### api-node-backend vs img-analyse-backend
 
@@ -397,7 +397,7 @@ Each service has a `.env.example` file. Key variables:
 | img-analyse-backend | 4001 |
 | vision-core (Python) | 4002 |
 | next-frontend | 3000 |
-| img-analyse-frontend | 3001 |
+| admin-next-frontend | 3001 |
 | visionIQ node-backend | 8000 |
 | PostgreSQL | 5432 |
 | Redis | 6379 |
