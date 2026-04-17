@@ -13,10 +13,10 @@ const options: swaggerJsdoc.Options = {
     definition: {
         openapi: '3.0.0',
         info: {
-            title: 'PICS Backend API',
+            title: 'Img Analyse Backend API',
             version: '1.0.0',
             description: `
-PICS Photo Gallery Platform API.
+Img Analyse Photo Gallery Platform API.
 
 ## Authentication
 Authentication is handled via JWT tokens.

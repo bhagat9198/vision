@@ -1,7 +1,7 @@
 {
-  "name": "pics-backend",
+  "name": "img-analyse-backend",
   "version": "1.0.0",
-  "description": "Backend API for PICS - Photo Gallery Platform",
+  "description": "Backend API for img-analyse - Photo Gallery Platform",
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",

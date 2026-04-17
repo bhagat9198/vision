@@ -1,4 +1,4 @@
-# PICS - Photography & Vision Intelligence Platform
+# Vision - Photography & Vision Intelligence Platform
 
 A multi-service platform for **photography event management** with AI-powered face detection/search, and **video surveillance** with anomaly detection.
 
@@ -7,7 +7,7 @@ A multi-service platform for **photography event management** with AI-powered fa
 ## Repository Structure
 
 ```
-pics/
+vision/
 ├── img-analyse/                  # Photo gallery platform (primary product)
 │   ├── api-node-backend/         # Main product API (Express + Prisma)
 │   ├── img-analyse-backend/      # Face analysis microservice (Express + Qdrant)
